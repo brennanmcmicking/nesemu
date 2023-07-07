@@ -25,17 +25,17 @@ add_executable(nesemu app/nesemu.cpp)
 target_link_libraries(nesemu PUBLIC cpu ppu cartridge "${Boost_LOG_LIBRARY}")
 
 add_executable(nesemu-cpu app/nesemu-cpu.cpp) 
-target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge)
+target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge "${Boost_LOG_LIBRARY}")
 
 add_executable(nesemu-cartridge app/nesemu-cartridge.cpp) 
-target_link_libraries(nesemu-cartridge PUBLIC cartridge)
+target_link_libraries(nesemu-cartridge PUBLIC cartridge "${Boost_LOG_LIBRARY}")
 
 # testing
 add_executable(test-cpu app/catch2_main.cpp app/test-cpu.cpp)
-target_link_libraries(test-cpu PUBLIC cpu ppu cartridge)
+target_link_libraries(test-cpu PUBLIC cpu ppu cartridge "${Boost_LOG_LIBRARY}")
 
 add_executable(test-ppu app/catch2_main.cpp app/test-ppu.cpp)
-target_link_libraries(test-ppu PUBLIC ppu)
+target_link_libraries(test-ppu PUBLIC ppu "${Boost_LOG_LIBRARY}")
 
 add_executable(test-cartridge app/catch2_main.cpp app/test-cartridge.cpp)
-target_link_libraries(test-cartridge PUBLIC cartridge)
+target_link_libraries(test-cartridge PUBLIC cartridge "${Boost_LOG_LIBRARY}")

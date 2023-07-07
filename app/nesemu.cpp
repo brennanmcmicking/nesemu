@@ -21,4 +21,6 @@ int main(int argc, char* argv[]) {
   BOOST_LOG_TRIVIAL(info) << "hello world\n";
   BOOST_LOG_TRIVIAL(info)
       << "this program will be the fully integrated nes emulator!\n";
+
+  cpu.cycle();
 }

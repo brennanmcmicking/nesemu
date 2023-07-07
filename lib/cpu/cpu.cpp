@@ -20,4 +20,12 @@ uint8_t CPU::X() const { return X_; }
 uint8_t CPU::Y() const { return Y_; }
 uint8_t CPU::P() const { return P_; }
 
+uint8_t CPU::read(uint16_t addr) {
+  throw std::runtime_error("not implemented");
+}
+
+bool CPU::write(uint16_t addr, uint8_t value) {
+  throw std::runtime_error("not implemented");
+}
+
 }  // namespace cpu
