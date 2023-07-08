@@ -5,15 +5,22 @@
 
 namespace cpu {
 
-bool crossed_page(uint16_t oldAddr, uint16_t newAddr) {
+// detect whether a page boundary was crossed when addr is incremented by offset
+bool crossed_page(uint16_t addr, uint8_t offset) {
   // pages in the NES are 256 bytes large
   // we only need to compare the upper 8 bits of the address
-  return (oldAddr >> 8) != (newAddr >> 0);
+  return (addr >> 8) != ((addr + offset) >> 0);
 }
 
 std::size_t CPU::get_cycles_todo(uint8_t opcode) {
   uint16_t addr;
   switch (opcode) {
+    case 0xA9:
+      return 2;
+    case 0xA5:
+      return 3;
+    case 0x85:
+      return 3;
     case 0x69:
       return 2;
     case 0x65:
@@ -24,14 +31,14 @@ std::size_t CPU::get_cycles_todo(uint8_t opcode) {
       return 4;
     case 0x7D:
       addr = read(PC_ + 1);
-      if (crossed_page(addr, addr + X_)) {
+      if (crossed_page(addr, X_)) {
         return 5;
       } else {
         return 4;
       }
     case 0x79:
       addr = read(PC_ + 1);
-      if (crossed_page(addr, addr + X_)) {
+      if (crossed_page(addr, X_)) {
         return 5;
       } else {
         return 4;
@@ -40,7 +47,7 @@ std::size_t CPU::get_cycles_todo(uint8_t opcode) {
       return 6;
     case 0x71:
       addr = read(PC_ + 1);
-      if (crossed_page(addr, addr + Y_)) {
+      if (crossed_page(addr, Y_)) {
         return 5;
       } else {
         return 4;
@@ -60,6 +67,12 @@ std::size_t CPU::get_cycles_todo(uint8_t opcode) {
       } else {
         return 4;
       }
+  }
+}
+
+void CPU::advance(std::size_t cycles) {
+  for (std::size_t i = 0; i < cycles; i++) {
+    cycle();
   }
 }
 
@@ -463,12 +476,15 @@ void CPU::execute(uint8_t opcode) {
     }
     case 0xA9: {
       // LDA, Immediate, 2 bytes, 2 cycles
-      // TODO
+      PC_++;
+      A_ = read(PC_);
+      PC_++;
       break;
     }
     case 0xA5: {
       // LDA, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      PC_++;
+      A_ = read(read(PC_));
       break;
     }
     case 0xB5: {
@@ -758,7 +774,9 @@ void CPU::execute(uint8_t opcode) {
     }
     case 0x85: {
       // STA, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      PC_++;
+      write(0x0000 + read(PC_), A_);
+      PC_++;
       break;
     }
     case 0x95: {
@@ -861,6 +879,8 @@ void CPU::execute(uint8_t opcode) {
 
 void CPU::ASL_a() {}
 void CPU::ASL_m(uint16_t addr) {}
-void CPU::AND(uint8_t other) { this->A_ = this->A_ & other; }
+void CPU::AND(uint8_t other) { A_ = A_ & other; }
+
+void CPU::LDA(uint8_t other) { A_ = other; }
 
 }  // namespace cpu

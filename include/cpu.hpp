@@ -54,6 +54,8 @@ class CPU {
    * @return uint8_t The value at that location
    */
   uint8_t read(uint16_t addr);
+  // convenience function for reading 16-bit values
+  uint16_t read16(uint16_t addr);
 
   /**
    * @brief Writes the given value to the absolute memory address
@@ -72,6 +74,8 @@ class CPU {
    * @return false Failure
    */
   bool write(uint16_t addr, uint8_t value);
+  // convenience function for writing 16-bit values
+  void write16(uint16_t addr, uint16_t value);
 
   /**
    * @brief TODO: write docstring
@@ -98,6 +102,8 @@ class CPU {
   void AND(uint8_t other);
   void ASL_a();
   void ASL_m(uint16_t addr);
+  void LDA(uint8_t other);
+  void STA(uint16_t addr);
 };
 
 }  // namespace cpu

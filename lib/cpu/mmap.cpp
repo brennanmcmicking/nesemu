@@ -29,4 +29,16 @@ bool CPU::write(uint16_t addr, uint8_t data) {
   }
   return true;
 }
+
+uint16_t CPU::read16(uint16_t addr) {
+  uint16_t lo = read(addr);
+  uint16_t hi = read(addr + 1);
+  return (hi << 8) | lo;
+};
+
+void CPU::write16(uint16_t addr, uint16_t data) {
+  write(addr, data & 0xFF);
+  write(addr + 1, data >> 8);
+};
+
 }  // namespace cpu
