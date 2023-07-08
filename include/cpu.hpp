@@ -1,5 +1,6 @@
 #ifndef CPU_HPP
 #define CPU_HPP
+#include <array>
 #include <cstdint>
 
 #include "cartridge.hpp"
@@ -88,6 +89,8 @@ class CPU {
 
   std::size_t cycles_todo_;  // cycles until the instruction is done
   uint8_t next_instr_;
+
+  std::array<uint8_t, 0x800> ram_;  // 2kb of RAM
 
   std::size_t get_cycles_todo(uint8_t opcode);
 
