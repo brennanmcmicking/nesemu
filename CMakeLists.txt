@@ -17,25 +17,30 @@ file(GLOB PPU_SOURCES "lib/ppu/*.cpp")
 file(GLOB CARTRIDGE_SOURCES "lib/cartridge/*.cpp")
 
 add_library(cpu STATIC ${CPU_SOURCES})
+target_link_libraries(cpu PUBLIC Boost::log)
+
 add_library(ppu STATIC ${PPU_SOURCES})
+target_link_libraries(ppu PUBLIC Boost::log)
+
 add_library(cartridge STATIC ${CARTRIDGE_SOURCES})
+target_link_libraries(cartridge PUBLIC Boost::log)
 
 # deliverables
 add_executable(nesemu app/nesemu.cpp) 
-target_link_libraries(nesemu PUBLIC cpu ppu cartridge "${Boost_LOG_LIBRARY}")
+target_link_libraries(nesemu PUBLIC cpu ppu cartridge Boost::log)
 
 add_executable(nesemu-cpu app/nesemu-cpu.cpp) 
-target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge "${Boost_LOG_LIBRARY}")
+target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge Boost::log)
 
 add_executable(nesemu-cartridge app/nesemu-cartridge.cpp) 
-target_link_libraries(nesemu-cartridge PUBLIC cartridge "${Boost_LOG_LIBRARY}")
+target_link_libraries(nesemu-cartridge PUBLIC cartridge Boost::log)
 
 # testing
 add_executable(test-cpu app/catch2_main.cpp app/test-cpu.cpp)
-target_link_libraries(test-cpu PUBLIC cpu ppu cartridge "${Boost_LOG_LIBRARY}")
+target_link_libraries(test-cpu PUBLIC cpu ppu cartridge Boost::log)
 
 add_executable(test-ppu app/catch2_main.cpp app/test-ppu.cpp)
-target_link_libraries(test-ppu PUBLIC ppu "${Boost_LOG_LIBRARY}")
+target_link_libraries(test-ppu PUBLIC ppu Boost::log)
 
 add_executable(test-cartridge app/catch2_main.cpp app/test-cartridge.cpp)
-target_link_libraries(test-cartridge PUBLIC cartridge "${Boost_LOG_LIBRARY}")
+target_link_libraries(test-cartridge PUBLIC cartridge Boost::log)

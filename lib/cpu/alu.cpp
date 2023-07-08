@@ -1,4 +1,4 @@
-// #include <boost/log/trivial.hpp>
+#include <boost/log/trivial.hpp>
 #include <format>
 
 #include "cpu.hpp"
@@ -68,6 +68,7 @@ std::size_t CPU::get_cycles_todo(uint8_t opcode) {
         return 4;
       }
   }
+  return 0;
 }
 
 void CPU::advance(std::size_t cycles) {
@@ -77,6 +78,12 @@ void CPU::advance(std::size_t cycles) {
 }
 
 void CPU::cycle() {
+  BOOST_LOG_TRIVIAL(trace) << "cycle()";
+  BOOST_LOG_TRIVIAL(trace) << std::format(
+      "PC: {:04X}, SP: {:02X}, A: {:02X}, X: {:02X}, Y: {:02X}, P: {:02X}", PC_,
+      SP_, A_, X_, Y_, P_);
+  BOOST_LOG_TRIVIAL(trace) << std::format("cycles_todo: {}", cycles_todo_);
+
   if (cycles_todo_ > 1) {
     cycles_todo_--;
     return;
@@ -88,12 +95,15 @@ void CPU::cycle() {
   }
 
   if (cycles_todo_ == 0) {
+    BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
     next_instr_ = read(PC_);
     cycles_todo_ = get_cycles_todo(next_instr_);
+    BOOST_LOG_TRIVIAL(trace) << std::format("next_instr: {:02X}", next_instr_);
   }
 }
 
 void CPU::execute(uint8_t opcode) {
+  BOOST_LOG_TRIVIAL(trace) << std::format("execute({:02X})", opcode);
   // after each case statement, put the instruction assembly name, addressing
   // mode, byte count, and cycle count
   switch (opcode) {
