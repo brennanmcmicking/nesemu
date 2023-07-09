@@ -39,10 +39,6 @@ class CPU {
   void cycle();
   void advance(std::size_t cycles);
 
- private:
-  PPU& ppu_;
-  Cartridge& cart_;
-
   /**
    * @brief Reads the value in the absolute memory address
    *
@@ -77,6 +73,10 @@ class CPU {
   // convenience function for writing 16-bit values
   void write16(uint16_t addr, uint16_t value);
 
+ private:
+  PPU& ppu_;
+  Cartridge& cart_;
+
   /**
    * @brief TODO: write docstring
    *
@@ -98,7 +98,18 @@ class CPU {
 
   std::size_t get_cycles_todo(uint8_t opcode);
 
-  void ADC(uint8_t other);
+  bool get_carry();
+  void set_carry(bool value);
+  bool get_zero();
+  void set_zero(bool value);
+  bool get_decimal();
+  void set_decimal(bool value);
+  bool get_overflow();
+  void set_overflow(bool value);
+  bool get_negative();
+  void set_negative(bool value);
+
+  void ADC(uint8_t value);
   void AND(uint8_t other);
   void ASL_a();
   void ASL_m(uint16_t addr);

@@ -84,22 +84,16 @@ void CPU::cycle() {
       SP_, A_, X_, Y_, P_);
   BOOST_LOG_TRIVIAL(trace) << std::format("cycles_todo: {}", cycles_todo_);
 
-  if (cycles_todo_ > 1) {
-    cycles_todo_--;
-    return;
-  }
-
   if (cycles_todo_ == 1) {
     // fetch, decode, execute
     execute(next_instr_);
-  }
-
-  if (cycles_todo_ == 0) {
+  } else if (cycles_todo_ == 0) {
     BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
     next_instr_ = read(PC_);
     cycles_todo_ = get_cycles_todo(next_instr_);
     BOOST_LOG_TRIVIAL(trace) << std::format("next_instr: {:02X}", next_instr_);
   }
+  cycles_todo_--;
 }
 
 void CPU::execute(uint8_t opcode) {
@@ -109,7 +103,8 @@ void CPU::execute(uint8_t opcode) {
   switch (opcode) {
     case 0x69: {
       // ADC, Immediate, 2 bytes, 2 cycles
-      // TODO
+      ADC(read(PC_ + 1));
+      PC_ += 2;
       break;
     }
     case 0x65: {
@@ -151,11 +146,8 @@ void CPU::execute(uint8_t opcode) {
       // AND, Immediate, 2 bytes, 2 cycles
       // Does accumulator & value @ memory address and stores it in the
       // accumulator
-      uint16_t loc = PC_;
+      AND(read(PC_ + 1));
       PC_ += 2;
-      cycles_todo_ += 2;
-      uint8_t other = read(loc + 1);
-      A_ = A_ & other;
       break;
     }
     case 0x25: {
@@ -495,6 +487,7 @@ void CPU::execute(uint8_t opcode) {
       // LDA, Zero Page, 2 bytes, 3 cycles
       PC_++;
       A_ = read(read(PC_));
+      PC_++;
       break;
     }
     case 0xB5: {
@@ -885,6 +878,56 @@ void CPU::execute(uint8_t opcode) {
       // opcode);
       break;
   }
+}
+
+bool CPU::get_carry() { return (P_ & 0x1) > 0; }
+void CPU::set_carry(bool value) {
+  if (value) {
+    P_ |= 0b00000001;
+  } else {
+    P_ &= 0b11111110;
+  }
+}
+bool CPU::get_zero() { return (P_ & 0b00000010) > 0; }
+void CPU::set_zero(bool value) {
+  if (value) {
+    P_ |= 0b00000010;
+  } else {
+    P_ &= 0b11111101;
+  }
+}
+bool CPU::get_decimal() { return (P_ & 0b00001000) > 0; }
+void CPU::set_decimal(bool value) {
+  if (value) {
+    P_ |= 0b00001000;
+  } else {
+    P_ &= 0b11110111;
+  }
+}
+bool CPU::get_overflow() { return (P_ & 0b01000000) > 0; }
+void CPU::set_overflow(bool value) {
+  if (value) {
+    P_ |= 0b01000000;
+  } else {
+    P_ &= 0b10111111;
+  }
+}
+bool CPU::get_negative() { return (P_ & 0b10000000) > 0; }
+void CPU::set_negative(bool value) {
+  if (value) {
+    P_ |= 0b10000000;
+  } else {
+    P_ &= 0b01111111;
+  }
+}
+
+void CPU::ADC(uint8_t value) {
+  A_ += value;
+
+  set_carry(A_ < (static_cast<uint16_t>(A_) + value));
+  set_zero(A_ == 0);
+  // set_overflow( ??? );
+  set_negative((A_ & 0b10000000) > 0);
 }
 
 void CPU::ASL_a() {}

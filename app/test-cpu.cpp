@@ -61,12 +61,10 @@ TEST_CASE("constructor") {
   REQUIRE(cpu.A() == 0);
 
   cpu.cycle();
-  REQUIRE(cpu.PC() == 0x8000);
-  REQUIRE(cpu.A() == 0);
-
-  cpu.cycle();
   REQUIRE(cpu.PC() == 0x8002);
   REQUIRE(cpu.A() == 1);
+
+  REQUIRE(cpu.read(0x0000) == 0x00);
 
   // STA $0000
   cpu.cycle();
@@ -81,11 +79,9 @@ TEST_CASE("constructor") {
   REQUIRE(cpu.PC() == 0x8004);
   REQUIRE(cpu.A() == 1);
 
-  // LDA #$02
-  cpu.cycle();
-  REQUIRE(cpu.PC() == 0x8004);
-  REQUIRE(cpu.A() == 1);
+  REQUIRE(cpu.read(0x0000) == 0x01);
 
+  // LDA #$02
   cpu.cycle();
   REQUIRE(cpu.PC() == 0x8004);
   REQUIRE(cpu.A() == 1);
