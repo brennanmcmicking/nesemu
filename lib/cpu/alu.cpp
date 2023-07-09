@@ -12,7 +12,40 @@ bool crossed_page(uint16_t addr, uint8_t offset) {
   return (addr >> 8) != ((addr + offset) >> 0);
 }
 
-std::size_t CPU::get_cycles_todo(uint8_t opcode) {
+template <>
+uint8_t CPU::read_addrmode<uint8_t>(AddrMode mode) {
+  switch (mode) {
+    case kAccumulator:
+      return A_;
+    case kImmediate:
+      return read(PC_ + 1);
+    case kZeroPage:
+      return read(read(PC_ + 1));
+    case kZeroPageX:
+      return read((read(PC_ + 1) + X_) & 0xFF);
+    case kZeroPageY:
+      return read((read(PC_ + 1) + Y_) & 0xFF);
+    case kRelative:
+    case kAbsolute:
+    case kAbsoluteX:
+    case kAbsoluteY:
+    case kIndexedIndirect:
+      break;
+  };
+  BOOST_LOG_TRIVIAL(error) << "unknown addressing mode";
+  return 0xAA;
+};
+
+// template <>
+// uint16_t read_addrmode<uint16_t>(AddrMode mode){
+
+// };
+
+// uint8_t read_addrmode(AddrMode mode) {
+//   switch (kAccumulator) {}
+// }
+
+std::size_t CPU::cycle_count(uint8_t opcode) {
   uint16_t addr;
   switch (opcode) {
     case 0xA9:
@@ -90,7 +123,7 @@ void CPU::cycle() {
   } else if (cycles_todo_ == 0) {
     BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
     next_instr_ = read(PC_);
-    cycles_todo_ = get_cycles_todo(next_instr_);
+    cycles_todo_ = cycle_count(next_instr_);
     BOOST_LOG_TRIVIAL(trace) << std::format("next_instr: {:02X}", next_instr_);
   }
   cycles_todo_--;
@@ -98,8 +131,8 @@ void CPU::cycle() {
 
 void CPU::execute(uint8_t opcode) {
   BOOST_LOG_TRIVIAL(trace) << std::format("execute({:02X})", opcode);
-  // after each case statement, put the instruction assembly name, addressing
-  // mode, byte count, and cycle count
+  // after each case statement, put the instruction assembly name,
+  // addressing mode, byte count, and cycle count
   switch (opcode) {
     case 0x69: {
       // ADC, Immediate, 2 bytes, 2 cycles
@@ -109,27 +142,32 @@ void CPU::execute(uint8_t opcode) {
     }
     case 0x65: {
       // ADC, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      ADC(read(read(PC_ + 1)));
+      PC_ += 2;
       break;
     }
     case 0x75: {
       // ADC, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      ADC(read((read(PC_ + 1) + X_) & 0xFF));
+      PC_ += 2;
       break;
     }
     case 0x6D: {
       // ADC, Absolute, 3 bytes, 4 cycles
-      // TODO
+      ADC(read(read16(PC_ + 1)));
+      PC_ += 3;
       break;
     }
     case 0x7D: {
       // ADC, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      ADC(read(read16(PC_ + 1) + X_));
+      PC_ += 3;
       break;
     }
     case 0x79: {
       // ADC, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      ADC(read(read16(PC_ + 1) + Y_));
+      PC_ += 3;
       break;
     }
     case 0x61: {
@@ -152,27 +190,32 @@ void CPU::execute(uint8_t opcode) {
     }
     case 0x25: {
       // AND, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      AND(read(read(PC_ + 1)));
+      PC_ += 2;
       break;
     }
     case 0x35: {
       // AND, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      AND(read((read(PC_ + 1) + X_) & 0xFF));
+      PC_ += 2;
       break;
     }
     case 0x2D: {
       // AND, Absolute, 3 bytes, 4 cycles
-      // TODO
+      AND(read(read16(PC_ + 1)));
+      PC_ += 3;
       break;
     }
     case 0x3D: {
       // AND, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      AND(read(read16(PC_ + 1) + X_));
+      PC_ += 3;
       break;
     }
     case 0x39: {
       // AND, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      AND(read(read16(PC_ + 1) + Y_));
+      PC_ += 3;
       break;
     }
     case 0x21: {
@@ -189,45 +232,47 @@ void CPU::execute(uint8_t opcode) {
       // ASL, Accumulator, 1 bytes, 2 cycles
       ASL_a();
       PC_ += 1;
-      cycles_todo_ = 2;
       break;
     }
     case 0x06: {
       // ASL, Zero Page, 2 bytes, 5 cycles
       ASL_m(read(PC_ + 1));
       PC_ += 2;
-      cycles_todo_ += 5;
       break;
     }
     case 0x16: {
       // ASL, Zero Page,X, 2 bytes, 6 cycles
       ASL_m(read(PC_ + 1) + X_);
       PC_ += 2;
-      cycles_todo_ += 6;
       break;
     }
     case 0x0E: {
       // ASL, Absolute, 3 bytes, 6 cycles
-      // TODO
+      ASL_m(read16(PC_ + 1));
+      PC_ += 3;
       break;
     }
     case 0x1E: {
       // ASL, Absolute,X, 3 bytes, 7 cycles
-      // TODO
+      ASL_m(read16(PC_ + 1) + X_);
+      PC_ += 3;
       break;
     }
     case 0x90: {
-      // BCC, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BCC, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
     case 0xB0: {
-      // BCS, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BCS, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
     case 0xF0: {
-      // BEQ, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BEQ, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
@@ -242,17 +287,20 @@ void CPU::execute(uint8_t opcode) {
       break;
     }
     case 0x30: {
-      // BMI, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BMI, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
     case 0xD0: {
-      // BNE, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BNE, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
     case 0x10: {
-      // BPL, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BPL, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
@@ -262,12 +310,14 @@ void CPU::execute(uint8_t opcode) {
       break;
     }
     case 0x50: {
-      // BVC, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BVC, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
     case 0x70: {
-      // BVS, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new page)
+      // BVS, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
+      // page)
       // TODO
       break;
     }
@@ -930,8 +980,16 @@ void CPU::ADC(uint8_t value) {
   set_negative((A_ & 0b10000000) > 0);
 }
 
-void CPU::ASL_a() {}
-void CPU::ASL_m(uint16_t addr) {}
+void CPU::ASL_a() {
+  set_carry((A_ & 0b10000000) > 0);
+  A_ = A_ << 1;
+}
+void CPU::ASL_m(uint16_t addr) {
+  uint8_t val = read(addr);
+  set_carry((val & 0b10000000) > 0);
+  val = val << 1;
+  write(addr, val);
+}
 void CPU::AND(uint8_t other) { A_ = A_ & other; }
 
 void CPU::LDA(uint8_t other) { A_ = other; }

@@ -8,6 +8,20 @@
 
 namespace cpu {
 
+enum AddrMode {
+  kAccumulator,
+  kImmediate,
+  kZeroPage,
+  kZeroPageX,
+  kZeroPageY,
+  kRelative,
+  kAbsolute,
+  kAbsoluteX,
+  kAbsoluteY,
+  // kIndirect, // this is the only one that
+  kIndexedIndirect,
+};
+
 class CPU {
  public:
   using Cartridge = cartridge::Cartridge;
@@ -96,7 +110,10 @@ class CPU {
 
   std::array<uint8_t, 0x800> ram_;  // 2kb of RAM
 
-  std::size_t get_cycles_todo(uint8_t opcode);
+  std::size_t cycle_count(uint8_t opcode);
+
+  template <class T>
+  T read_addrmode(AddrMode mode);
 
   bool get_carry();
   void set_carry(bool value);
