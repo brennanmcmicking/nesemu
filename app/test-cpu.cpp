@@ -24,7 +24,10 @@ class VectorMapper : public cartridge::Mapper {
     }
     return bytes_.at(addr);
   };
-  void prg_write(uint16_t addr, uint8_t data) override{};
+  void prg_write(uint16_t addr, uint8_t data) override {
+    (void)addr;  // explicitly unused
+    (void)data;
+  };
 
  private:
   std::vector<uint8_t> bytes_;
