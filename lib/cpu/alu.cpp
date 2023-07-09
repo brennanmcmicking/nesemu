@@ -12,39 +12,6 @@ bool crossed_page(uint16_t addr, uint8_t offset) {
   return (addr >> 8) != ((addr + offset) >> 0);
 }
 
-template <>
-uint8_t CPU::read_addrmode<uint8_t>(AddrMode mode) {
-  switch (mode) {
-    case kAccumulator:
-      return A_;
-    case kImmediate:
-      return read(PC_ + 1);
-    case kZeroPage:
-      return read(read(PC_ + 1));
-    case kZeroPageX:
-      return read((read(PC_ + 1) + X_) & 0xFF);
-    case kZeroPageY:
-      return read((read(PC_ + 1) + Y_) & 0xFF);
-    case kRelative:
-    case kAbsolute:
-    case kAbsoluteX:
-    case kAbsoluteY:
-    case kIndexedIndirect:
-      break;
-  };
-  BOOST_LOG_TRIVIAL(error) << "unknown addressing mode";
-  return 0xAA;
-};
-
-// template <>
-// uint16_t read_addrmode<uint16_t>(AddrMode mode){
-
-// };
-
-// uint8_t read_addrmode(AddrMode mode) {
-//   switch (kAccumulator) {}
-// }
-
 std::size_t CPU::cycle_count(uint8_t opcode) {
   uint16_t addr;
   switch (opcode) {

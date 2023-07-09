@@ -8,18 +8,27 @@
 
 namespace cpu {
 
+// syntax:
+// #x = immediate
+// x, y = addition
+// (x) = indirection/dereference
+//
+// for everything except immediate or accumulator, the value at the address
 enum AddrMode {
-  kAccumulator,
-  kImmediate,
-  kZeroPage,
-  kZeroPageX,
-  kZeroPageY,
-  kRelative,
-  kAbsolute,
-  kAbsoluteX,
-  kAbsoluteY,
-  // kIndirect, // this is the only one that
-  kIndexedIndirect,
+  // 8-bit (value)
+  kAccumulator,  // A
+  kImmediate,    // #$00
+  // 16-bit (address)
+  kZeroPage,         // $00
+  kZeroPageX,        // $00, X (zero page wraparound)
+  kZeroPageY,        // $00, Y (zero page wraparound)
+  kRelative,         // $0000 (signed)
+  kAbsolute,         // $0000
+  kAbsoluteX,        // $0000, X
+  kAbsoluteY,        // $0000, Y
+  kIndirect,         // ($0000)
+  kIndexedIndirect,  // ($00, X) (zero page wraparound)
+  kIndirectIndexed,  // ($00), Y
 };
 
 class CPU {
@@ -112,8 +121,13 @@ class CPU {
 
   std::size_t cycle_count(uint8_t opcode);
 
-  template <class T>
-  T read_addrmode(AddrMode mode);
+  template <AddrMode M>
+  uint16_t addr_fetch();
+
+  template <AddrMode M>
+  uint8_t value_fetch() {
+    return read(addr_fetch<M>());
+  }
 
   bool get_carry();
   void set_carry(bool value);
