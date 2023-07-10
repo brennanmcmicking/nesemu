@@ -6,6 +6,8 @@
 #include "cpu.hpp"
 #include "ppu.hpp"
 
+using namespace cpu;
+
 class VectorMapper : public cartridge::Mapper {
  public:
   VectorMapper(std::vector<uint8_t> bytecode, uint16_t entrypoint = 0x8000u)
@@ -34,23 +36,25 @@ class VectorMapper : public cartridge::Mapper {
   uint16_t entrypoint_;
 };
 
+#define U16(x) ((x)&0xFF), ((x) >> 8)
+
 #define MAKE_CPU(bytecode)                                            \
   std::unique_ptr<VectorMapper> __mapper(new VectorMapper(bytecode)); \
   cartridge::Cartridge __cart(std::move(__mapper));                   \
   ppu::PPU __ppu;                                                     \
-  cpu::CPU cpu(__ppu, __cart);
+  CPU cpu(__ppu, __cart);
 
-TEST_CASE("constructor") {
+TEST_CASE("trivial load and store") {
   // clang-format off
   std::vector<uint8_t> bytecode = {
       // LDA #$01
-      0xA9, 0x01,
+      kLDA_IMM, 0x01,
       // STA $0000
-      0x85, 0x00,
+      kSTA_ZP, 0x00,
       // LDA #$02
-      0xA9, 0x02,
+      kLDA_IMM, 0x02,
       // LDA $0000
-      0xA5, 0x00, 
+      kLDA_ZP, 0x00, 
   };  // clang-format on
 
   MAKE_CPU(bytecode);

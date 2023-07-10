@@ -1,3 +1,4 @@
+#include "boost/log/trivial.hpp"
 #include "cpu.hpp"
 
 namespace cpu {
@@ -41,74 +42,69 @@ void CPU::write16(uint16_t addr, uint16_t data) {
   write(addr + 1, data >> 8);
 };
 
-template <>
-uint16_t CPU::addr_fetch<kZeroPage>() {
-  uint16_t addr = read(PC_ + 1);
-  return addr;
-};
-
-template <>
-uint16_t CPU::addr_fetch<kZeroPageX>() {
-  uint16_t addr = read(PC_ + 1);
-  return (addr + X_) & 0xFF;
-};
-
-template <>
-uint16_t CPU::addr_fetch<kZeroPageY>() {
-  uint16_t addr = read(PC_ + 1);
-  return (addr + Y_) & 0xFF;
-};
-
-template <>
-uint16_t CPU::addr_fetch<kRelative>() {
-  int8_t offset = static_cast<int8_t>(read(PC_ + 1));
-  uint8_t instruction_length = 1 + 1;  // opcode + operand
-  return PC_ + instruction_length + offset;
-};
-
-template <>
-uint16_t CPU::addr_fetch<kAbsolute>() {
-  return read16(PC_ + 1);
-};
-
-template <>
-uint16_t CPU::addr_fetch<kAbsoluteX>() {
-  uint16_t addr = read16(PC_ + 1);
-  return addr + X_;
+uint16_t CPU::addr_fetch(AddrMode mode) {
+  switch (mode) {
+    case kZeroPage: {
+      uint16_t addr = read(PC_ + 1);
+      return addr;
+    }
+    case kZeroPageX: {
+      uint16_t addr = read(PC_ + 1);
+      return (addr + X_) & 0xFF;
+    }
+    case kZeroPageY: {
+      uint16_t addr = read(PC_ + 1);
+      return (addr + Y_) & 0xFF;
+    }
+    case kRelative: {
+      int8_t offset = static_cast<int8_t>(read(PC_ + 1));
+      uint8_t instruction_length = 1 + 1;  // opcode + operand
+      return PC_ + instruction_length + offset;
+    }
+    case kAbsolute: {
+      uint16_t addr = read16(PC_ + 1);
+      return addr;
+    }
+    case kAbsoluteX: {
+      uint16_t addr = read16(PC_ + 1);
+      return addr + X_;
+    }
+    case kAbsoluteY: {
+      uint16_t addr = read16(PC_ + 1);
+      return addr + Y_;
+    }
+    case kIndirect: {
+      uint16_t addr = read16(PC_ + 1);
+      return read16(addr);
+    }
+    case kIndexedIndirect: {
+      uint16_t addr = read(PC_ + 1);
+      return read16((addr + X_) & 0xFF);
+    }
+    case kIndirectIndexed: {
+      uint16_t addr = read(PC_ + 1);
+      return read16(addr) + Y_;
+    }
+    default: {
+      BOOST_LOG_TRIVIAL(fatal) << "Invalid addressing mode: " << mode;
+      return 0;
+    }
+  }
 }
 
-template <>
-uint16_t CPU::addr_fetch<kAbsoluteY>() {
-  uint16_t addr = read16(PC_ + 1);
-  return addr + Y_;
-}
-
-template <>
-uint16_t CPU::addr_fetch<kIndirect>() {
-  uint16_t addr = read16(PC_ + 1);
-  return read16(addr);
-}
-
-template <>
-uint16_t CPU::addr_fetch<kIndexedIndirect>() {
-  uint16_t addr = read(PC_ + 1);
-  return read16((addr + X_) & 0xFF);
-}
-
-template <>
-uint16_t CPU::addr_fetch<kIndirectIndexed>() {
-  uint16_t addr = read(PC_ + 1);
-  return read16(addr) + Y_;
-}
-
-template <>
-uint8_t CPU::value_fetch<kAccumulator>() {
-  return A_;
-}
-
-template <>
-uint8_t CPU::value_fetch<kImmediate>() {
-  return read(PC_ + 1);
+uint8_t CPU::value_fetch(AddrMode mode) {
+  switch (mode) {
+    case kAccumulator: {
+      return A_;
+    }
+    case kImmediate: {
+      return read(PC_ + 1);
+    }
+    default: {
+      uint16_t addr = addr_fetch(mode);
+      return read(addr);
+    }
+  }
 }
 
 }  // namespace cpu

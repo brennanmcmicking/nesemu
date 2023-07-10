@@ -101,40 +101,40 @@ void CPU::execute(uint8_t opcode) {
   // after each case statement, put the instruction assembly name,
   // addressing mode, byte count, and cycle count
   switch (opcode) {
-    case 0x69: {
+    case kADC_IMM: {
       // ADC, Immediate, 2 bytes, 2 cycles
-      ADC(read(PC_ + 1));
-      PC_ += 2;
+      ADC(value_fetch(kImmediate));
+      PC_ += byte_count(kADC_IMM);
       break;
     }
-    case 0x65: {
+    case kADC_ZP: {
       // ADC, Zero Page, 2 bytes, 3 cycles
-      ADC(read(read(PC_ + 1)));
-      PC_ += 2;
+      ADC(value_fetch(kZeroPage));
+      PC_ += byte_count(kADC_ZP);
       break;
     }
-    case 0x75: {
+    case kADC_ZPX: {
       // ADC, Zero Page,X, 2 bytes, 4 cycles
-      ADC(read((read(PC_ + 1) + X_) & 0xFF));
-      PC_ += 2;
+      ADC(value_fetch(kZeroPageX));
+      PC_ += byte_count(kADC_ZPX);
       break;
     }
-    case 0x6D: {
+    case kADC_ABS: {
       // ADC, Absolute, 3 bytes, 4 cycles
-      ADC(read(read16(PC_ + 1)));
-      PC_ += 3;
+      ADC(value_fetch(kAbsolute));
+      PC_ += byte_count(kADC_ABS);
       break;
     }
-    case 0x7D: {
+    case kADC_ABSX: {
       // ADC, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      ADC(read(read16(PC_ + 1) + X_));
-      PC_ += 3;
+      ADC(value_fetch(kAbsoluteX));
+      PC_ += byte_count(kADC_ABSX);
       break;
     }
-    case 0x79: {
+    case kADC_ABSY: {
       // ADC, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      ADC(read(read16(PC_ + 1) + Y_));
-      PC_ += 3;
+      ADC(value_fetch(kAbsoluteY));
+      PC_ += byte_count(kADC_ABSY);
       break;
     }
     case 0x61: {
@@ -147,12 +147,12 @@ void CPU::execute(uint8_t opcode) {
       // TODO
       break;
     }
-    case 0x29: {
+    case kAND_IMM: {
       // AND, Immediate, 2 bytes, 2 cycles
       // Does accumulator & value @ memory address and stores it in the
       // accumulator
-      AND(read(PC_ + 1));
-      PC_ += 2;
+      AND(value_fetch(kImmediate));
+      PC_ += byte_count(kAND_IMM);
       break;
     }
     case 0x25: {
@@ -493,18 +493,16 @@ void CPU::execute(uint8_t opcode) {
       // TODO
       break;
     }
-    case 0xA9: {
+    case kLDA_IMM: {
       // LDA, Immediate, 2 bytes, 2 cycles
-      PC_++;
-      A_ = read(PC_);
-      PC_++;
+      A_ = value_fetch(kImmediate);
+      PC_ += byte_count(kLDA_IMM);
       break;
     }
-    case 0xA5: {
+    case kLDA_ZP: {
       // LDA, Zero Page, 2 bytes, 3 cycles
-      PC_++;
-      A_ = read(read(PC_));
-      PC_++;
+      A_ = value_fetch(kZeroPage);
+      PC_ += byte_count(kLDA_ZP);
       break;
     }
     case 0xB5: {
@@ -792,11 +790,10 @@ void CPU::execute(uint8_t opcode) {
       // TODO
       break;
     }
-    case 0x85: {
+    case kSTA_ZP: {
       // STA, Zero Page, 2 bytes, 3 cycles
-      PC_++;
-      write(0x0000 + read(PC_), A_);
-      PC_++;
+      write(addr_fetch(kZeroPage), A_);
+      PC_ += byte_count(kSTA_ZP);
       break;
     }
     case 0x95: {
