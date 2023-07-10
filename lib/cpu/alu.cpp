@@ -155,120 +155,123 @@ void CPU::execute(uint8_t opcode) {
       PC_ += byte_count(kAND_IMM);
       break;
     }
-    case 0x25: {
+    case kAND_ZP: {
       // AND, Zero Page, 2 bytes, 3 cycles
-      AND(read(read(PC_ + 1)));
-      PC_ += 2;
+      AND(value_fetch(kZeroPage));
+      PC_ += byte_count(kAND_ZP);
       break;
     }
-    case 0x35: {
+    case kAND_ZPX: {
       // AND, Zero Page,X, 2 bytes, 4 cycles
-      AND(read((read(PC_ + 1) + X_) & 0xFF));
-      PC_ += 2;
+      AND(value_fetch(kZeroPageX));
+      PC_ += byte_count(kAND_ZPX);
       break;
     }
-    case 0x2D: {
+    case kAND_ABS: {
       // AND, Absolute, 3 bytes, 4 cycles
-      AND(read(read16(PC_ + 1)));
-      PC_ += 3;
+      AND(value_fetch(kAbsolute));
+      PC_ += byte_count(kAND_ABS);
       break;
     }
-    case 0x3D: {
+    case kAND_ABSX: {
       // AND, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      AND(read(read16(PC_ + 1) + X_));
-      PC_ += 3;
+      AND(value_fetch(kAbsoluteX));
+      PC_ += byte_count(kAND_ABSX);
       break;
     }
-    case 0x39: {
+    case kAND_ABSY: {
       // AND, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      AND(read(read16(PC_ + 1) + Y_));
-      PC_ += 3;
+      AND(kAbsoluteY);
+      PC_ += byte_count(kAND_ABSY);
       break;
     }
-    case 0x21: {
+    case kAND_INDX: {
       // AND, (Indirect,X), 2 bytes, 6 cycles
       // TODO
       break;
     }
-    case 0x31: {
+    case kAND_INDY: {
       // AND, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
       // TODO
       break;
     }
-    case 0x0A: {
+    case kASL_A: {
       // ASL, Accumulator, 1 bytes, 2 cycles
       ASL_a();
-      PC_ += 1;
+      PC_ += byte_count(kASL_A);
       break;
     }
-    case 0x06: {
+    case kASL_ZP: {
       // ASL, Zero Page, 2 bytes, 5 cycles
-      ASL_m(read(PC_ + 1));
-      PC_ += 2;
+      // since ASL writes back to memory, we pass it the address that we want to
+      // to shift instead of the value to shift
+      ASL_m(addr_fetch(kZeroPage));
+      PC_ += byte_count(kASL_ZP);
       break;
     }
-    case 0x16: {
+    case kASL_ZPX: {
       // ASL, Zero Page,X, 2 bytes, 6 cycles
-      ASL_m(read(PC_ + 1) + X_);
-      PC_ += 2;
+      ASL_m(addr_fetch(kZeroPageX));
+      PC_ += byte_count(kASL_ZPX);
       break;
     }
-    case 0x0E: {
+    case kASL_ABS: {
       // ASL, Absolute, 3 bytes, 6 cycles
-      ASL_m(read16(PC_ + 1));
-      PC_ += 3;
+      ASL_m(addr_fetch(kAbsolute));
+      PC_ += byte_count(kASL_ABS);
       break;
     }
-    case 0x1E: {
+    case kASL_ABSX: {
       // ASL, Absolute,X, 3 bytes, 7 cycles
-      ASL_m(read16(PC_ + 1) + X_);
-      PC_ += 3;
+      ASL_m(addr_fetch(kAbsoluteX));
+      PC_ += byte_count(kASL_ABSX);
       break;
     }
-    case 0x90: {
+    case kBCC_REL: {
       // BCC, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      BRANCH(kBCC_REL, !get_carry());
       break;
     }
-    case 0xB0: {
+    case kBCS_REL: {
       // BCS, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      // See the comments on kBCC_REL to understand what's going on here
+      BRANCH(kBCS_REL, get_carry());
       break;
     }
-    case 0xF0: {
+    case kBEQ_REL: {
       // BEQ, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      BRANCH(kBEQ_REL, get_zero());
       break;
     }
-    case 0x24: {
+    case kBIT_ZP: {
       // BIT, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      BIT(kZeroPage);
       break;
     }
-    case 0x2C: {
+    case kBIT_ABS: {
       // BIT, Absolute, 3 bytes, 4 cycles
-      // TODO
+      BIT(kAbsolute);
       break;
     }
-    case 0x30: {
+    case kBMI_REL: {
       // BMI, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      BRANCH(kBMI_REL, get_negative());
       break;
     }
-    case 0xD0: {
+    case kBNE_REL: {
       // BNE, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      BRANCH(kBNE_REL, !get_zero());
       break;
     }
-    case 0x10: {
+    case kBPL_REL: {
       // BPL, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      BRANCH(kBPL_REL, !get_negative());
       break;
     }
     case 0x00: {
@@ -276,36 +279,36 @@ void CPU::execute(uint8_t opcode) {
       // TODO
       break;
     }
-    case 0x50: {
+    case kBVC_REL: {
       // BVC, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      BRANCH(kBVC_REL, !get_overflow());
       break;
     }
-    case 0x70: {
+    case kBVS_REL: {
       // BVS, Relative, 2 bytes, 2 (+1 if branch succeeds +2 if to a new
       // page)
-      // TODO
+      BRANCH(kBVS_REL, get_overflow());
       break;
     }
-    case 0x18: {
+    case kCLC: {
       // CLC, Implied, 1 bytes, 2 cycles
-      // TODO
+      set_carry(false);
       break;
     }
-    case 0xD8: {
+    case kCLD: {
       // CLD, Implied, 1 bytes, 2 cycles
-      // TODO
+      set_decimal(false);
       break;
     }
     case 0x58: {
       // CLI, Implied, 1 bytes, 2 cycles
-      // TODO
+      set_interrupt_disable(false);
       break;
     }
     case 0xB8: {
       // CLV, Implied, 1 bytes, 2 cycles
-      // TODO
+      set_overflow(false);
       break;
     }
     case 0xC9: {
@@ -910,6 +913,16 @@ void CPU::set_zero(bool value) {
     P_ &= 0b11111101;
   }
 }
+
+bool CPU::get_interrupt_disable() { return (P_ & 0b00000100) > 0; }
+void CPU::set_interrupt_disable(bool value) {
+  if (value) {
+    P_ |= 0b00000100;
+  } else {
+    P_ &= 0b11111011;
+  }
+}
+
 bool CPU::get_decimal() { return (P_ & 0b00001000) > 0; }
 void CPU::set_decimal(bool value) {
   if (value) {
@@ -955,6 +968,28 @@ void CPU::ASL_m(uint16_t addr) {
   write(addr, val);
 }
 void CPU::AND(uint8_t other) { A_ = A_ & other; }
+
+void CPU::BIT(AddrMode addressingMode) {
+  uint8_t v = value_fetch(addressingMode);
+  uint8_t r = A_ & v;
+
+  set_zero(r == 0);
+  set_overflow((r & 0b01000000) > 0);
+  set_negative((r & 0b10000000) > 0);
+}
+
+void CPU::BRANCH(OpCode opcode, bool doBranch) {
+  // we must the read value as a signed integer to support backwards jumps
+  int8_t offset = static_cast<int8_t>(value_fetch(kRelative));
+  // from the docs: "As the program counter itself is incremented during
+  // instruction execution by two the effective address range for the target
+  // instruction must be with -126 to +129 bytes of the branch."
+  // i.e. we must increment the PC *before* applying the offset
+  PC_ += byte_count(opcode);
+  if (doBranch) {
+    PC_ += offset;
+  }
+}
 
 void CPU::LDA(uint8_t other) { A_ = other; }
 
