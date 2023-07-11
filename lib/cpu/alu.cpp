@@ -249,11 +249,13 @@ void CPU::execute(uint8_t opcode) {
     case kBIT_ZP: {
       // BIT, Zero Page, 2 bytes, 3 cycles
       BIT(kZeroPage);
+      PC_ += byte_count(kBIT_ZP);
       break;
     }
     case kBIT_ABS: {
       // BIT, Absolute, 3 bytes, 4 cycles
       BIT(kAbsolute);
+      PC_ += byte_count(kBIT_ABS);
       break;
     }
     case kBMI_REL: {
@@ -294,206 +296,250 @@ void CPU::execute(uint8_t opcode) {
     case kCLC: {
       // CLC, Implied, 1 bytes, 2 cycles
       set_carry(false);
+      PC_ += byte_count(kCLC);
       break;
     }
     case kCLD: {
       // CLD, Implied, 1 bytes, 2 cycles
       set_decimal(false);
+      PC_ += byte_count(kCLD);
       break;
     }
-    case 0x58: {
+    case kCLI: {
       // CLI, Implied, 1 bytes, 2 cycles
       set_interrupt_disable(false);
       break;
     }
-    case 0xB8: {
+    case kCLV: {
       // CLV, Implied, 1 bytes, 2 cycles
       set_overflow(false);
+      PC_ += byte_count(kCLV);
       break;
     }
-    case 0xC9: {
+    case kCMP_IMM: {
       // CMP, Immediate, 2 bytes, 2 cycles
-      // TODO
+      CMP(A_, value_fetch(kImmediate));
+      PC_ += byte_count(kCMP_IMM);
       break;
     }
-    case 0xC5: {
+    case kCMP_ZP: {
       // CMP, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      CMP(A_, value_fetch(kZeroPage));
+      PC_ += byte_count(kCMP_ZP);
       break;
     }
-    case 0xD5: {
+    case kCMP_ZPX: {
       // CMP, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      CMP(A_, value_fetch(kZeroPageX));
+      PC_ += byte_count(kCMP_ZPX);
       break;
     }
-    case 0xCD: {
+    case kCMP_ABS: {
       // CMP, Absolute, 3 bytes, 4 cycles
-      // TODO
+      CMP(A_, value_fetch(kAbsolute));
+      PC_ += byte_count(kCMP_ABS);
       break;
     }
-    case 0xDD: {
+    case kCMP_ABSX: {
       // CMP, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      CMP(A_, value_fetch(kAbsoluteX));
+      PC_ += byte_count(kCMP_ABSX);
       break;
     }
-    case 0xD9: {
+    case kCMP_ABSY: {
       // CMP, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      CMP(A_, value_fetch(kAbsoluteY));
+      PC_ += byte_count(kCMP_ABSY);
       break;
     }
-    case 0xC1: {
+    case kCMP_INDX: {
       // CMP, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      CMP(A_, value_fetch(kIndexedIndirect));
+      PC_ += byte_count(kCMP_INDX);
       break;
     }
-    case 0xD1: {
+    case kCMP_INDY: {
       // CMP, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      // TODO
+      CMP(A_, value_fetch(kIndirectIndexed));
+      PC_ += byte_count(kCMP_INDY);
       break;
     }
-    case 0xE0: {
+    case kCPX_IMM: {
       // CPX, Immediate, 2 bytes, 2 cycles
-      // TODO
+      CMP(X_, value_fetch(kImmediate));
+      PC_ += byte_count(kCPX_IMM);
       break;
     }
-    case 0xE4: {
+    case kCPX_ZP: {
       // CPX, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      CMP(X_, value_fetch(kZeroPage));
+      PC_ += byte_count(kCPX_ZP);
       break;
     }
-    case 0xEC: {
+    case kCPX_ABS: {
       // CPX, Absolute, 3 bytes, 4 cycles
-      // TODO
+      CMP(X_, value_fetch(kAbsolute));
+      PC_ += byte_count(kCPX_ABS);
       break;
     }
-    case 0xC0: {
+    case kCPY_IMM: {
       // CPY, Immediate, 2 bytes, 2 cycles
-      // TODO
+      CMP(Y_, value_fetch(kImmediate));
+      PC_ += byte_count(kCPY_IMM);
       break;
     }
-    case 0xC4: {
+    case kCPY_ZP: {
       // CPY, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      CMP(Y_, value_fetch(kZeroPage));
+      PC_ += byte_count(kCPY_ZP);
       break;
     }
-    case 0xCC: {
+    case kCPY_ABS: {
       // CPY, Absolute, 3 bytes, 4 cycles
-      // TODO
+      CMP(Y_, value_fetch(kAbsolute));
+      PC_ += byte_count(kCPY_ABS);
       break;
     }
-    case 0xC6: {
+    case kDEC_ZP: {
       // DEC, Zero Page, 2 bytes, 5 cycles
-      // TODO
+      DEC(kZeroPage);
+      PC_ += byte_count(kDEC_ZP);
       break;
     }
-    case 0xD6: {
+    case kDEC_ZPX: {
       // DEC, Zero Page,X, 2 bytes, 6 cycles
-      // TODO
+      DEC(kZeroPageX);
+      PC_ += byte_count(kDEC_ZPX);
       break;
     }
-    case 0xCE: {
+    case kDEC_ABS: {
       // DEC, Absolute, 3 bytes, 6 cycles
-      // TODO
+      DEC(kAbsolute);
+      PC_ += byte_count(kDEC_ABS);
       break;
     }
-    case 0xDE: {
+    case kDEC_ABSX: {
       // DEC, Absolute,X, 3 bytes, 7 cycles
-      // TODO
+      DEC(kAbsoluteX);
+      PC_ += byte_count(kDEC_ABSX);
       break;
     }
-    case 0xCA: {
+    case kDEX: {
       // DEX, Implied, 1 bytes, 2 cycles
-      // TODO
+      X_ -= 1;
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
+      PC_ += byte_count(kDEX);
       break;
     }
-    case 0x88: {
+    case kDEY: {
       // DEY, Implied, 1 bytes, 2 cycles
-      // TODO
+      Y_ -= 1;
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
       break;
     }
-    case 0x49: {
+    case kEOR_IMM: {
       // EOR, Immediate, 2 bytes, 2 cycles
-      // TODO
+      EOR(kImmediate);
+      PC_ += byte_count(kEOR_IMM);
       break;
     }
-    case 0x45: {
+    case kEOR_ZP: {
       // EOR, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      EOR(kZeroPage);
+      PC_ += byte_count(kEOR_ZP);
       break;
     }
-    case 0x55: {
+    case kEOR_ZPX: {
       // EOR, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      EOR(kZeroPageX);
+      PC_ += byte_count(kEOR_ZPX);
       break;
     }
-    case 0x4D: {
+    case kEOR_ABS: {
       // EOR, Absolute, 3 bytes, 4 cycles
-      // TODO
+      EOR(kAbsolute);
+      PC_ += byte_count(kEOR_ABS);
       break;
     }
-    case 0x5D: {
+    case kEOR_ABSX: {
       // EOR, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      EOR(kAbsoluteX);
+      PC_ += byte_count(kEOR_ABSX);
       break;
     }
-    case 0x59: {
+    case kEOR_ABSY: {
       // EOR, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      EOR(kAbsoluteY);
+      PC_ += byte_count(kEOR_ABSY);
       break;
     }
-    case 0x41: {
+    case kEOR_INDX: {
       // EOR, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      EOR(kIndexedIndirect);
+      PC_ += byte_count(kEOR_INDX);
       break;
     }
-    case 0x51: {
+    case kEOR_INDY: {
       // EOR, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      // TODO
+      EOR(kIndirectIndexed);
+      PC_ += byte_count(kEOR_INDY);
       break;
     }
-    case 0xE6: {
+    case kINC_ZP: {
       // INC, Zero Page, 2 bytes, 5 cycles
-      // TODO
+      INC(kZeroPage);
+      PC_ += byte_count(kINC_ZP);
       break;
     }
-    case 0xF6: {
+    case kINC_ZPX: {
       // INC, Zero Page,X, 2 bytes, 6 cycles
-      // TODO
+      INC(kZeroPageX);
+      PC_ += byte_count(kINC_ZPX);
       break;
     }
-    case 0xEE: {
+    case kINC_ABS: {
       // INC, Absolute, 3 bytes, 6 cycles
-      // TODO
+      INC(kAbsolute);
+      PC_ += byte_count(kINC_ABS);
       break;
     }
-    case 0xFE: {
+    case kINC_ABSX: {
       // INC, Absolute,X, 3 bytes, 7 cycles
-      // TODO
+      INC(kAbsoluteX);
+      PC_ += byte_count(kINC_ABSX);
       break;
     }
-    case 0xE8: {
+    case kINX: {
       // INX, Implied, 1 bytes, 2 cycles
-      // TODO
+      X_ += 1;
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
+      PC_ += byte_count(kINX);
       break;
     }
-    case 0xC8: {
+    case kINY: {
       // INY, Implied, 1 bytes, 2 cycles
-      // TODO
+      Y_ -= 1;
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
+      PC_ += byte_count(kINY);
       break;
     }
-    case 0x4C: {
+    case kJMP_ABS: {
       // JMP, Absolute, 3 bytes, 3 cycles
-      // TODO
+      PC_ = value_fetch(kAbsolute);
       break;
     }
-    case 0x6C: {
+    case kJMP_IND: {
       // JMP, Indirect, 3 bytes, 5 cycles
-      // TODO
+      PC_ = value_fetch(kIndirect);
       break;
     }
     case 0x20: {
       // JSR, Absolute, 3 bytes, 6 cycles
-      // TODO
+      // TODO - blocked on stack implementation
       break;
     }
     case kLDA_IMM: {
@@ -508,114 +554,135 @@ void CPU::execute(uint8_t opcode) {
       PC_ += byte_count(kLDA_ZP);
       break;
     }
-    case 0xB5: {
+    case kLDA_ZPX: {
       // LDA, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      A_ = value_fetch(kZeroPageX);
+      PC_ += byte_count(kLDA_ZPX);
       break;
     }
-    case 0xAD: {
+    case kLDA_ABS: {
       // LDA, Absolute, 3 bytes, 4 cycles
-      // TODO
+      A_ = value_fetch(kAbsolute);
+      PC_ += byte_count(kLDA_ABS);
       break;
     }
-    case 0xBD: {
+    case kLDA_ABSX: {
       // LDA, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      A_ = value_fetch(kAbsoluteX);
+      PC_ += byte_count(kLDA_ABSX);
       break;
     }
-    case 0xB9: {
+    case kLDA_ABSY: {
       // LDA, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      A_ = value_fetch(kAbsoluteY);
+      PC_ += byte_count(kLDA_ABSY);
       break;
     }
-    case 0xA1: {
+    case kLDA_INDX: {
       // LDA, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      A_ = value_fetch(kIndexedIndirect);
+      PC_ += byte_count(kLDA_INDX);
       break;
     }
-    case 0xB1: {
+    case kLDA_INDY: {
       // LDA, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      // TODO
+      A_ = value_fetch(kIndirectIndexed);
+      PC_ += byte_count(kLDA_INDY);
       break;
     }
-    case 0xA2: {
+    case kLDX_IMM: {
       // LDX, Immediate, 2 bytes, 2 cycles
-      // TODO
+      X_ = value_fetch(kImmediate);
+      PC_ += byte_count(kLDX_IMM);
       break;
     }
-    case 0xA6: {
+    case kLDX_ZP: {
       // LDX, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      X_ = value_fetch(kZeroPage);
+      PC_ += byte_count(kLDX_ZP);
       break;
     }
-    case 0xB6: {
+    case kLDX_ZPY: {
       // LDX, Zero Page,Y, 2 bytes, 4 cycles
-      // TODO
+      X_ = value_fetch(kZeroPageY);
+      PC_ += byte_count(kLDX_ZPY);
       break;
     }
-    case 0xAE: {
+    case kLDX_ABS: {
       // LDX, Absolute, 3 bytes, 4 cycles
-      // TODO
+      X_ = value_fetch(kAbsolute);
+      PC_ += byte_count(kLDX_ABS);
       break;
     }
-    case 0xBE: {
+    case kLDX_ABSY: {
       // LDX, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      X_ = value_fetch(kAbsoluteY);
+      PC_ += byte_count(kLDX_ABSY);
       break;
     }
-    case 0xA0: {
+    case kLDY_IMM: {
       // LDY, Immediate, 2 bytes, 2 cycles
-      // TODO
+      Y_ = value_fetch(kImmediate);
+      PC_ += byte_count(kLDY_IMM);
       break;
     }
-    case 0xA4: {
+    case kLDY_ZP: {
       // LDY, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      Y_ = value_fetch(kZeroPage);
+      PC_ += byte_count(kLDY_ZP);
       break;
     }
-    case 0xB4: {
+    case kLDY_ZPX: {
       // LDY, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      Y_ = value_fetch(kZeroPageX);
+      PC_ += byte_count(kLDY_ZPX);
       break;
     }
-    case 0xAC: {
+    case kLDY_ABS: {
       // LDY, Absolute, 3 bytes, 4 cycles
-      // TODO
+      Y_ = value_fetch(kAbsolute);
+      PC_ += byte_count(kLDY_ABS);
       break;
     }
-    case 0xBC: {
+    case kLDY_ABSX: {
       // LDY, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      Y_ = value_fetch(kAbsoluteX);
+      PC_ += byte_count(kLDY_ABSX);
       break;
     }
-    case 0x4A: {
+    case kLSR_A: {
       // LSR, Accumulator, 1 bytes, 2 cycles
-      // TODO
+      LSR_a();
+      PC_ += byte_count(kLSR_A);
       break;
     }
-    case 0x46: {
+    case kLSR_ZP: {
       // LSR, Zero Page, 2 bytes, 5 cycles
-      // TODO
+      LSR_m(kZeroPage);
+      PC_ += byte_count(kLSR_ZP);
       break;
     }
-    case 0x56: {
+    case kLSR_ZPX: {
       // LSR, Zero Page,X, 2 bytes, 6 cycles
-      // TODO
+      LSR_m(kZeroPageX);
+      PC_ += byte_count(kLSR_ZPX);
       break;
     }
-    case 0x4E: {
+    case kLSR_ABS: {
       // LSR, Absolute, 3 bytes, 6 cycles
-      // TODO
+      LSR_m(kAbsolute);
+      PC_ += byte_count(kLSR_ABS);
       break;
     }
-    case 0x5E: {
+    case kLSR_ABSX: {
       // LSR, Absolute,X, 3 bytes, 7 cycles
-      // TODO
+      LSR_m(kAbsoluteX);
+      PC_ += byte_count(kLSR_ABSX);
       break;
     }
-    case 0xEA: {
+    case kNOP: {
       // NOP, Implied, 1 bytes, 2 cycles
-      // TODO
+      PC_ += byte_count(kNOP);
       break;
     }
     case 0x09: {
@@ -778,115 +845,140 @@ void CPU::execute(uint8_t opcode) {
       // TODO
       break;
     }
-    case 0x38: {
+    case kSEC: {
       // SEC, Implied, 1 bytes, 2 cycles
-      // TODO
+      set_carry(true);
+      PC_ += byte_count(kSEC);
       break;
     }
-    case 0xF8: {
+    case kSED: {
       // SED, Implied, 1 bytes, 2 cycles
-      // TODO
+      set_decimal(true);
+      PC_ += byte_count(kSED);
       break;
     }
-    case 0x78: {
+    case kSEI: {
       // SEI, Implied, 1 bytes, 2 cycles
-      // TODO
+      set_interrupt_disable(true);
+      PC_ += byte_count(kSEI);
       break;
     }
     case kSTA_ZP: {
       // STA, Zero Page, 2 bytes, 3 cycles
-      write(addr_fetch(kZeroPage), A_);
+      STA(kZeroPage);
       PC_ += byte_count(kSTA_ZP);
       break;
     }
-    case 0x95: {
+    case kSTA_ZPX: {
       // STA, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      STA(kZeroPageX);
+      PC_ += byte_count(kSTA_ZPX);
       break;
     }
-    case 0x8D: {
+    case kSTA_ABS: {
       // STA, Absolute, 3 bytes, 4 cycles
-      // TODO
+      STA(kAbsolute);
+      PC_ += byte_count(kSTA_ABS);
       break;
     }
-    case 0x9D: {
+    case kSTA_ABSX: {
       // STA, Absolute,X, 3 bytes, 5 cycles
-      // TODO
+      STA(kAbsoluteX);
+      PC_ += byte_count(kSTA_ABSX);
       break;
     }
-    case 0x99: {
+    case kSTA_ABSY: {
       // STA, Absolute,Y, 3 bytes, 5 cycles
-      // TODO
+      STA(kAbsoluteY);
+      PC_ += byte_count(kSTA_ABSY);
       break;
     }
-    case 0x81: {
+    case kSTA_INDX: {
       // STA, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      STA(kIndexedIndirect);
+      PC_ += byte_count(kSTA_INDX);
       break;
     }
-    case 0x91: {
+    case kSTA_INDY: {
       // STA, (Indirect),Y, 2 bytes, 6 cycles
-      // TODO
+      STA(kIndirectIndexed);
+      PC_ += byte_count(kSTA_INDY);
       break;
     }
-    case 0x86: {
+    case kSTX_ZP: {
       // STX, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      STX(kZeroPage);
+      PC_ += byte_count(kSTX_ZP);
       break;
     }
-    case 0x96: {
+    case kSTX_ZPY: {
       // STX, Zero Page,Y, 2 bytes, 4 cycles
-      // TODO
+      STX(kZeroPageY);
+      PC_ += byte_count(kSTX_ZPY);
       break;
     }
-    case 0x8E: {
+    case kSTX_ABS: {
       // STX, Absolute, 3 bytes, 4 cycles
-      // TODO
+      STX(kAbsolute);
+      PC_ += byte_count(kSTX_ABS);
       break;
     }
-    case 0x84: {
+    case kSTY_ZP: {
       // STY, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      STY(kZeroPage);
+      PC_ += byte_count(kSTX_ZP);
       break;
     }
-    case 0x94: {
+    case kSTY_ZPX: {
       // STY, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      STY(kZeroPageY);
+      PC_ += byte_count(kSTY_ZPX);
       break;
     }
-    case 0x8C: {
+    case kSTY_ABS: {
       // STY, Absolute, 3 bytes, 4 cycles
-      // TODO
+      STY(kAbsolute);
+      PC_ += byte_count(kSTY_ABS);
       break;
     }
-    case 0xAA: {
+    case kTAX: {
       // TAX, Implied, 1 bytes, 2 cycles
-      // TODO
+      X_ = A_;
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
       break;
     }
-    case 0xA8: {
+    case kTAY: {
       // TAY, Implied, 1 bytes, 2 cycles
-      // TODO
+      Y_ = A_;
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
       break;
     }
-    case 0xBA: {
+    case kTSX: {
       // TSX, Implied, 1 bytes, 2 cycles
-      // TODO
+      X_ = SP_;
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
       break;
     }
-    case 0x8A: {
+    case kTXA: {
       // TXA, Implied, 1 bytes, 2 cycles
-      // TODO
+      A_ = X_;
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
-    case 0x9A: {
+    case kTXS: {
       // TXS, Implied, 1 bytes, 2 cycles
-      // TODO
+      SP_ = X_;
       break;
     }
-    case 0x98: {
+    case kTYA: {
       // TYA, Implied, 1 bytes, 2 cycles
-      // TODO
+      A_ = Y_;
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
 
@@ -991,6 +1083,80 @@ void CPU::BRANCH(OpCode opcode, bool doBranch) {
   }
 }
 
-void CPU::LDA(uint8_t other) { A_ = other; }
+void CPU::CMP(uint8_t reg, uint8_t other) {
+  set_carry(reg >= other);
+  set_zero(reg == other);
+  set_negative(reg < other);
+}
+
+void CPU::DEC(AddrMode addressingMode) {
+  uint16_t addr = addr_fetch(addressingMode);
+  uint8_t res = read(addr) - 1;
+  write(addr, res);
+  set_zero(res == 0);
+  set_negative((res & 0b10000000) > 0);
+}
+
+void CPU::DEX() {
+  X_ -= 1;
+  set_zero(X_ == 0);
+  set_negative((X_ & 0b10000000) > 0);
+}
+
+void CPU::EOR(AddrMode addressingMode) {
+  uint8_t v = value_fetch(addressingMode);
+  A_ ^= v;
+  set_zero(A_ == 0);
+  set_negative((A_ & 0b10000000) > 0);
+}
+
+void CPU::INC(AddrMode addressingMode) {
+  uint16_t addr = addr_fetch(addressingMode);
+  uint8_t res = read(addr) + 1;
+  write(addr, res);
+  set_zero(res == 0);
+  set_negative((res & 0b10000000) > 0);
+}
+
+void CPU::INX() {
+  X_ += 1;
+  set_zero(X_ == 0);
+  set_negative((X_ & 0b10000000) > 0);
+}
+
+void CPU::LSR_a() {
+  set_carry((A_ & 0b1) == 1);
+  A_ = A_ >> 1;
+  set_zero(A_ == 0);
+  if (get_carry()) {
+    A_ |= 0b10000000;
+    set_negative(true);
+  }
+}
+
+void CPU::LSR_m(AddrMode addressingMode) {
+  uint16_t addr = addr_fetch(addressingMode);
+  uint8_t val = read(addr);  // could use value_fetch here too but not necessary
+  set_carry((val & 0b1) == 1);
+  val = val >> 1;
+  set_zero(val == 0);
+  if (get_carry()) {
+    val |= 0b10000000;
+    set_negative(true);
+  }
+  write(addr, val);
+}
+
+void CPU::STA(AddrMode addressingMode) {
+  write(addr_fetch(addressingMode), A_);
+}
+
+void CPU::STX(AddrMode addressingMode) {
+  write(addr_fetch(addressingMode), X_);
+}
+
+void CPU::STY(AddrMode addressingMode) {
+  write(addr_fetch(addressingMode), Y_);
+}
 
 }  // namespace cpu

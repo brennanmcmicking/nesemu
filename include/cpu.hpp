@@ -163,8 +163,18 @@ class CPU {
   void ASL_m(uint16_t addr);
   void BIT(AddrMode addressingMode);
   void BRANCH(enum OpCode opcode, bool doBranch);
+  void CMP(uint8_t reg, uint8_t other);
+  void DEC(AddrMode addressingMode);
+  void DEX();
+  void EOR(AddrMode addressingMode);
+  void INC(AddrMode addressingMode);
+  void INX();
   void LDA(uint8_t other);
-  void STA(uint16_t addr);
+  void LSR_a();
+  void LSR_m(AddrMode addressingMode);
+  void STA(AddrMode addressingMode);
+  void STX(AddrMode addressingMode);
+  void STY(AddrMode addressingMode);
 };
 
 // generated using scripts/scrape-opcodes.py
