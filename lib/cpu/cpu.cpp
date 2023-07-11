@@ -1,6 +1,5 @@
 #include "cpu.hpp"
 
-// #include <boost/thread/thread.hpp>
 #include <boost/log/trivial.hpp>
 #include <chrono>
 #include <thread>
@@ -32,20 +31,12 @@ uint8_t CPU::P() const { return P_; }
 void CPU::begin_cpu_loop() {
   while (1) {
     // Each loop is one frame. Calculate how long the frame should take
-    const auto frame_start = std::chrono::system_clock::now();
+    const auto frame_start = std::chrono::steady_clock::now();
     const auto frame_deadline = frame_start + kTimePerFrameMillis;
 
     // Do all logic: CPU, PPU, etc
 
-    const auto end = std::chrono::system_clock::now();
-    if (end > frame_deadline) {
-      // Don't wait if exceeded deadline
-      BOOST_LOG_TRIVIAL(warning) << "frame exceeded deadline!\n";
-      continue;
-    }
-    const auto actual_time_elapsed = end - frame_start;
-    std::this_thread::sleep_for(frame_deadline - end);
-
+    std::this_thread::sleep_until(frame_deadline);
     BOOST_LOG_TRIVIAL(info) << "tick\n";
   }
 }
