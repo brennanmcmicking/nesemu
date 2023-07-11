@@ -8,6 +8,7 @@
 #include "cpu.hpp"
 #include "debugger.hpp"
 #include "ppu.hpp"
+#include "util.hpp"
 
 constexpr char help_msg[] =
     "Usage: nesemu <FILE> [FLAGS]... \n"
@@ -75,6 +76,8 @@ int main(int argc, char* argv[]) {
     std::cout << "Running in debug mode.\n";
     debug_mode = true;
   }
+
+  util::init_log_level();
 
   ppu::PPU ppu;
   cartridge::Cartridge cart(std::make_unique<DummyMapper>());
