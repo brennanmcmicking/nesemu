@@ -1,5 +1,6 @@
 # editor specific files
-.vscode/
+.vscode/*
+!.vscode/launch.json
 
 # build artifacts
 build/
