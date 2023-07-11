@@ -4,9 +4,18 @@
 #include <format>
 #include <iostream>
 #include <sstream>
+
 namespace debugger {
+
+// Must construct from a ptr to an existing CPU
+Debugger::Debugger(cpu::CPU* cpu) : cpu_(cpu) {}
+
 void Debugger::debug() {
   // Loop while debugging. Listen for a command and execute it.
+  std::cout << "Debug mode active; program execution is stopped.\n Use the "
+               "'help' command to view all usable commands.\n"
+            << std::endl;
+
   while (1) {
     read_command();
   }
@@ -25,26 +34,32 @@ bool Debugger::read_command() {
 
   std::string cmd_name;
   input_stream >> cmd_name;
+  const char* cmd = cmd_name.c_str();
 
-  if (cmd_name == "help") {
+  if (strcmp(cmd, "help") == 0) {
     cmd_help();
-  } else if (cmd_name == "step") {
-  } else if (cmd_name == "break") {
-  } else if (cmd_name == "delete") {
-  } else if (cmd_name == "continue") {
-  } else if (cmd_name == "list") {
-  } else if (cmd_name == "clear") {
-  } else if (cmd_name == "registers") {
-  } else if (cmd_name == "set") {
-  } else if (cmd_name == "read") {
-  } else if (cmd_name == "write") {
-  } else if (cmd_name == "cpudump") {
-  } else if (cmd_name == "memdump") {
+  } else if (strcmp(cmd, "step") == 0) {
+  } else if (strcmp(cmd, "break") == 0) {
+  } else if (strcmp(cmd, "delete") == 0) {
+  } else if (strcmp(cmd, "continue") == 0) {
+  } else if (strcmp(cmd, "list") == 0) {
+  } else if (strcmp(cmd, "clear") == 0) {
+  } else if (strcmp(cmd, "registers") == 0) {
+  } else if (strcmp(cmd, "set") == 0) {
+  } else if (strcmp(cmd, "read") == 0) {
+  } else if (strcmp(cmd, "write") == 0) {
+  } else if (strcmp(cmd, "cpudump") == 0) {
+  } else if (strcmp(cmd, "memdump") == 0) {
+  } else if (strcmp(cmd, "") == 0) {
+    // empty check for newline to allow spamming w/o error messages
   } else {
     // unrecognized command
-    BOOST_LOG_TRIVIAL(info) << std::format("Command '{}' not recognized.\n");
+    BOOST_LOG_TRIVIAL(info)
+        << std::format("Command '{}' not recognized.\n", cmd_name);
     return false;
   }
+
+  return true;
 }
 
 void Debugger::cmd_help() { std::cout << help_msg_; }

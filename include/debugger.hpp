@@ -51,6 +51,7 @@ memdump <file>
 */
 
 class Debugger {
+ public:
   using address_t = uint16_t;
 
   enum Register {
@@ -62,7 +63,16 @@ class Debugger {
     kRegP,
   };
 
- public:
+  Debugger() = delete;
+  explicit Debugger(cpu::CPU* cpu);
+  ~Debugger() = default;
+
+  // prevent moves and copies
+  Debugger(Debugger&) = delete;
+  Debugger(Debugger&&) = delete;
+  Debugger& operator=(Debugger&) = delete;
+  Debugger operator=(Debugger&&) = delete;
+
   /**
    * @brief Pause program execution, listen for user input, and begin
    * interpreting their commands.
@@ -71,6 +81,7 @@ class Debugger {
 
  private:
   static constexpr char help_msg_[] = "asdf";
+  const cpu::CPU* cpu_;
 
   /**
    * @brief Read line from stdin and parse it into a command.

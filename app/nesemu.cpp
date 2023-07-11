@@ -6,6 +6,7 @@
 
 #include "cartridge.hpp"
 #include "cpu.hpp"
+#include "debugger.hpp"
 #include "ppu.hpp"
 
 constexpr char help_msg[] =
@@ -82,7 +83,15 @@ int main(int argc, char* argv[]) {
   BOOST_LOG_TRIVIAL(info)
       << "this program will be the fully integrated nes emulator!\n";
 
-  cpu.cycle();
-  // cpu.begin_cpu_loop();
+  if (debug_mode) {
+    // Only when the program was started in debug mode can it be debugged
+    debugger::Debugger debugger(&cpu);
+    // Debugger runs infinite loop here
+    debugger.debug();
+  } else {
+    // TODO: for now, running one cycle to see some output
+    cpu.cycle();
+    // cpu.begin_cpu_loop();
+  }
   return 0;
 }
