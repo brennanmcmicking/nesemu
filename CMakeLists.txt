@@ -7,7 +7,8 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -g3")
 include(Sanitizers.cmake)
 
 find_package(Catch2 2 REQUIRED)
-find_package(Boost COMPONENTS log REQUIRED program_options REQUIRED)
+ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+find_package(Boost COMPONENTS log program_options REQUIRED)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIR})
