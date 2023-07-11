@@ -23,5 +23,6 @@ int main(int argc, char* argv[]) {
       << "this program will be the fully integrated nes emulator!\n";
 
   cpu.cycle();
+  // cpu.begin_cpu_loop();
   return 0;
 }

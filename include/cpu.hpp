@@ -1,6 +1,7 @@
 #ifndef CPU_HPP
 #define CPU_HPP
 #include <array>
+#include <chrono>
 #include <cstdint>
 
 #include "cartridge.hpp"
@@ -36,6 +37,11 @@ class CPU {
   using Cartridge = cartridge::Cartridge;
   using PPU = ppu::PPU;
 
+  const double kFramerate = 60.0988;              // Hz
+  const double kTimePerFrame = 1.0 / kFramerate;  // seconds
+  const std::chrono::duration<double, std::milli> kTimePerFrameMillis{
+      kTimePerFrame * 1000};  // Milliseconds
+
   explicit CPU(PPU& ppu, Cartridge& cartridge);
 
   CPU() = delete;
@@ -50,6 +56,16 @@ class CPU {
   uint8_t X() const;
   uint8_t Y() const;
   uint8_t P() const;
+
+  /**
+   * @brief Runs a blocking infinite loop where the CPU
+   *
+   * Once this function is run, it will loop until the program terminates. It
+   * handles running the clock at a consistent speed, invoking various
+   * components of the system at appropriate times, and sleeping in between
+   * cycles.
+   */
+  void begin_cpu_loop();
 
   /**
    * @brief Executes the next cycle of the ALU.
