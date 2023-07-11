@@ -32,6 +32,8 @@ enum AddrMode {
   kIndirectIndexed,  // ($00), Y
 };
 
+enum OpCode : uint8_t;
+
 class CPU {
  public:
   using Cartridge = cartridge::Cartridge;
@@ -146,6 +148,8 @@ class CPU {
   void set_carry(bool value);
   bool get_zero();
   void set_zero(bool value);
+  bool get_interrupt_disable();
+  void set_interrupt_disable(bool value);
   bool get_decimal();
   void set_decimal(bool value);
   bool get_overflow();
@@ -157,6 +161,8 @@ class CPU {
   void AND(uint8_t other);
   void ASL_a();
   void ASL_m(uint16_t addr);
+  void BIT(AddrMode addressingMode);
+  void BRANCH(enum OpCode opcode, bool doBranch);
   void LDA(uint8_t other);
   void STA(uint16_t addr);
 };
