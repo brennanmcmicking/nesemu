@@ -4,6 +4,7 @@
 
 namespace cpu {
 
+// TODO generate this with a constexpr and std::array<std::size_t, 256>
 // generated using scripts/scrape-opcodes.py
 // missing instructions are default initialized to zero (invalid instruction)
 constexpr std::size_t instruction_sizes[256] = {
