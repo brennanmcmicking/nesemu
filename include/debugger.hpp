@@ -63,6 +63,29 @@ class Debugger {
   };
 
  public:
+  /**
+   * @brief Pause program execution, listen for user input, and begin
+   * interpreting their commands.
+   */
+  void debug();
+
+ private:
+  static constexpr char help_msg_[] = "asdf";
+
+  /**
+   * @brief Read line from stdin and parse it into a command.
+   *
+   * If the user gives an invalid command, an error message is printed to
+   * stdout
+   *
+   * @return true if the command was parsed and ran successfully
+   * @return false if there was a parsing error
+   */
+  bool read_command();
+
+  /**
+   * @brief Prints a help message describing the commands that can be used.
+   */
   void cmd_help();
 
   /****** Breakpoint commands *******/
@@ -152,9 +175,6 @@ class Debugger {
    * exists already, it is not overwritten.
    */
   void cmd_memdump(const char* filename);
-
- private:
-  void print_help_message();
 };
 
 }  // namespace debugger
