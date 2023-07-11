@@ -7,7 +7,7 @@ set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -g3")
 include(Sanitizers.cmake)
 
 find_package(Catch2 2 REQUIRED)
-find_package(Boost COMPONENTS log REQUIRED)
+find_package(Boost COMPONENTS log REQUIRED program_options REQUIRED)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIR})
@@ -26,13 +26,13 @@ add_library(cartridge STATIC ${CARTRIDGE_SOURCES})
 target_link_libraries(cartridge PUBLIC Boost::log)
 
 # deliverables
-add_executable(nesemu app/nesemu.cpp) 
-target_link_libraries(nesemu PUBLIC cpu ppu cartridge Boost::log)
+add_executable(nesemu app/nesemu.cpp)
+target_link_libraries(nesemu PUBLIC cpu ppu cartridge Boost::log Boost::program_options)
 
-add_executable(nesemu-cpu app/nesemu-cpu.cpp) 
+add_executable(nesemu-cpu app/nesemu-cpu.cpp)
 target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge Boost::log)
 
-add_executable(nesemu-cartridge app/nesemu-cartridge.cpp) 
+add_executable(nesemu-cartridge app/nesemu-cartridge.cpp)
 target_link_libraries(nesemu-cartridge PUBLIC cartridge Boost::log)
 
 # testing
