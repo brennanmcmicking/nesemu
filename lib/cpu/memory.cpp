@@ -3,32 +3,44 @@
 
 namespace cpu {
 uint8_t CPU::read(uint16_t addr) {
-  if (addr < 0x2000) {
-    return ram_[addr % 0x800];
-  } else if (addr < 0x4000) {
-    switch (addr % 8) {};
-    return 0xAA;  // TODO ppu
-  } else if (addr < 0x4020) {
-    return 0xAA;  // TODO io
-  } else {
-    return cart_.cpu_read(addr);
+  switch (addr) {
+    case 0x0000 ... 0x1FFF:  // Internal RAM
+      return ram_[addr % 0x800];
+    case 0x2000 ... 0x3FFF:  // TODO: PPU Registers
+      switch (addr % 8) {};
+      return 0xAA;
+    case 0x4000 ... 0x4017:  // TODO: IO
+      return 0xAA;
+    case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
+      BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
+    case 0x4020 ... 0xFFFF:  // TODO: Cartridge space
+      return cart_.cpu_read(addr);
+    default:
+      BOOST_LOG_TRIVIAL(fatal) << "Invalid memory address read: " << addr;
+      return 0x00;
   }
 };
 
 bool CPU::write(uint16_t addr, uint8_t data) {
-  if (addr < 0x2000) {
-    ram_[addr % 0x800] = data;
-    return true;
-  } else if (addr < 0x4000) {
-    switch (addr % 8) {};
-    return false;  // TODO ppu
-  } else if (addr < 0x4020) {
-    return false;  // TODO io
-  } else {
-    // cart_.cpu_write(addr, data);
-    return false;  // for now, writing is not allowed
+  switch (addr) {
+    case 0x0000 ... 0x1FFF:  // Internal RAM
+      ram_[addr % 0x800] = data;
+      return true;
+    case 0x2000 ... 0x3FFF:  // TODO: PPU Registers
+      switch (addr % 8) {};
+      return false;
+    case 0x4000 ... 0x4017:  // TODO: IO
+      return false;
+    case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
+      BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
+      return false;
+    case 0x4020 ... 0xFFFF:  // TODO: Cartridge space
+      // cart_.cpu_write(addr, data);
+      return false;  // for now, writing is not allowed
+    default:
+      BOOST_LOG_TRIVIAL(fatal) << "Invalid memory address read: " << addr;
+      return false;
   }
-  return true;
 }
 
 uint16_t CPU::read16(uint16_t addr) {
