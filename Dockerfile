@@ -69,4 +69,6 @@ RUN mkdir -p /opt/sde/etc/ && echo "base" > /opt/sde/etc/default_environment
 # Finish setup
 RUN $DEVSHELL sde/installer -d /opt/sde
 
+RUN echo "/opt/sde/bin/sde_shell; clear" >> ~/.bashrc
+
 CMD ["sleep", "infinity"] 
