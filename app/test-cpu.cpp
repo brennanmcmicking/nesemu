@@ -110,3 +110,19 @@ TEST_CASE("trivial load and store") {
   REQUIRE(cpu.PC() == 0x8008);
   REQUIRE(cpu.A() == 1);
 };
+
+TEST_CASE("trivial memory") {
+  std::vector<uint8_t> bytecode = {};
+
+  uint8_t val8 = 123;
+  uint16_t val16 = 12345;
+
+  MAKE_CPU(bytecode);
+
+  // RAM
+  REQUIRE(cpu.read(0x0000) == 0x00);
+  REQUIRE(cpu.write(0x0800, val8));
+  REQUIRE(cpu.read(0x0000) == val8);
+  REQUIRE(cpu.write16(0x0900, val16));
+  REQUIRE(cpu.read16(0x0100) == val16);
+};

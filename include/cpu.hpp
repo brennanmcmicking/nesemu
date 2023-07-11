@@ -112,7 +112,7 @@ class CPU {
    */
   bool write(uint16_t addr, uint8_t value);
   // convenience function for writing 16-bit values
-  void write16(uint16_t addr, uint16_t value);
+  bool write16(uint16_t addr, uint16_t value);
 
  private:
   PPU& ppu_;

@@ -9,15 +9,19 @@ uint8_t CPU::read(uint16_t addr) {
     case 0x2000 ... 0x3FFF:  // TODO: PPU Registers
       switch (addr % 8) {};
       return 0xAA;
-    case 0x4000 ... 0x4017:  // TODO: IO
+    case 0x4000 ... 0x4015:  // Sound
+      BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
+      return 0xAA;
+    case 0x4016 ... 0x4017:  // TODO: Controller IO
       return 0xAA;
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
       BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
+      return 0xAA;
     case 0x4020 ... 0xFFFF:  // TODO: Cartridge space
       return cart_.cpu_read(addr);
     default:
       BOOST_LOG_TRIVIAL(fatal) << "Invalid memory address read: " << addr;
-      return 0x00;
+      return 0xAA;
   }
 };
 
@@ -29,7 +33,10 @@ bool CPU::write(uint16_t addr, uint8_t data) {
     case 0x2000 ... 0x3FFF:  // TODO: PPU Registers
       switch (addr % 8) {};
       return false;
-    case 0x4000 ... 0x4017:  // TODO: IO
+    case 0x4000 ... 0x4015:  // Sound
+      BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
+      return false;
+    case 0x4016 ... 0x4017:  // TODO: Controller IO
       return false;
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
       BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
@@ -49,9 +56,8 @@ uint16_t CPU::read16(uint16_t addr) {
   return (hi << 8) | lo;
 };
 
-void CPU::write16(uint16_t addr, uint16_t data) {
-  write(addr, data & 0xFF);
-  write(addr + 1, data >> 8);
+bool CPU::write16(uint16_t addr, uint16_t data) {
+  return write(addr, data & 0xFF) && write(addr + 1, data >> 8);
 };
 
 uint16_t CPU::addr_fetch(AddrMode mode) {
