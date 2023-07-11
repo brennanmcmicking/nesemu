@@ -38,7 +38,7 @@ int main(int argc, char* argv[]) {
   // Declare the supported options. Sourced from
   // https://www.boost.org/doc/libs/1_82_0/doc/html/program_options/tutorial.html#id-1.3.30.4.3
   po::options_description desc("Allowed options");
-  desc.add_options()("help", "produce help message")(
+  desc.add_options()("help,h", "produce help message")(
       "debug,D", "run in debug mode")("input-file", "input file");
 
   // Add the file to load as a positional argument
