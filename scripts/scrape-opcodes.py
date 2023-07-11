@@ -1,9 +1,21 @@
 from bs4 import BeautifulSoup
 import requests
 
-resp = requests.get("https://www.nesdev.org/obelisk-6502-guide/reference.html")
+text = None
 
-soup = BeautifulSoup(resp.text, "html.parser")
+try:
+    with open("cached.html") as f:
+        text = f.read()
+except FileNotFoundError:
+    pass
+
+if text is None:
+    resp = requests.get("https://www.nesdev.org/obelisk-6502-guide/reference.html")
+    text = resp.text
+    with open("cached.html", "w") as f:
+        f.write(text)
+
+soup = BeautifulSoup(text, "html.parser")
 
 body = soup.select_one("body")
 main = body.contents[9]
