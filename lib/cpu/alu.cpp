@@ -632,7 +632,7 @@ void CPU::execute(uint8_t opcode) {
     case kAND_INDY: {
       // AND, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
       AND(kIndirectIndexed);
-      PC += byte_count(kAND_INDY);
+      PC_ += byte_count(kAND_INDY);
       break;
     }
     case kASL_A: {
