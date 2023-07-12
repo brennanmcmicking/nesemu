@@ -10,7 +10,7 @@ CPU::CPU(CPU::PPU& ppu, CPU::Cartridge& cartridge)
     : ppu_(ppu),
       cart_(cartridge),
       PC_(0),
-      SP_(0),
+      SP_(0xFF),
       A_(0),
       X_(0),
       Y_(0),
@@ -27,6 +27,41 @@ uint8_t CPU::A() const { return A_; }
 uint8_t CPU::X() const { return X_; }
 uint8_t CPU::Y() const { return Y_; }
 uint8_t CPU::P() const { return P_; }
+
+void CPU::push_stack(uint8_t value) {
+  if (SP_ == 0x00) {
+    BOOST_LOG_TRIVIAL(fatal) << "Stack overflow detected\n";
+  }
+  SP_ -= 1;
+  write(0x0100 | SP_, value);
+}
+
+void CPU::push_stack16(uint16_t value) {
+  if (SP_ == 0x00) {
+    BOOST_LOG_TRIVIAL(fatal) << "Stack overflow detected\n";
+  }
+
+  SP_ -= 2;
+  write16(0x0100 | SP_, value);
+}
+
+uint8_t CPU::pop_stack() {
+  if (SP_ == 0xFF) {
+    BOOST_LOG_TRIVIAL(fatal) << "Stack underflow detected\n";
+  }
+  SP_ += 1;
+  return read(0x0100 | (SP_ - 1));
+}
+
+uint16_t CPU::pop_stack16() {
+  if (SP_ >= 0xFE) {
+    BOOST_LOG_TRIVIAL(fatal) << "Stack underflow detected\n";
+  }
+  SP_ += 2;
+  return read16(0x0100 | (SP_ - 2));
+}
+
+uint8_t CPU::peek_stack() { return read(SP_); }
 
 void CPU::begin_cpu_loop() {
   while (1) {

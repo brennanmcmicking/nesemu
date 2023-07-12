@@ -144,6 +144,36 @@ class CPU {
 
   uint8_t value_fetch(AddrMode mode);
 
+  /**
+   * @brief Pushes a byte onto the stack and updates the stack pointer
+   *
+   * Complains if SP is invalid
+   *
+   * @param value the byte to put
+   */
+  void push_stack(uint8_t value);
+  void push_stack16(uint16_t value);
+
+  /**
+   * @brief Pops the top byte off of the stack and decrements the stack pointer
+   *
+   * Complains if SP is invalid
+   *
+   * @return uint8_t
+   */
+  uint8_t pop_stack();
+  uint16_t pop_stack16();
+
+  /**
+   * @brief Peeks the top of the stack without decrementing
+   *
+   * Does not complain if SP is invalid
+   *
+   * @return uint8_t
+   */
+  uint8_t peek_stack();
+  uint16_t peek_stack16();
+
   bool get_carry();
   void set_carry(bool value);
   bool get_zero();
@@ -172,6 +202,7 @@ class CPU {
   void LDA(uint8_t other);
   void LSR_a();
   void LSR_m(AddrMode addressingMode);
+  void ORA();
   void STA(AddrMode addressingMode);
   void STX(AddrMode addressingMode);
   void STY(AddrMode addressingMode);

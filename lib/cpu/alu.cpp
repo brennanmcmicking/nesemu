@@ -573,14 +573,16 @@ void CPU::execute(uint8_t opcode) {
       PC_ += byte_count(kADC_ABSY);
       break;
     }
-    case 0x61: {
+    case kADC_INDX: {
       // ADC, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      ADC(value_fetch(kIndexedIndirect));
+      PC_ += byte_count(kADC_INDX);
       break;
     }
-    case 0x71: {
+    case kADC_INDY: {
       // ADC, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      // TODO
+      ADC(value_fetch(kIndirectIndexed));
+      PC_ += byte_count(kADC_INDY);
       break;
     }
     case kAND_IMM: {
@@ -623,12 +625,14 @@ void CPU::execute(uint8_t opcode) {
     }
     case kAND_INDX: {
       // AND, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      AND(kIndexedIndirect);
+      PC_ += byte_count(kAND_INDX);
       break;
     }
     case kAND_INDY: {
       // AND, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      // TODO
+      AND(kIndirectIndexed);
+      PC += byte_count(kAND_INDY);
       break;
     }
     case kASL_A: {
@@ -965,7 +969,7 @@ void CPU::execute(uint8_t opcode) {
     }
     case kJMP_ABS: {
       // JMP, Absolute, 3 bytes, 3 cycles
-      PC_ = value_fetch(kAbsolute);
+      PC_ = addr_fetch(kAbsolute);
       break;
     }
     case kJMP_IND: {
@@ -973,9 +977,10 @@ void CPU::execute(uint8_t opcode) {
       PC_ = value_fetch(kIndirect);
       break;
     }
-    case 0x20: {
+    case kJSR_ABS: {
       // JSR, Absolute, 3 bytes, 6 cycles
-      // TODO - blocked on stack implementation
+      push_stack16(PC_ + byte_count(kJSR_ABS) - 1);
+      PC_ = addr_fetch(kAbsolute);
       break;
     }
     case kLDA_IMM: {
