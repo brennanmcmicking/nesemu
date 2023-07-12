@@ -1588,6 +1588,8 @@ void CPU::LSR_m(AddrMode addressingMode) {
   write(addr, val);
 }
 
+void CPU::ORA() {}
+
 void CPU::STA(AddrMode addressingMode) {
   write(addr_fetch(addressingMode), A_);
 }
