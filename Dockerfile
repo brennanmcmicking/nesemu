@@ -1,13 +1,15 @@
 FROM centos:7.9.2009
 
-ARG DEVSHELL="scl enable devtoolset-8 -- env CC=/opt/rh/devtoolset-8/root/bin/gcc CXX=/opt/rh/devtoolset-8/root/bin/g++"
+ARG DEVSHELL="scl enable devtoolset-11 -- env CC=/opt/rh/devtoolset-11/root/bin/gcc CXX=/opt/rh/devtoolset-11/root/bin/g++"
 
 RUN yum -y install \
     # General Tools
-    git wget make bzip2 openssl openssl-devel python36-setuptools python36-devel perl-Data-Dumper \
+    git wget make bzip2 openssl openssl-devel python-devel python36-setuptools python36-devel perl-Data-Dumper \
     # C & C++ Compiler
     scl-utils centos-release-scl && \
-    yum install -y devtoolset-8-gcc devtoolset-8-gcc-c++
+    yum install -y devtoolset-11-gcc devtoolset-11-gcc-c++ gdb && \
+    # Reduce image size
+    yum -y clean all && rm -rf /var/cache
 
 RUN git clone https://github.com/mdadams/sde.git
 
@@ -15,20 +17,14 @@ RUN git clone https://github.com/mdadams/sde.git
 RUN sed -i '365,367 s/^/#/' sde/installer
 
 # Monkey patch wget
-RUN find sde -type f -exec sed -i 's/wget/wget --no-check-certificate/g' {} \;
+RUN find sde -type f -exec sed -i 's/wget /wget --no-check-certificate /g' {} \;
 
-RUN sed -i '830s/.*/if [[ $exitearly -eq 1 ]]; then exit 0; fi/' sde/installer
+RUN sed -i '830s/.*/if [[ $gccexit -eq 1 ]]; then exit 0; fi/' sde/installer
 
 # Cache CMake + GCC
-RUN $DEVSHELL exitearly=1 sde/installer -d /opt/sde
-
-RUN yum update -y && yum -y install python-devel freeglut
-
-RUN sed -i '90s/.*/boost_version=1.81.0/' sde/installer
+RUN $DEVSHELL gccexit=1 sde/installer -d /opt/sde
 
 RUN sed -i \
-    # Skip ninja build system
-    # -e '789,797 s/^/#/' \
     # Skip ghi gh://stephencelis/ghi
     -e '803,811 s/^/#/' \
     # Skip GCC Alternative
@@ -63,12 +59,15 @@ RUN sed -i \
     -e '1276,1284 s/^/#/' \
     sde/installer
 
+RUN sed -i '90s/.*/boost_version=1.81.0/' sde/installer
+
 # Setup defualt env
 RUN mkdir -p /opt/sde/etc/ && echo "base" > /opt/sde/etc/default_environment
 
 # Finish setup
 RUN $DEVSHELL sde/installer -d /opt/sde
 
+RUN rm /opt/sde/bin/gdb
 RUN echo "/opt/sde/bin/sde_shell; clear" >> ~/.bashrc
 
 CMD ["sleep", "infinity"] 
