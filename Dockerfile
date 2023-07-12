@@ -28,7 +28,7 @@ RUN sed -i '90s/.*/boost_version=1.81.0/' sde/installer
 
 RUN sed -i \
     # Skip ninja build system
-    -e '789,797 s/^/#/' \
+    # -e '789,797 s/^/#/' \
     # Skip ghi gh://stephencelis/ghi
     -e '803,811 s/^/#/' \
     # Skip GCC Alternative
