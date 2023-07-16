@@ -7,49 +7,6 @@
 
 namespace debugger {
 
-/*
-help
-  Prints this message
-break <address>
-  Pauses program execution when program counter contains <address>
-delete <address>
-  Removes the previously specified breakpoint at address
-step
-  Advance the CPU by one instruction
-continue
-  Continue execution until the next breakpoint
-clear
-  Deletes all breakpoints
-x/<N> <address>
-  Prints N bytes starting at the location <address>. This only supports RAM
-  access, everything else is undefined. Bytes are printed in hexadecimal
-  format
-registers
-  Prints the names and values of all registers in hexadecimal format. The
-  register names are:
-  - PC (program counter, 16-bit)
-  - SP (stack pointer, 8-bit)
-  - A (accumulator, 8-bit)
-  - X (index register X, 8-bit)
-  - Y (index register Y, 8-bit)
-  - P (processor status flags, 8-bit)
-
-  MICHAEL'S REQUESTS: //TODO: get feedback
-
-set <register> <value>
-  Set the specified register's value
-read <address> [bytes]            //TODO: duplicate of 'x/<N>' above
-  Prints the value in memory at the specified address in hexadecimal. Optionally
-  specify a number of bytes to read (default 1).
-write <address> <data>
-
-cpudump
-  Dumps the processor state: registers and flags. //TODO: to file or stdout?
-memdump <file>
-  Creates a file with the given name and dumps the contents of CPU memory to
-  that file
-*/
-
 class Debugger {
  public:
   using address_t = uint16_t;
@@ -80,7 +37,47 @@ class Debugger {
   void debug();
 
  private:
-  static constexpr char help_msg_[] = "asdf";
+  static constexpr char help_msg_[] =
+      "help \n"
+      "  Prints this message \n"
+      "break <address> \n"
+      "  Pauses program execution when program counter contains <address> \n"
+      "delete <address> \n"
+      "  Removes the previously specified breakpoint at address \n"
+      "step \n"
+      "  Advance the CPU by one instruction \n"
+      "continue \n"
+      "  Continue execution until the next breakpoint \n"
+      "clear \n"
+      "  Deletes all breakpoints \n"
+      // TODO: x/<N> or read ???????????? not both
+      // "x/<N> <address> \n"
+      // "  Prints N bytes starting at the location <address>. This only
+      // supports "
+      // "\n"
+      // "  RAM access, everything else is undefined. Bytes are printed in \n"
+      // "  hexadecimal \n"
+      "read <address> [bytes] \n"
+      "  Prints the value in memory at the specified address in hexadecimal. \n"
+      "  Optionally specify a number of bytes to read (default 1) \n"
+      "write <address> <data> \n"
+      "  Overwrites the value in memory at the given address with specified \n"
+      "  data. Note: only writes a single byte. If given data is more than a \n"
+      "  byte, //TODO: what to do? \n"
+      "set <register> <value> \n"
+      "  Set the specified register's value \n"
+      "registers \n"
+      "  Prints the names and values of all registers in hexadecimal format. \n"
+      "  The register names are: \n"
+      "  - PC (program counter, 16-bit) \n"
+      "  - SP (stack pointer, 8-bit) \n"
+      "  - A (accumulator, 8-bit) \n"
+      "  - X (index register X, 8-bit) \n"
+      "  - Y (index register Y, 8-bit) \n"
+      "  - P (processor status flags, 8-bit) \n"
+      "\n";
+  // TODO: add description of flag bits to help message here;
+
   const cpu::CPU* cpu_;
 
   /**
