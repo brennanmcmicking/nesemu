@@ -39,17 +39,15 @@ bool Debugger::read_command() {
   if (strcmp(cmd, "help") == 0) {
     cmd_help();
   } else if (strcmp(cmd, "step") == 0) {
+  } else if (strcmp(cmd, "continue") == 0) {
   } else if (strcmp(cmd, "break") == 0) {
   } else if (strcmp(cmd, "delete") == 0) {
-  } else if (strcmp(cmd, "continue") == 0) {
   } else if (strcmp(cmd, "list") == 0) {
   } else if (strcmp(cmd, "clear") == 0) {
-  } else if (strcmp(cmd, "registers") == 0) {
-  } else if (strcmp(cmd, "set") == 0) {
   } else if (strcmp(cmd, "read") == 0) {
   } else if (strcmp(cmd, "write") == 0) {
-  } else if (strcmp(cmd, "cpudump") == 0) {
-  } else if (strcmp(cmd, "memdump") == 0) {
+  } else if (strcmp(cmd, "registers") == 0) {
+  } else if (strcmp(cmd, "set") == 0) {
   } else if (strcmp(cmd, "") == 0) {
     // empty check for newline to allow spamming w/o error messages
   } else {
