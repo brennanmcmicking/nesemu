@@ -2,6 +2,7 @@
 #define DEBUGGER_HPP
 
 #include <cstdint>
+#include <map>
 
 #include "cpu.hpp"
 
@@ -19,6 +20,10 @@ class Debugger {
     kRegY,
     kRegP,
   };
+
+  static inline const std::map<std::string, Register> RegisterFromString{
+      {"PC", kRegPC}, {"SP", kRegSP}, {"A", kRegA},
+      {"X", kRegX},   {"Y", kRegY},   {"P", kRegP}};
 
   Debugger() = delete;
   explicit Debugger(cpu::CPU* cpu);
@@ -80,7 +85,7 @@ class Debugger {
       "  Set the specified register's value \n"
       "\n";
 
-  const cpu::CPU* cpu_;
+  cpu::CPU* cpu_;
 
   /**
    * @brief Read line from stdin and parse it into a command.
@@ -88,8 +93,8 @@ class Debugger {
    * If the user gives an invalid command, an error message is printed to
    * stdout
    *
-   * @return true if the command was parsed and ran successfully
-   * @return false if there was a parsing error
+   * @return true iff the debug loop should continue (i.e. didn't read EOF or
+   * some other fatal error)
    */
   bool read_command();
 
@@ -170,7 +175,7 @@ class Debugger {
    * Note: registers SP, A, X, Y, and P are 8 bits in size, and the PC is 16
    * bits.
    */
-  void cmd_set(Register reg, uint16_t value);
+  void cmd_set(std::string reg_name, uint16_t value);
 };
 
 }  // namespace debugger

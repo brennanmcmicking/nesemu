@@ -7,6 +7,11 @@
 #include "cartridge.hpp"
 #include "ppu.hpp"
 
+// Forward declaration to deal with circular dependency
+namespace debugger {
+class Debugger;
+}
+
 namespace cpu {
 
 // syntax:
@@ -35,6 +40,9 @@ enum AddrMode {
 enum OpCode : uint8_t;
 
 class CPU {
+  // Debugger needs access to internal data to read/write memory and registers
+  friend class debugger::Debugger;
+
  public:
   using Cartridge = cartridge::Cartridge;
   using PPU = ppu::PPU;

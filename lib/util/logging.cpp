@@ -2,6 +2,7 @@
 #include <boost/log/expressions.hpp>
 #include <boost/log/trivial.hpp>
 #include <cstdlib>
+#include <format>
 
 #include "util.hpp"
 
@@ -45,4 +46,7 @@ void init_log_level() {
   log::core::get()->set_filter(log::trivial::severity >= level);
   return;
 }
+
+std::string fmt_hex(uint8_t val) { return std::format("${:02X}", val); }
+std::string fmt_hex(uint16_t val) { return std::format("${:04X}", val); }
 }  // namespace util
