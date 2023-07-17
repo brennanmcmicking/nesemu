@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <boost/log/trivial.hpp>
+#include <cstdint>
 #include <format>
 #include <ios>
 #include <iostream>
@@ -53,7 +54,7 @@ bool Debugger::read_command() {
   if (strcmp(cmd, "help") == 0) {
     cmd_help();
   } else if (strcmp(cmd, "step") == 0) {
-    _unimplemented();  // TODO:
+    cmd_step();
   } else if (strcmp(cmd, "continue") == 0) {
     _unimplemented();  // TODO:
   } else if (strcmp(cmd, "break") == 0) {
@@ -100,7 +101,22 @@ bool Debugger::read_command() {
 
 void Debugger::cmd_help() { std::cout << help_msg_; }
 void Debugger::cmd_step() {
-  // TODO:
+  // TODO: is this logic good for stepping?
+
+  uint8_t instruction = cpu_->read(cpu_->PC());
+  auto cycles = cpu_->cycle_count(instruction);
+
+  if (cpu_->cycles_todo_ != 0) {
+    // TODO: is this a problem?
+    BOOST_LOG_TRIVIAL(info) << "Step: previous command not finished cycling\n";
+    cpu_->cycles_todo_ = 0;
+  }
+
+  // Advancing the current instruction's number of cycles with no cycles_todo_
+  // is equivalent to executing the command and leaving no remaining cycles
+  cpu_->advance(cycles);
+
+  // cpu_->advance()
 }
 void Debugger::cmd_continue() {
   // TODO:

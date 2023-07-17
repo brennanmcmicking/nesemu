@@ -68,7 +68,7 @@ class CPU {
   uint8_t P() const;
 
   /**
-   * @brief Runs a blocking infinite loop where the CPU
+   * @brief Runs a blocking infinite loop
    *
    * Once this function is run, it will loop until the program terminates. It
    * handles running the clock at a consistent speed, invoking various
