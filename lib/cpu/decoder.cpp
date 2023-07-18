@@ -189,9 +189,12 @@ void CPU::execute(uint8_t opcode) {
       BRANCH(kBPL_REL, !get_negative());
       break;
     }
-    case 0x00: {
+    case kBRK: {
       // BRK, Implied, 1 bytes, 7 cycles
-      // TODO
+      push_stack16(PC_);
+      push_stack16(P_);
+      PC_ = read16(0xFFFE);
+      set_break(true);
       break;
     }
     case kBVC_REL: {
@@ -599,164 +602,210 @@ void CPU::execute(uint8_t opcode) {
       PC_ += byte_count(kNOP);
       break;
     }
-    case 0x09: {
+    case kORA_IMM: {
       // ORA, Immediate, 2 bytes, 2 cycles
-      // TODO
+      ORA(kImmediate);
+      PC_ += byte_count(kORA_IMM);
       break;
     }
-    case 0x05: {
+    case kORA_ZP: {
       // ORA, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      ORA(kZeroPage);
+      PC_ += byte_count(kORA_ZP);
       break;
     }
-    case 0x15: {
+    case kORA_ZPX: {
       // ORA, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      ORA(kZeroPageX);
+      PC_ += byte_count(kORA_ZPX);
       break;
     }
-    case 0x0D: {
+    case kORA_ABS: {
       // ORA, Absolute, 3 bytes, 4 cycles
-      // TODO
+      ORA(kAbsolute);
+      PC_ += byte_count(kORA_ABS);
       break;
     }
-    case 0x1D: {
+    case kORA_ABSX: {
       // ORA, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      ORA(kAbsoluteX);
+      PC_ += byte_count(kORA_ABSX);
       break;
     }
-    case 0x19: {
+    case kORA_ABSY: {
       // ORA, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      ORA(kAbsoluteY);
+      PC_ += byte_count(kORA_ABSY);
       break;
     }
-    case 0x01: {
+    case kORA_INDX: {
       // ORA, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      ORA(kIndexedIndirect);
+      PC_ += byte_count(kORA_INDX);
       break;
     }
-    case 0x11: {
+    case kORA_INDY: {
       // ORA, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      // TODO
+      ORA(kIndirectIndexed);
+      PC_ += byte_count(kORA_INDY);
       break;
     }
-    case 0x48: {
+    case kPHA: {
       // PHA, Implied, 1 bytes, 3 cycles
-      // TODO
+      push_stack(A_);
+      PC_ += byte_count(kPHA);
       break;
     }
-    case 0x08: {
+    case kPHP: {
       // PHP, Implied, 1 bytes, 3 cycles
-      // TODO
+      push_stack16(P_);
+      PC_ += byte_count(kPHP);
       break;
     }
-    case 0x68: {
+    case kPLA: {
       // PLA, Implied, 1 bytes, 4 cycles
-      // TODO
+      A_ = pop_stack();
+      set_zero(A_ == 0);
+      set_negative(A_ & 0b10000000 > 0);
+      PC_ += byte_count(kPLA);
       break;
     }
-    case 0x28: {
+    case kPLP: {
       // PLP, Implied, 1 bytes, 4 cycles
-      // TODO
+      P_ = pop_stack();
+      set_zero(P_ == 0);
+      set_negative(P_ & 0b10000000 > 0);
+      PC_ += byte_count(kPLP);
       break;
     }
-    case 0x2A: {
+    case kROL_A: {
       // ROL, Accumulator, 1 bytes, 2 cycles
-      // TODO
+      bool old_carry = get_carry();
+      set_carry(A_ & 0b10000000 > 0);
+      A_ = A_ << 1;
+      A_ |= old_carry ? 1 : 0;
+      PC_ += byte_count(kROL_A);
       break;
     }
-    case 0x26: {
+    case kROL_ZP: {
       // ROL, Zero Page, 2 bytes, 5 cycles
-      // TODO
+      ROL_m(kZeroPage);
+      PC_ += byte_count(kROL_ZP);
       break;
     }
-    case 0x36: {
+    case kROL_ZPX: {
       // ROL, Zero Page,X, 2 bytes, 6 cycles
-      // TODO
+      ROL_m(kZeroPageX);
+      PC_ += byte_count(kROL_ZPX);
       break;
     }
-    case 0x2E: {
+    case kROL_ABS: {
       // ROL, Absolute, 3 bytes, 6 cycles
-      // TODO
+      ROL_m(kAbsolute);
+      PC_ += byte_count(kROL_ABS);
       break;
     }
-    case 0x3E: {
+    case kROL_ABSX: {
       // ROL, Absolute,X, 3 bytes, 7 cycles
-      // TODO
+      ROL_m(kAbsoluteX);
+      PC_ += byte_count(kROL_ABSX);
       break;
     }
-    case 0x6A: {
+    case kROR_A: {
       // ROR, Accumulator, 1 bytes, 2 cycles
-      // TODO
+      bool old_carry = get_carry();
+      set_carry(A_ & 0b00000001 > 0);
+      A_ = A_ >> 1;
+      A_ |= old_carry ? 0b10000000 : 0;
+      PC_ += byte_count(kROR_A);
       break;
     }
-    case 0x66: {
+    case kROR_ZP: {
       // ROR, Zero Page, 2 bytes, 5 cycles
-      // TODO
+      ROR_m(kZeroPage);
+      PC_ += byte_count(kROR_ZP);
       break;
     }
-    case 0x76: {
+    case kROR_ZPX: {
       // ROR, Zero Page,X, 2 bytes, 6 cycles
-      // TODO
+      ROR_m(kZeroPageX);
+      PC_ += byte_count(kROR_ZPX);
       break;
     }
-    case 0x6E: {
+    case kROR_ABS: {
       // ROR, Absolute, 3 bytes, 6 cycles
-      // TODO
+      ROR_m(kAbsolute);
+      PC_ += byte_count(kROR_ABS);
       break;
     }
-    case 0x7E: {
+    case kROR_ABSX: {
       // ROR, Absolute,X, 3 bytes, 7 cycles
-      // TODO
+      ROR_m(kAbsoluteX);
+      PC_ += byte_count(kROR_ABSX);
       break;
     }
-    case 0x40: {
+    case kRTI: {
       // RTI, Implied, 1 bytes, 6 cycles
-      // TODO
+      P_ = pop_stack16();
+      PC_ = pop_stack16();
+      // when returning from interrupt we do not increment the PC
       break;
     }
-    case 0x60: {
+    case kRTS: {
       // RTS, Implied, 1 bytes, 6 cycles
-      // TODO
+      PC_ = pop_stack();
+      // JSR stores the byte before the next memory location before jumping
+      // so we need to add 1 to the value from the stack to get the true
+      // next instruction location
+      PC_ += byte_count(kRTS);
       break;
     }
-    case 0xE9: {
+    case kSBC_IMM: {
       // SBC, Immediate, 2 bytes, 2 cycles
-      // TODO
+      SBC(kImmediate);
+      PC_ += byte_count(kSBC_IMM);
       break;
     }
-    case 0xE5: {
+    case kSBC_ZP: {
       // SBC, Zero Page, 2 bytes, 3 cycles
-      // TODO
+      SBC(kZeroPage);
+      PC_ += byte_count(kSBC_ZP);
       break;
     }
-    case 0xF5: {
+    case kSBC_ZPX: {
       // SBC, Zero Page,X, 2 bytes, 4 cycles
-      // TODO
+      SBC(kZeroPageX);
+      PC_ += byte_count(kSBC_ZPX);
       break;
     }
-    case 0xED: {
+    case kSBC_ABS: {
       // SBC, Absolute, 3 bytes, 4 cycles
-      // TODO
+      SBC(kAbsolute);
+      PC_ += byte_count(kSBC_ABS);
       break;
     }
-    case 0xFD: {
+    case kSBC_ABSX: {
       // SBC, Absolute,X, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      SBC(kAbsoluteX);
+      PC_ += byte_count(kSBC_ABSX);
       break;
     }
-    case 0xF9: {
+    case kSBC_ABSY: {
       // SBC, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      // TODO
+      SBC(kAbsoluteY);
+      PC_ += byte_count(kSBC_ABSY);
       break;
     }
-    case 0xE1: {
+    case kSBC_INDX: {
       // SBC, (Indirect,X), 2 bytes, 6 cycles
-      // TODO
+      SBC(kIndexedIndirect);
+      PC_ += byte_count(kSBC_INDX);
       break;
     }
-    case 0xF1: {
+    case kSBC_INDY: {
       // SBC, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      // TODO
+      SBC(kIndirectIndexed);
+      PC_ += byte_count(kSBC_INDY);
       break;
     }
     case kSEC: {

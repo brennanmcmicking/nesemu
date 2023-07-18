@@ -209,6 +209,8 @@ class CPU {
   void set_interrupt_disable(bool value);
   bool get_decimal();
   void set_decimal(bool value);
+  bool get_break();
+  void set_break(bool value);
   bool get_overflow();
   void set_overflow(bool value);
   bool get_negative();
@@ -229,7 +231,10 @@ class CPU {
   void LDA(uint8_t other);
   void LSR_a();
   void LSR_m(AddrMode addressingMode);
-  void ORA();
+  void ORA(AddrMode addressingMode);
+  void ROL_m(AddrMode addressingMode);
+  void ROR_m(AddrMode addressingMode);
+  void SBC(AddrMode addressingMode);
   void STA(AddrMode addressingMode);
   void STX(AddrMode addressingMode);
   void STY(AddrMode addressingMode);

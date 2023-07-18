@@ -588,6 +588,14 @@ void CPU::set_decimal(bool value) {
     P_ &= 0b11110111;
   }
 }
+bool CPU::get_break() { return P_ & 0b00010000; }
+void CPU::set_break(bool value) {
+  if (value) {
+    P_ |= 0b00010000;
+  } else {
+    P_ &= 0b11101111;
+  }
+}
 bool CPU::get_overflow() { return (P_ & 0b01000000) > 0; }
 void CPU::set_overflow(bool value) {
   if (value) {
@@ -712,7 +720,41 @@ void CPU::LSR_m(AddrMode addressingMode) {
   write(addr, val);
 }
 
-void CPU::ORA() {}
+void CPU::ORA(AddrMode addressingMode) {
+  A_ |= value_fetch(addressingMode);
+  set_zero(A_ == 0);
+  set_negative(A_ & 0b10000000 > 0);
+}
+
+void CPU::ROL_m(AddrMode addressingMode) {
+  bool old_carry = get_carry();
+  uint16_t addr = addr_fetch(addressingMode);
+  uint8_t val = read(addr);
+  set_carry(val & 0b10000000 > 0);
+  val = val << 1;
+  val |= old_carry ? 1 : 0;
+  write(addr, val);
+}
+
+void CPU::ROR_m(AddrMode addressingMode) {
+  bool old_carry = get_carry();
+  uint16_t addr = addr_fetch(addressingMode);
+  uint8_t val = read(addr);
+  set_carry(val & 0b00000001 > 0);
+  val = val >> 1;
+  val |= old_carry ? 0b10000000 : 0;
+  write(addr, val);
+}
+
+void CPU::SBC(AddrMode addressingMode) {
+  uint8_t val = value_fetch(addressingMode);
+  uint8_t c = get_carry() ? 0 : 1;
+  bool overflowed = (val + c) > A_;
+  A_ -= (val + c);
+  set_carry(overflowed);
+  set_zero(A_ == 0);
+  set_negative(A_ & 0b10000000 > 0);
+}
 
 void CPU::STA(AddrMode addressingMode) {
   write(addr_fetch(addressingMode), A_);
