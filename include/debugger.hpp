@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <map>
+#include <set>
 
 #include "cpu.hpp"
 
@@ -80,12 +81,15 @@ class Debugger {
       "  - X (index register X, 8-bit) \n"
       "  - Y (index register Y, 8-bit) \n"
       "  - P (processor status flags, 8-bit) \n"
-      // TODO: add description of flag bits to help message here;
+      // TODO: add description of flag bits to help message here
       "set <register> <value> \n"
       "  Set the specified register's value \n"
       "\n";
 
   cpu::CPU* cpu_;
+
+  // Set of breakpoints. Not using unordered set for ease of iterating
+  std::set<address_t> breakpoints_;
 
   /**
    * @brief Read line from stdin and parse it into a command.
@@ -121,7 +125,7 @@ class Debugger {
    *
    * Has no effect if there was already a breakpoint at the specified address.
    *
-   * @param addr //TODO: where is program memory
+   * @param addr
    */
   void cmd_break(address_t addr);
 
@@ -153,11 +157,10 @@ class Debugger {
    * @param addr
    * @param bytes
    */
-  void cmd_read(address_t addr, uint bytes = 1);
-
+  void cmd_read(address_t addr, uint16_t bytes = 1);
   /**
-   * @brief Overwrite the memory at the specified address with the given byte of
-   * data.
+   * @brief Overwrite the memory at the specified address with the given byte
+   * of data.
    *
    * @param addr
    * @param data

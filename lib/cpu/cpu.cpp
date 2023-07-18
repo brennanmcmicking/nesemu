@@ -69,7 +69,8 @@ void CPU::begin_cpu_loop() {
     const auto frame_start = std::chrono::steady_clock::now();
     const auto frame_deadline = frame_start + kTimePerFrameMillis;
 
-    // Do all logic: CPU, PPU, etc
+    // Do all logic: CPU, PPU, etc.
+    advance_frame();
 
     std::this_thread::sleep_until(frame_deadline);
     BOOST_LOG_TRIVIAL(info) << "tick\n";

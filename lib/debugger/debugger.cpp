@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <boost/log/trivial.hpp>
+#include <cstdint>
 #include <format>
 #include <ios>
 #include <iostream>
@@ -12,7 +13,7 @@
 namespace debugger {
 
 // Must construct from a ptr to an existing CPU
-Debugger::Debugger(cpu::CPU* cpu) : cpu_(cpu) {}
+Debugger::Debugger(cpu::CPU* cpu) : cpu_(cpu), breakpoints_{} {}
 
 void Debugger::debug() {
   // Loop while debugging. Listen for a command and execute it.
@@ -45,6 +46,7 @@ bool Debugger::read_command() {
   }
 
   std::stringstream input_stream(input);
+  int32_t tmp_num;  // for parsing the value of user-given tokens
 
   std::string cmd_name;
   input_stream >> cmd_name;
@@ -52,24 +54,89 @@ bool Debugger::read_command() {
 
   if (strcmp(cmd, "help") == 0) {
     cmd_help();
+
   } else if (strcmp(cmd, "step") == 0) {
     _unimplemented();  // TODO:
+
   } else if (strcmp(cmd, "continue") == 0) {
     _unimplemented();  // TODO:
+
   } else if (strcmp(cmd, "break") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Please specify an address to add a new breakpoint\n";
+      return true;
+    }
+    addr = tmp_num;
+
+    cmd_break(addr);
+
   } else if (strcmp(cmd, "delete") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Please specify the address where a breakpoint should be "
+                   "deleted\n";
+      return true;
+    }
+    addr = tmp_num;
+
+    cmd_delete(addr);
+
   } else if (strcmp(cmd, "list") == 0) {
-    _unimplemented();  // TODO:
+    cmd_list();
+
   } else if (strcmp(cmd, "clear") == 0) {
-    _unimplemented();  // TODO:
+    cmd_clear();
+
   } else if (strcmp(cmd, "read") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    uint16_t bytes;
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Bad address value\n";
+      return true;
+    }
+    addr = tmp_num;
+
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num > -1) {
+      bytes = tmp_num;
+    } else {
+      // it's ok if this wasn't specified, it defaults to 1.
+      // TODO: doesn't check if parse error or not provided
+      bytes = 1;
+    }
+
+    cmd_read(addr, bytes);
+
   } else if (strcmp(cmd, "write") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    uint8_t data;
+
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Address parsing failed\n";
+      return true;
+    }
+    addr = tmp_num;
+
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Data parsing failed\n";
+      return true;
+    }
+    data = tmp_num;
+    if (data != tmp_num) {
+      std::cout << "Note: data truncated to " << util::fmt_hex(data) << "\n";
+    }
+
+    cmd_write(addr, data);
+
   } else if (strcmp(cmd, "registers") == 0) {
     cmd_registers();
+
   } else if (strcmp(cmd, "set") == 0) {
     std::string reg_name;
     uint16_t value;
@@ -80,18 +147,20 @@ bool Debugger::read_command() {
       return true;
     }
 
-    // Parse value
-    if (!(input_stream >> value)) {
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
       std::cout << "No value specified\n";
       return true;
     }
+    value = tmp_num;
 
     cmd_set(reg_name, value);
+
   } else if (strcmp(cmd, "") == 0) {
     // empty check for newline to allow spamming w/o error messages
   } else {
     // unrecognized command
-    std::cout << std::format("Command '{}' not recognized.\n", cmd_name);
+    std::cout << "Command '" << cmd_name << "' not recognized\n";
     return true;
   }
 
@@ -100,38 +169,58 @@ bool Debugger::read_command() {
 
 void Debugger::cmd_help() { std::cout << help_msg_; }
 void Debugger::cmd_step() {
-  // TODO:
+  // TODO: display data in current PC so this is more useful?
+  // address_t instr_addr = cpu_->
+  cpu_->advance_instruction();
+
+  std::cout << "Step: executed instruction at address"
+            << util::fmt_hex(cpu_->addr_fetch(cpu::kAbsolute)) << "\n";
 }
 void Debugger::cmd_continue() {
   // TODO:
 }
 void Debugger::cmd_break(address_t addr) {
-  // TODO:
+  auto res = breakpoints_.insert(addr);
+  if (res.second) {
+    std::cout << "Breakpoint added at address " << util::fmt_hex(addr) << "\n";
+  } else {
+    std::cout << "Breakpoint already created for address "
+              << util::fmt_hex(addr) << "\n";
+  }
 }
+
 void Debugger::cmd_delete(address_t addr) {
-  // TODO:
+  if (breakpoints_.erase(addr)) {
+    std::cout << "Breakpoint removed at address " << util::fmt_hex(addr)
+              << "\n";
+  } else {
+    std::cout << "No breakpoint exists at address " << util::fmt_hex(addr)
+              << "\n";
+  }
 }
 void Debugger::cmd_list() {
-  // TODO:
+  std::cout << "Breakpoints: \n";
+  for (const address_t& addr : breakpoints_) {
+    std::cout << util::fmt_hex(addr) << "\n";
+  }
 }
 void Debugger::cmd_clear() {
-  // TODO:
+  breakpoints_.clear();
+  std::cout << "Breakpoints cleared\n";
 }
-void Debugger::cmd_read(address_t addr, uint bytes) {
-  // TODO:
+void Debugger::cmd_read(address_t addr, uint16_t bytes) {
+  for (uint16_t offset = 0; offset < bytes; ++offset) {
+    if (offset > 0 && offset % 8 == 0) std::cout << "\n";
+    std::cout << util::fmt_hex(cpu_->read(addr + offset)) << "\t";
+  }
+  std::cout << "\n";
 }
 void Debugger::cmd_write(address_t addr, uint8_t data) {
-  // TODO:
+  std::cout << "Wrote " << util::fmt_hex(data) << " to " << util::fmt_hex(addr)
+            << "\n";
+  cpu_->write(addr, data);
 }
 void Debugger::cmd_registers() {
-  // "  - PC (program counter, 16-bit) \n"
-  // "  - SP (stack pointer, 8-bit) \n"
-  // "  - A (accumulator, 8-bit) \n"
-  // "  - X (index register X, 8-bit) \n"
-  // "  - Y (index register Y, 8-bit) \n"
-  // "  - P (processor status flags, 8-bit) \n"
-  // TODO:
-
   std::cout << "PC (16-bit): " << util::fmt_hex(cpu_->PC()) << "\n"  //
             << "SP (8-bit):  " << util::fmt_hex(cpu_->SP()) << "\n"  //
             << "A  (8-bit):  " << util::fmt_hex(cpu_->A()) << "\n"   //

@@ -507,10 +507,32 @@ std::size_t CPU::cycle_count(uint8_t opcode) {
   return 0;  // by default, don't wait, just skip over invalid opcodes
 }
 
-void CPU::advance(std::size_t cycles) {
+void CPU::advance_cycles(std::size_t cycles) {
   for (std::size_t i = 0; i < cycles; i++) {
     cycle();
   }
+}
+
+void CPU::advance_instruction() {
+  uint8_t instruction = read(PC_);
+  auto cycles = cycle_count(instruction);
+
+  if (cycles_todo_ != 0) {
+    // TODO: is this a problem?
+    BOOST_LOG_TRIVIAL(info) << "Step: previous command not finished cycling\n";
+    // advance them manually (doesn't execute) //TODO: test
+    advance_cycles(cycles_todo_);
+  }
+
+  // Advancing the current instruction's number of cycles with no cycles_todo_
+  // is equivalent to executing the command and leaving no remaining cycles
+  advance_cycles(cycles);
+}
+
+void CPU::advance_frame() {
+  // TODO: PPU stuff for the frame
+  // TODO: what does 0.5 cycles mean and how to deal with that?
+  advance_cycles(static_cast<std::size_t>(kCyclesPerFrame));
 }
 
 void CPU::cycle() {
