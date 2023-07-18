@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    container: "ghcr.io/mnthomson/sde:latest"
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Build all
+        run: |
+          set -o allexport && source .devcontainer/devcontainer.env && set +o allexport
+          mkdir build && cd build
+          cmake ..
+          make
+
+      - name: Upload executables
+        uses: actions/upload-artifact@v3
+        with:
+          name: build-${{ github.sha }}
+          path: |
+            build/nesemu
+            build/nesemu-cartridge
+            build/nesemu-cpu
+            build/test-cpu
+            build/test-ppu
+            build/test-cartridge
+
+  test:
+    name: Test
+    needs: [build]
+    runs-on: ubuntu-latest
+    container: "ghcr.io/mnthomson/sde:latest"
+    strategy:
+      fail-fast: false
+      matrix:
+        test: ["cpu", "ppu", "cartridge"]
+    steps:
+      - name: Download executables
+        uses: actions/download-artifact@v3
+        with:
+          name: build-${{ github.sha }}
+
+      - name: Run test-${{ matrix.test }}
+        run: |
+          chmod +x test-${{ matrix.test }}
+          ./test-${{ matrix.test }}
