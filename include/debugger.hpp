@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <map>
+#include <set>
 
 #include "cpu.hpp"
 
@@ -87,6 +88,9 @@ class Debugger {
 
   cpu::CPU* cpu_;
 
+  // Set of breakpoints. Not using unordered set for ease of iterating
+  std::set<address_t> breakpoints_;
+
   /**
    * @brief Read line from stdin and parse it into a command.
    *
@@ -121,7 +125,7 @@ class Debugger {
    *
    * Has no effect if there was already a breakpoint at the specified address.
    *
-   * @param addr //TODO: where is program memory
+   * @param addr
    */
   void cmd_break(address_t addr);
 

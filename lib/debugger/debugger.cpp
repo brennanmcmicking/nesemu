@@ -13,7 +13,7 @@
 namespace debugger {
 
 // Must construct from a ptr to an existing CPU
-Debugger::Debugger(cpu::CPU* cpu) : cpu_(cpu) {}
+Debugger::Debugger(cpu::CPU* cpu) : cpu_(cpu), breakpoints_{} {}
 
 void Debugger::debug() {
   // Loop while debugging. Listen for a command and execute it.
@@ -53,24 +53,45 @@ bool Debugger::read_command() {
 
   if (strcmp(cmd, "help") == 0) {
     cmd_help();
+
   } else if (strcmp(cmd, "step") == 0) {
     cmd_step();
+
   } else if (strcmp(cmd, "continue") == 0) {
     _unimplemented();  // TODO:
+
   } else if (strcmp(cmd, "break") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    if (!(input_stream >> addr)) {
+      std::cout << "Please specify an address to add a new breakpoint\n";
+      return true;
+    }
+    cmd_break(addr);
+
   } else if (strcmp(cmd, "delete") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    if (!(input_stream >> addr)) {
+      std::cout << "Please specify the address where a breakpoint should be "
+                   "deleted\n";
+      return true;
+    }
+    cmd_delete(addr);
+
   } else if (strcmp(cmd, "list") == 0) {
-    _unimplemented();  // TODO:
+    cmd_list();
+
   } else if (strcmp(cmd, "clear") == 0) {
-    _unimplemented();  // TODO:
+    cmd_clear();
+
   } else if (strcmp(cmd, "read") == 0) {
     _unimplemented();  // TODO:
+
   } else if (strcmp(cmd, "write") == 0) {
     _unimplemented();  // TODO:
+
   } else if (strcmp(cmd, "registers") == 0) {
     cmd_registers();
+
   } else if (strcmp(cmd, "set") == 0) {
     std::string reg_name;
     uint16_t value;
@@ -88,11 +109,12 @@ bool Debugger::read_command() {
     }
 
     cmd_set(reg_name, value);
+
   } else if (strcmp(cmd, "") == 0) {
     // empty check for newline to allow spamming w/o error messages
   } else {
     // unrecognized command
-    std::cout << std::format("Command '{}' not recognized.\n", cmd_name);
+    std::cout << "Command '" << cmd_name << "' not recognized\n";
     return true;
   }
 
@@ -101,37 +123,44 @@ bool Debugger::read_command() {
 
 void Debugger::cmd_help() { std::cout << help_msg_; }
 void Debugger::cmd_step() {
-  // TODO: is this logic good for stepping?
+  // TODO: display data in current PC so this is more useful?
+  // address_t instr_addr = cpu_->
+  cpu_->advance_instruction();
 
-  uint8_t instruction = cpu_->read(cpu_->PC());
-  auto cycles = cpu_->cycle_count(instruction);
-
-  if (cpu_->cycles_todo_ != 0) {
-    // TODO: is this a problem?
-    BOOST_LOG_TRIVIAL(info) << "Step: previous command not finished cycling\n";
-    cpu_->cycles_todo_ = 0;
-  }
-
-  // Advancing the current instruction's number of cycles with no cycles_todo_
-  // is equivalent to executing the command and leaving no remaining cycles
-  cpu_->advance(cycles);
-
-  // cpu_->advance()
+  std::cout << "Step: executed instruction at address"
+            << util::fmt_hex(cpu_->addr_fetch(cpu::kAbsolute)) << "\n";
 }
 void Debugger::cmd_continue() {
   // TODO:
 }
 void Debugger::cmd_break(address_t addr) {
-  // TODO:
+  auto res = breakpoints_.insert(addr);
+  if (res.second) {
+    std::cout << "Breakpoint added at address " << util::fmt_hex(addr) << "\n";
+  } else {
+    std::cout << "Breakpoint already created for address "
+              << util::fmt_hex(addr) << "\n";
+  }
 }
+
 void Debugger::cmd_delete(address_t addr) {
-  // TODO:
+  if (breakpoints_.erase(addr)) {
+    std::cout << "Breakpoint removed at address " << util::fmt_hex(addr)
+              << "\n";
+  } else {
+    std::cout << "No breakpoint exists at address " << util::fmt_hex(addr)
+              << "\n";
+  }
 }
 void Debugger::cmd_list() {
-  // TODO:
+  std::cout << "Breakpoints: \n";
+  for (const address_t& addr : breakpoints_) {
+    std::cout << util::fmt_hex(addr) << "\n";
+  }
 }
 void Debugger::cmd_clear() {
-  // TODO:
+  breakpoints_.clear();
+  std::cout << "Breakpoints cleared\n";
 }
 void Debugger::cmd_read(address_t addr, uint bytes) {
   // TODO:
@@ -140,14 +169,6 @@ void Debugger::cmd_write(address_t addr, uint8_t data) {
   // TODO:
 }
 void Debugger::cmd_registers() {
-  // "  - PC (program counter, 16-bit) \n"
-  // "  - SP (stack pointer, 8-bit) \n"
-  // "  - A (accumulator, 8-bit) \n"
-  // "  - X (index register X, 8-bit) \n"
-  // "  - Y (index register Y, 8-bit) \n"
-  // "  - P (processor status flags, 8-bit) \n"
-  // TODO:
-
   std::cout << "PC (16-bit): " << util::fmt_hex(cpu_->PC()) << "\n"  //
             << "SP (8-bit):  " << util::fmt_hex(cpu_->SP()) << "\n"  //
             << "A  (8-bit):  " << util::fmt_hex(cpu_->A()) << "\n"   //

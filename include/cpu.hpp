@@ -50,7 +50,8 @@ class CPU {
   const double kFramerate = 60.0988;              // Hz
   const double kTimePerFrame = 1.0 / kFramerate;  // seconds
   const std::chrono::duration<double, std::milli> kTimePerFrameMillis{
-      kTimePerFrame * 1000};  // Milliseconds
+      kTimePerFrame * 1000};               // Milliseconds
+  const double kCyclesPerFrame = 29780.5;  // taken from wiki
 
   explicit CPU(PPU& ppu, Cartridge& cartridge);
 
@@ -86,7 +87,21 @@ class CPU {
    * the remaining cycles of that instruction.
    */
   void cycle();
-  void advance(std::size_t cycles);
+
+  /**
+   * @brief Executes multiple cycles sequentially.
+   */
+  void advance_cycles(std::size_t cycles);
+
+  /**
+   * @brief Executes the next instruction.
+   */
+  void advance_instruction();
+
+  /**
+   * @brief Renders a frame, then advances a frame's worth of CPU cycles.
+   */
+  void advance_frame();
 
   /**
    * @brief Reads the value in the absolute memory address
@@ -126,8 +141,12 @@ class CPU {
   PPU& ppu_;
   Cartridge& cart_;
 
+  // True iff the program was started in debug mode. If true, the program will
+  // stop execution on breakpoints //TODO: make that happen
+  bool debug_mode_;
+
   /**
-   * @brief TODO: write docstring
+   * @brief Execute the instruction with given opcode
    *
    * @param opcode
    */
