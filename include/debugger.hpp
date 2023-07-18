@@ -81,7 +81,7 @@ class Debugger {
       "  - X (index register X, 8-bit) \n"
       "  - Y (index register Y, 8-bit) \n"
       "  - P (processor status flags, 8-bit) \n"
-      // TODO: add description of flag bits to help message here;
+      // TODO: add description of flag bits to help message here
       "set <register> <value> \n"
       "  Set the specified register's value \n"
       "\n";
@@ -157,11 +157,10 @@ class Debugger {
    * @param addr
    * @param bytes
    */
-  void cmd_read(address_t addr, uint bytes = 1);
-
+  void cmd_read(address_t addr, uint16_t bytes = 1);
   /**
-   * @brief Overwrite the memory at the specified address with the given byte of
-   * data.
+   * @brief Overwrite the memory at the specified address with the given byte
+   * of data.
    *
    * @param addr
    * @param data

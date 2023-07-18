@@ -46,6 +46,7 @@ bool Debugger::read_command() {
   }
 
   std::stringstream input_stream(input);
+  int32_t tmp_num;  // for parsing the value of user-given tokens
 
   std::string cmd_name;
   input_stream >> cmd_name;
@@ -55,26 +56,32 @@ bool Debugger::read_command() {
     cmd_help();
 
   } else if (strcmp(cmd, "step") == 0) {
-    cmd_step();
+    _unimplemented();  // TODO:
 
   } else if (strcmp(cmd, "continue") == 0) {
     _unimplemented();  // TODO:
 
   } else if (strcmp(cmd, "break") == 0) {
     address_t addr;
-    if (!(input_stream >> addr)) {
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
       std::cout << "Please specify an address to add a new breakpoint\n";
       return true;
     }
+    addr = tmp_num;
+
     cmd_break(addr);
 
   } else if (strcmp(cmd, "delete") == 0) {
     address_t addr;
-    if (!(input_stream >> addr)) {
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
       std::cout << "Please specify the address where a breakpoint should be "
                    "deleted\n";
       return true;
     }
+    addr = tmp_num;
+
     cmd_delete(addr);
 
   } else if (strcmp(cmd, "list") == 0) {
@@ -84,10 +91,48 @@ bool Debugger::read_command() {
     cmd_clear();
 
   } else if (strcmp(cmd, "read") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    uint16_t bytes;
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Bad address value\n";
+      return true;
+    }
+    addr = tmp_num;
+
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num > -1) {
+      bytes = tmp_num;
+    } else {
+      // it's ok if this wasn't specified, it defaults to 1.
+      // TODO: doesn't check if parse error or not provided
+      bytes = 1;
+    }
+
+    cmd_read(addr, bytes);
 
   } else if (strcmp(cmd, "write") == 0) {
-    _unimplemented();  // TODO:
+    address_t addr;
+    uint8_t data;
+
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Address parsing failed\n";
+      return true;
+    }
+    addr = tmp_num;
+
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
+      std::cout << "Data parsing failed\n";
+      return true;
+    }
+    data = tmp_num;
+    if (data != tmp_num) {
+      std::cout << "Note: data truncated to " << util::fmt_hex(data) << "\n";
+    }
+
+    cmd_write(addr, data);
 
   } else if (strcmp(cmd, "registers") == 0) {
     cmd_registers();
@@ -102,11 +147,12 @@ bool Debugger::read_command() {
       return true;
     }
 
-    // Parse value
-    if (!(input_stream >> value)) {
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num == -1) {
       std::cout << "No value specified\n";
       return true;
     }
+    value = tmp_num;
 
     cmd_set(reg_name, value);
 
@@ -162,11 +208,17 @@ void Debugger::cmd_clear() {
   breakpoints_.clear();
   std::cout << "Breakpoints cleared\n";
 }
-void Debugger::cmd_read(address_t addr, uint bytes) {
-  // TODO:
+void Debugger::cmd_read(address_t addr, uint16_t bytes) {
+  for (uint16_t offset = 0; offset < bytes; ++offset) {
+    if (offset > 0 && offset % 8 == 0) std::cout << "\n";
+    std::cout << util::fmt_hex(cpu_->read(addr + offset)) << "\t";
+  }
+  std::cout << "\n";
 }
 void Debugger::cmd_write(address_t addr, uint8_t data) {
-  // TODO:
+  std::cout << "Wrote " << util::fmt_hex(data) << " to " << util::fmt_hex(addr)
+            << "\n";
+  cpu_->write(addr, data);
 }
 void Debugger::cmd_registers() {
   std::cout << "PC (16-bit): " << util::fmt_hex(cpu_->PC()) << "\n"  //
