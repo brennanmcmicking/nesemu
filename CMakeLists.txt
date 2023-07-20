@@ -9,6 +9,7 @@ include(Sanitizers.cmake)
 find_package(Catch2 2 REQUIRED)
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 find_package(Boost COMPONENTS log program_options REQUIRED)
+find_package(glfw3 REQUIRED)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIR})
@@ -36,7 +37,7 @@ target_link_libraries(util PUBLIC Boost::log)
 
 # deliverables
 add_executable(nesemu app/nesemu.cpp)
-target_link_libraries(nesemu PUBLIC cpu ppu cartridge debugger util Boost::log Boost::program_options)
+target_link_libraries(nesemu PUBLIC cpu ppu cartridge debugger util Boost::log Boost::program_options glfw)
 
 add_executable(nesemu-cpu app/nesemu-cpu.cpp)
 target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge util Boost::log)
