@@ -531,6 +531,8 @@ void CPU::advance_instruction() {
 
 void CPU::advance_frame() {
   // TODO: PPU stuff for the frame
+  ppu_.render_frame();
+  ppu_.draw();
   // TODO: what does 0.5 cycles mean and how to deal with that?
   advance_cycles(static_cast<std::size_t>(kCyclesPerFrame));
 }

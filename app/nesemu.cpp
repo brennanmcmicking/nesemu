@@ -92,9 +92,7 @@ int main(int argc, char* argv[]) {
     // Debugger runs infinite loop here
     debugger.debug();
   } else {
-    // TODO: for now, running one cycle to see some output
-    cpu.cycle();
-    // cpu.begin_cpu_loop();
+    cpu.begin_cpu_loop();
   }
   return 0;
 }

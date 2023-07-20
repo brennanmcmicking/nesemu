@@ -3,13 +3,14 @@ project(nesemu LANGUAGES CXX)
 set(CMAKE_CXX_STANDARD 20)
 
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS} -Wall -Wextra -Wpedantic -g3")
-
+set(OpenGL_GL_PREFERENCE "LEGACY")
 include(Sanitizers.cmake)
 
 find_package(Catch2 2 REQUIRED)
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
 find_package(Boost COMPONENTS log program_options REQUIRED)
 find_package(glfw3 REQUIRED)
+find_package(OpenGL REQUIRED)
 
 include_directories(include)
 include_directories(${Boost_INCLUDE_DIR})
@@ -24,7 +25,7 @@ add_library(cpu STATIC ${CPU_SOURCES})
 target_link_libraries(cpu PUBLIC Boost::log)
 
 add_library(ppu STATIC ${PPU_SOURCES})
-target_link_libraries(ppu PUBLIC Boost::log glfw)
+target_link_libraries(ppu PUBLIC Boost::log glfw OpenGL::GL)
 
 add_library(cartridge STATIC ${CARTRIDGE_SOURCES})
 target_link_libraries(cartridge PUBLIC Boost::log)
