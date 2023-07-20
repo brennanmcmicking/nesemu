@@ -37,11 +37,10 @@ class PPU {
   void render_frame(frame_t& out);
 
  private:
-  // Handle to the window. Nullptr before the window is created
-  using window_ptr_t = std::unique_ptr<GLFWwindow, void (*)(GLFWwindow*)>;
-  window_ptr_t window_;
-
-  // GLFWwindow* window_;
+  // Handle to the window. Nullptr before the window is created. Needs to be a
+  // raw pointer because GLFWwindow is an opaque type and it's overly
+  // complicated to make it into a smart pointer
+  GLFWwindow* window_;
 };
 
 }  // namespace ppu

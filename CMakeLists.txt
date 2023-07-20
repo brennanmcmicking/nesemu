@@ -24,7 +24,7 @@ add_library(cpu STATIC ${CPU_SOURCES})
 target_link_libraries(cpu PUBLIC Boost::log)
 
 add_library(ppu STATIC ${PPU_SOURCES})
-target_link_libraries(ppu PUBLIC Boost::log)
+target_link_libraries(ppu PUBLIC Boost::log glfw)
 
 add_library(cartridge STATIC ${CARTRIDGE_SOURCES})
 target_link_libraries(cartridge PUBLIC Boost::log)
@@ -37,7 +37,7 @@ target_link_libraries(util PUBLIC Boost::log)
 
 # deliverables
 add_executable(nesemu app/nesemu.cpp)
-target_link_libraries(nesemu PUBLIC cpu ppu cartridge debugger util Boost::log Boost::program_options glfw)
+target_link_libraries(nesemu PUBLIC cpu ppu cartridge debugger util Boost::log Boost::program_options)
 
 add_executable(nesemu-cpu app/nesemu-cpu.cpp)
 target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge util Boost::log)
