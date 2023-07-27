@@ -666,7 +666,7 @@ void CPU::execute(uint8_t opcode) {
       // PLA, Implied, 1 bytes, 4 cycles
       A_ = pop_stack();
       set_zero(A_ == 0);
-      set_negative(A_ & 0b10000000 > 0);
+      set_negative((A_ & 0b10000000) > 0);
       PC_ += byte_count(kPLA);
       break;
     }
@@ -674,14 +674,14 @@ void CPU::execute(uint8_t opcode) {
       // PLP, Implied, 1 bytes, 4 cycles
       P_ = pop_stack();
       set_zero(P_ == 0);
-      set_negative(P_ & 0b10000000 > 0);
+      set_negative((P_ & 0b10000000) > 0);
       PC_ += byte_count(kPLP);
       break;
     }
     case kROL_A: {
       // ROL, Accumulator, 1 bytes, 2 cycles
       bool old_carry = get_carry();
-      set_carry(A_ & 0b10000000 > 0);
+      set_carry((A_ & 0b10000000) > 0);
       A_ = A_ << 1;
       A_ |= old_carry ? 1 : 0;
       PC_ += byte_count(kROL_A);
@@ -714,7 +714,7 @@ void CPU::execute(uint8_t opcode) {
     case kROR_A: {
       // ROR, Accumulator, 1 bytes, 2 cycles
       bool old_carry = get_carry();
-      set_carry(A_ & 0b00000001 > 0);
+      set_carry((A_ & 0b00000001) > 0);
       A_ = A_ >> 1;
       A_ |= old_carry ? 0b10000000 : 0;
       PC_ += byte_count(kROR_A);

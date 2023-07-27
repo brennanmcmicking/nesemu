@@ -7,6 +7,8 @@
 
 namespace cartridge {
 
+using cartridge_error = std::runtime_error;
+
 class Mapper {
  public:
   virtual ~Mapper() = default;
@@ -23,10 +25,11 @@ class Mapper {
 class Cartridge {
  public:
   Cartridge() = delete;
-  // explicit Cartridge(std::istream &in);
+  explicit Cartridge(std::istream &in);
   explicit Cartridge(
       std::unique_ptr<Mapper, std::default_delete<Mapper>> mapper);
-  ~Cartridge() = default;
+
+  ~Cartridge();
 
   Cartridge(Cartridge &) = delete;
   Cartridge(Cartridge &&) = delete;
@@ -41,7 +44,14 @@ class Cartridge {
 
  private:
   std::unique_ptr<Mapper> mapper_;
+
+  uint8_t *prg_rom_;
+  uint8_t *chr_rom_;
+  std::size_t prg_rom_size_;
+  std::size_t chr_rom_size_;
 };
+
+Cartridge make_cartridge(std::string input_file);
 
 }  // namespace cartridge
 #endif  // CARTRIDGE_HPP
