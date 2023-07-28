@@ -4,6 +4,7 @@
 #include <format>
 #include <fstream>
 #include <memory>
+#include <vector>
 
 namespace cartridge {
 
@@ -17,12 +18,8 @@ class Mapper0 : public Mapper {
  public:
   Mapper0() = delete;
 
-  Mapper0(uint8_t *prg_rom, std::size_t prg_rom_size, uint8_t *chr_rom,
-          std::size_t chr_rom_size)
-      : prg_rom_size_(prg_rom_size), chr_rom_size_(chr_rom_size) {
-    this->prg_rom_ = prg_rom;
-    this->chr_rom_ = chr_rom;
-  }
+  Mapper0(std::vector<uint8_t> &&prg_rom, std::vector<uint8_t> &&chr_rom)
+      : prg_rom_(prg_rom), chr_rom_(chr_rom) {}
 
   uint8_t prg_read(uint16_t addr) override {
     switch (addr) {
@@ -54,24 +51,25 @@ class Mapper0 : public Mapper {
   };
 
  private:
-  uint8_t *prg_rom_;
-  uint8_t *chr_rom_;
-  std::size_t prg_rom_size_;
-  std::size_t chr_rom_size_;
+  std::vector<uint8_t> prg_rom_;
+  std::vector<uint8_t> chr_rom_;
 };
 
 Cartridge::Cartridge(std::istream &in) {
   uint8_t header[16];
-  in.read(reinterpret_cast<char *>(header), 16);
+  if (!in.read(reinterpret_cast<char *>(header), 16)) {
+    throw std::runtime_error("failed to read header from iNES ROM");
+  }
 
   // "NES\n"
-  assert_cart(header[0] == 0x4E);
-  assert_cart(header[1] == 0x45);
-  assert_cart(header[2] == 0x53);
-  assert_cart(header[3] == 0x1A);
+  if (!(header[0] == 0x4E && header[1] == 0x45 && header[2] == 0x53 &&
+        header[3] == 0x1A)) {
+    throw std::runtime_error(
+        "cartridge input doesn't appear to be an iNES ROM");
+  }
 
-  prg_rom_size_ = 16384 * header[4];
-  chr_rom_size_ = 8192 * header[5];
+  std::size_t prg_rom_size_ = 16 * (1 << 10) * header[4];
+  std::size_t chr_rom_size_ = 8 * (1 << 10) * header[5];
 
   bool has_trainer = (header[6] & 0b00000100) > 0;
   if (has_trainer) {
@@ -80,17 +78,21 @@ Cartridge::Cartridge(std::istream &in) {
     // discard for now
   }
 
-  prg_rom_ = static_cast<uint8_t *>(::operator new(prg_rom_size_));
-  chr_rom_ = static_cast<uint8_t *>(::operator new(chr_rom_size_));
+  std::vector<uint8_t> prg_rom(prg_rom_size_);
+  std::vector<uint8_t> chr_rom(chr_rom_size_);
 
-  in.read(reinterpret_cast<char *>(prg_rom_), prg_rom_size_);
-  in.read(reinterpret_cast<char *>(chr_rom_), chr_rom_size_);
+  if (!in.read(reinterpret_cast<char *>(prg_rom.data()), prg_rom.size())) {
+    throw std::runtime_error("failed to read PRG from iNES ROM");
+  }
+  if (!in.read(reinterpret_cast<char *>(chr_rom.data()), chr_rom.size())) {
+    throw std::runtime_error("failed to read CHR from iNES ROM");
+  }
 
   uint8_t mapper_number = (header[6] >> 4) || (header[7] && 0xFF00);
   switch (mapper_number) {
     case 0:
-      mapper_ = std::make_unique<Mapper0>(prg_rom_, prg_rom_size_, chr_rom_,
-                                          chr_rom_size_);
+      mapper_ =
+          std::make_unique<Mapper0>(std::move(prg_rom), std::move(chr_rom));
       break;
     default:
       throw new cartridge_error(
@@ -98,16 +100,7 @@ Cartridge::Cartridge(std::istream &in) {
   }
 }
 Cartridge::Cartridge(std::unique_ptr<Mapper> mapper) { mapper_.swap(mapper); };
-Cartridge::~Cartridge() {
-  if (prg_rom_ != nullptr) {
-    ::operator delete(prg_rom_);
-    prg_rom_ = nullptr;
-  }
-  if (chr_rom_ != nullptr) {
-    ::operator delete(chr_rom_);
-    chr_rom_ = nullptr;
-  }
-}
+Cartridge::~Cartridge() = default;
 uint8_t Cartridge::cpu_read(uint16_t addr) { return mapper_->prg_read(addr); };
 void Cartridge::cpu_write(uint16_t addr, uint8_t data) {
   mapper_->prg_write(addr, data);

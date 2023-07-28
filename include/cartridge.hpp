@@ -44,11 +44,6 @@ class Cartridge {
 
  private:
   std::unique_ptr<Mapper> mapper_;
-
-  uint8_t *prg_rom_;
-  uint8_t *chr_rom_;
-  std::size_t prg_rom_size_;
-  std::size_t chr_rom_size_;
 };
 
 Cartridge make_cartridge(std::string input_file);
