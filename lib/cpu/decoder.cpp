@@ -463,24 +463,32 @@ void CPU::execute(uint8_t opcode) {
       // LDA, Immediate, 2 bytes, 2 cycles
       A_ = value_fetch(kImmediate);
       PC_ += byte_count(kLDA_IMM);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDA_ZP: {
       // LDA, Zero Page, 2 bytes, 3 cycles
       A_ = value_fetch(kZeroPage);
       PC_ += byte_count(kLDA_ZP);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDA_ZPX: {
       // LDA, Zero Page,X, 2 bytes, 4 cycles
       A_ = value_fetch(kZeroPageX);
       PC_ += byte_count(kLDA_ZPX);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDA_ABS: {
       // LDA, Absolute, 3 bytes, 4 cycles
       A_ = value_fetch(kAbsolute);
       PC_ += byte_count(kLDA_ABS);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDA_ABSX: {

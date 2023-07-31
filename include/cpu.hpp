@@ -137,6 +137,15 @@ class CPU {
   // convenience function for writing 16-bit values
   bool write16(uint16_t addr, uint16_t value);
 
+  // Made public for testing purposes
+  bool get_carry();
+  bool get_zero();
+  bool get_interrupt_disable();
+  bool get_decimal();
+  bool get_break();
+  bool get_overflow();
+  bool get_negative();
+
  private:
   PPU& ppu_;
   Cartridge& cart_;
@@ -201,19 +210,12 @@ class CPU {
   uint8_t peek_stack();
   uint16_t peek_stack16();
 
-  bool get_carry();
   void set_carry(bool value);
-  bool get_zero();
   void set_zero(bool value);
-  bool get_interrupt_disable();
   void set_interrupt_disable(bool value);
-  bool get_decimal();
   void set_decimal(bool value);
-  bool get_break();
   void set_break(bool value);
-  bool get_overflow();
   void set_overflow(bool value);
-  bool get_negative();
   void set_negative(bool value);
 
   void ADC(uint8_t value);
