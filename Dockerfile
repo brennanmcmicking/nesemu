@@ -70,4 +70,10 @@ RUN $DEVSHELL sde/installer -d /opt/sde
 RUN rm /opt/sde/bin/gdb
 RUN echo "/opt/sde/bin/sde_shell; clear" >> ~/.bashrc
 
+RUN yum -y remove git git* && \
+    yum -y install https://packages.endpointdev.com/rhel/7/os/x86_64/endpoint-repo.x86_64.rpm && \
+    yum -y install git && \
+    # Reduce image size
+    yum -y clean all && rm -rf /var/cache
+
 CMD ["sleep", "infinity"] 

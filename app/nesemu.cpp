@@ -1,6 +1,7 @@
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
 #include <cstdint>
+#include <fstream>
 #include <iostream>
 #include <memory>
 
@@ -80,7 +81,13 @@ int main(int argc, char* argv[]) {
   util::init_log_level();
 
   ppu::PPU ppu;
-  cartridge::Cartridge cart(std::make_unique<DummyMapper>());
+  std::ifstream in(input_filename);
+  if (!in.is_open()) {
+    BOOST_LOG_TRIVIAL(fatal)
+        << "input file cannot be found: " << input_filename;
+    return 1;
+  }
+  cartridge::Cartridge cart(in);
   cpu::CPU cpu(ppu, cart);
   BOOST_LOG_TRIVIAL(info) << "hello world\n";
   BOOST_LOG_TRIVIAL(info)

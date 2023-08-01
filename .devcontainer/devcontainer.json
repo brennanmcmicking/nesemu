@@ -73,7 +73,8 @@
         "twxs.cmake",
         "ms-vscode.cmake-tools",
         "cschlosser.doxdocgen",
-        "Gruntfuggly.todo-tree"
+        "Gruntfuggly.todo-tree",
+        "eamodio.gitlens"
       ]
     }
   }
