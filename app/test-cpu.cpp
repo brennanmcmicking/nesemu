@@ -311,17 +311,386 @@ TEST_CASE("Unit: ASL_ZP") {}
 TEST_CASE("Unit: ASL_ZPX") {}
 TEST_CASE("Unit: ASL_ABS") {}
 TEST_CASE("Unit: ASL_ABSX") {}
-TEST_CASE("Unit: BCC_REL") {}
-TEST_CASE("Unit: BCS_REL") {}
-TEST_CASE("Unit: BEQ_REL") {}
+TEST_CASE("Unit: BCC_REL") {
+  // branch if carry clear
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x02,  //
+      kCMP_IMM, 0x01,  //
+      kBCC_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x03,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBCC_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$01
+
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BCC #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BCC #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$03
+  REQUIRE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
+TEST_CASE("Unit: BCS_REL") {
+  // branch if carry set
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x02,  //
+      kCMP_IMM, 0x03,  //
+      kBCS_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x01,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBCS_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$03
+
+  REQUIRE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BCS #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BCS #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$01
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
+TEST_CASE("Unit: BEQ_REL") {
+  // branch if equal (i.e. zero set)
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x02,  //
+      kCMP_IMM, 0x02,  //
+      kBEQ_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x03,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBEQ_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$02
+
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE(cpu.get_zero());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BEQ #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BEQ #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$03
+  REQUIRE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
 TEST_CASE("Unit: BIT_ZP") {}
 TEST_CASE("Unit: BIT_ABS") {}
-TEST_CASE("Unit: BMI_REL") {}
-TEST_CASE("Unit: BNE_REL") {}
-TEST_CASE("Unit: BPL_REL") {}
+TEST_CASE("Unit: BMI_REL") {
+  // branch if minus
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x02,  //
+      kCMP_IMM, 0x03,  //
+      kBMI_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x01,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBMI_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$03
+
+  REQUIRE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BMI #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BMI #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$01
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
+TEST_CASE("Unit: BNE_REL") {
+  // branch if not equal
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x02,  //
+      kCMP_IMM, 0x01,  //
+      kBNE_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x02,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBNE_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$01
+
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BNE #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BNE #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$02
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
+TEST_CASE("Unit: BPL_REL") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x02,  //
+      kCMP_IMM, 0x01,  //
+      kBPL_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x03,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBPL_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$01
+
+  REQUIRE_FALSE(cpu.get_negative());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BPL #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BPL #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$03
+  REQUIRE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
 TEST_CASE("Unit: BRK") {}
-TEST_CASE("Unit: BVC_REL") {}
-TEST_CASE("Unit: BVS_REL") {}
+TEST_CASE("Unit: BVC_REL") {
+  // branch if overflow clear
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x00,  //
+      kADC_IMM, 0x01,  //
+      kBVC_REL, 0x06,  // jump 6 (+2)
+      kADC_IMM, 0x7F,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBVC_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$01
+
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_overflow());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BVC #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BVC #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$03
+  REQUIRE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
+TEST_CASE("Unit: BVS_REL") {
+  // branch if overflow set
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x7F,  //
+      kADC_IMM, 0x01,  //
+      kBVC_REL, 0x06,  // jump 6 (+2)
+      kADC_IMM, 0x00,  //
+      kNOP,     kNOP,  //
+      kNOP,     kNOP,  //
+      kBVC_REL, 0xF8,  // jump -8 (+2)
+      kNOP,     kNOP   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA #$02
+  cpu.advance_instruction();  // CMP #$03
+
+  REQUIRE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE(cpu.get_overflow());
+
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BVS #$06
+
+  REQUIRE(cpu.PC() == old_pc + 0x08);
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();  // BVS #$-08
+
+  REQUIRE(cpu.PC() == old_pc - 0x06);
+
+  cpu.advance_instruction();  // CMP #$01
+  REQUIRE(cpu.get_negative());
+
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+  cpu.advance_instruction();  // NOP
+
+  old_pc = cpu.PC();
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.PC() == old_pc + 0x02);
+}
 TEST_CASE("Unit: CLC") {}
 TEST_CASE("Unit: CLD") {}
 TEST_CASE("Unit: CLI") {}
@@ -360,9 +729,57 @@ TEST_CASE("Unit: INC_ABS") {}
 TEST_CASE("Unit: INC_ABSX") {}
 TEST_CASE("Unit: INX") {}
 TEST_CASE("Unit: INY") {}
-TEST_CASE("Unit: JMP_ABS") {}
-TEST_CASE("Unit: JMP_IND") {}
-TEST_CASE("Unit: JSR_ABS") {}
+TEST_CASE("Unit: JMP_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kJMP_ABS, U16(0xABCD)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(3);
+
+  REQUIRE(cpu.PC() == 0xABCD);
+  REQUIRE(cpu.P() == 0x34);
+}
+TEST_CASE("Unit: JMP_IND") {
+  std::vector<uint8_t> bytecode = {
+      kJMP_IND, U16(0x0010)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write16(0x0010, 0x1234);
+
+  REQUIRE(cpu.read16(0x010) == 0x1234);
+
+  cpu.advance_cycles(5);
+
+  REQUIRE(cpu.PC() == 0x1234);
+  REQUIRE(cpu.P() == 0x34);
+}
+TEST_CASE("Unit: JSR_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kJSR_ABS, U16(0x0010),  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write16(0x0010, 0x1234);
+
+  REQUIRE(cpu.read16(0x0010) == 0x1234);
+  REQUIRE(cpu.SP() == 0xFD);
+  uint16_t old_pc = cpu.PC();
+
+  cpu.advance_cycles(6);
+
+  CAPTURE(old_pc);
+
+  REQUIRE(cpu.SP() == 0xFB);
+  REQUIRE(cpu.peek_stack16() == old_pc + 2);
+  REQUIRE(cpu.PC() == 0x1234);
+  // REQUIRE(cpu.read(cpu.SP() + 1) == 0x12);
+  // REQUIRE(cpu.read(cpu.SP() + 2) == 0x34);
+}
 
 TEST_CASE("Unit: LDA_IMM") {
   SECTION("Postitive") {
