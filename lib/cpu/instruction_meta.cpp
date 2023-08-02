@@ -4,21 +4,165 @@
 
 namespace cpu {
 
-// TODO generate this with a constexpr and std::array<std::size_t, 256>
 // generated using scripts/scrape-opcodes.py
 // missing instructions are default initialized to zero (invalid instruction)
-constexpr std::size_t instruction_sizes[256] = {
-    1, 2, 0, 0, 0, 2, 2, 0, 1, 2, 1, 0, 0, 3, 3, 0, 2, 2, 0, 0, 0, 2, 2, 0,
-    1, 3, 0, 0, 0, 3, 3, 0, 3, 2, 0, 0, 2, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,
-    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0, 1, 2, 0, 0, 0, 2, 2, 0,
-    1, 2, 1, 0, 3, 3, 3, 0, 2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0,
-    1, 2, 0, 0, 0, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0, 2, 2, 0, 0, 0, 2, 2, 0,
-    1, 3, 0, 0, 0, 3, 3, 0, 0, 2, 0, 0, 2, 2, 2, 0, 1, 0, 1, 0, 3, 3, 3, 0,
-    2, 2, 0, 0, 2, 2, 2, 0, 1, 3, 1, 0, 0, 3, 0, 0, 2, 2, 2, 0, 2, 2, 2, 0,
-    1, 2, 1, 0, 3, 3, 3, 0, 2, 2, 0, 0, 2, 2, 2, 0, 1, 3, 1, 0, 3, 3, 3, 0,
-    2, 2, 0, 0, 2, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0, 2, 2, 0, 0, 0, 2, 2, 0,
-    1, 3, 0, 0, 0, 3, 3, 0, 2, 2, 0, 0, 2, 2, 2, 0, 1, 2, 1, 0, 3, 3, 3, 0,
-    2, 2, 0, 0, 0, 2, 2, 0, 1, 3, 0, 0, 0, 3, 3, 0};
+consteval std::array<uint8_t, 256> make_instruction_sizes() {
+  std::array<uint8_t, 256> sizes = {};
+  sizes[kADC_IMM] = 2;
+  sizes[kADC_ZP] = 2;
+  sizes[kADC_ZPX] = 2;
+  sizes[kADC_ABS] = 3;
+  sizes[kADC_ABSX] = 3;
+  sizes[kADC_ABSY] = 3;
+  sizes[kADC_INDX] = 2;
+  sizes[kADC_INDY] = 2;
+  sizes[kAND_IMM] = 2;
+  sizes[kAND_ZP] = 2;
+  sizes[kAND_ZPX] = 2;
+  sizes[kAND_ABS] = 3;
+  sizes[kAND_ABSX] = 3;
+  sizes[kAND_ABSY] = 3;
+  sizes[kAND_INDX] = 2;
+  sizes[kAND_INDY] = 2;
+  sizes[kASL_A] = 1;
+  sizes[kASL_ZP] = 2;
+  sizes[kASL_ZPX] = 2;
+  sizes[kASL_ABS] = 3;
+  sizes[kASL_ABSX] = 3;
+  sizes[kBCC_REL] = 2;
+  sizes[kBCS_REL] = 2;
+  sizes[kBEQ_REL] = 2;
+  sizes[kBIT_ZP] = 2;
+  sizes[kBIT_ABS] = 3;
+  sizes[kBMI_REL] = 2;
+  sizes[kBNE_REL] = 2;
+  sizes[kBPL_REL] = 2;
+  sizes[kBRK] = 1;
+  sizes[kBVC_REL] = 2;
+  sizes[kBVS_REL] = 2;
+  sizes[kCLC] = 1;
+  sizes[kCLD] = 1;
+  sizes[kCLI] = 1;
+  sizes[kCLV] = 1;
+  sizes[kCMP_IMM] = 2;
+  sizes[kCMP_ZP] = 2;
+  sizes[kCMP_ZPX] = 2;
+  sizes[kCMP_ABS] = 3;
+  sizes[kCMP_ABSX] = 3;
+  sizes[kCMP_ABSY] = 3;
+  sizes[kCMP_INDX] = 2;
+  sizes[kCMP_INDY] = 2;
+  sizes[kCPX_IMM] = 2;
+  sizes[kCPX_ZP] = 2;
+  sizes[kCPX_ABS] = 3;
+  sizes[kCPY_IMM] = 2;
+  sizes[kCPY_ZP] = 2;
+  sizes[kCPY_ABS] = 3;
+  sizes[kDEC_ZP] = 2;
+  sizes[kDEC_ZPX] = 2;
+  sizes[kDEC_ABS] = 3;
+  sizes[kDEC_ABSX] = 3;
+  sizes[kDEX] = 1;
+  sizes[kDEY] = 1;
+  sizes[kEOR_IMM] = 2;
+  sizes[kEOR_ZP] = 2;
+  sizes[kEOR_ZPX] = 2;
+  sizes[kEOR_ABS] = 3;
+  sizes[kEOR_ABSX] = 3;
+  sizes[kEOR_ABSY] = 3;
+  sizes[kEOR_INDX] = 2;
+  sizes[kEOR_INDY] = 2;
+  sizes[kINC_ZP] = 2;
+  sizes[kINC_ZPX] = 2;
+  sizes[kINC_ABS] = 3;
+  sizes[kINC_ABSX] = 3;
+  sizes[kINX] = 1;
+  sizes[kINY] = 1;
+  sizes[kJMP_ABS] = 3;
+  sizes[kJMP_IND] = 3;
+  sizes[kJSR_ABS] = 3;
+  sizes[kLDA_IMM] = 2;
+  sizes[kLDA_ZP] = 2;
+  sizes[kLDA_ZPX] = 2;
+  sizes[kLDA_ABS] = 3;
+  sizes[kLDA_ABSX] = 3;
+  sizes[kLDA_ABSY] = 3;
+  sizes[kLDA_INDX] = 2;
+  sizes[kLDA_INDY] = 2;
+  sizes[kLDX_IMM] = 2;
+  sizes[kLDX_ZP] = 2;
+  sizes[kLDX_ZPY] = 2;
+  sizes[kLDX_ABS] = 3;
+  sizes[kLDX_ABSY] = 3;
+  sizes[kLDY_IMM] = 2;
+  sizes[kLDY_ZP] = 2;
+  sizes[kLDY_ZPX] = 2;
+  sizes[kLDY_ABS] = 3;
+  sizes[kLDY_ABSX] = 3;
+  sizes[kLSR_A] = 1;
+  sizes[kLSR_ZP] = 2;
+  sizes[kLSR_ZPX] = 2;
+  sizes[kLSR_ABS] = 3;
+  sizes[kLSR_ABSX] = 3;
+  sizes[kNOP] = 1;
+  sizes[kORA_IMM] = 2;
+  sizes[kORA_ZP] = 2;
+  sizes[kORA_ZPX] = 2;
+  sizes[kORA_ABS] = 3;
+  sizes[kORA_ABSX] = 3;
+  sizes[kORA_ABSY] = 3;
+  sizes[kORA_INDX] = 2;
+  sizes[kORA_INDY] = 2;
+  sizes[kPHA] = 1;
+  sizes[kPHP] = 1;
+  sizes[kPLA] = 1;
+  sizes[kPLP] = 1;
+  sizes[kROL_A] = 1;
+  sizes[kROL_ZP] = 2;
+  sizes[kROL_ZPX] = 2;
+  sizes[kROL_ABS] = 3;
+  sizes[kROL_ABSX] = 3;
+  sizes[kROR_A] = 1;
+  sizes[kROR_ZP] = 2;
+  sizes[kROR_ZPX] = 2;
+  sizes[kROR_ABS] = 3;
+  sizes[kROR_ABSX] = 3;
+  sizes[kRTI] = 1;
+  sizes[kRTS] = 1;
+  sizes[kSBC_IMM] = 2;
+  sizes[kSBC_ZP] = 2;
+  sizes[kSBC_ZPX] = 2;
+  sizes[kSBC_ABS] = 3;
+  sizes[kSBC_ABSX] = 3;
+  sizes[kSBC_ABSY] = 3;
+  sizes[kSBC_INDX] = 2;
+  sizes[kSBC_INDY] = 2;
+  sizes[kSEC] = 1;
+  sizes[kSED] = 1;
+  sizes[kSEI] = 1;
+  sizes[kSTA_ZP] = 2;
+  sizes[kSTA_ZPX] = 2;
+  sizes[kSTA_ABS] = 3;
+  sizes[kSTA_ABSX] = 3;
+  sizes[kSTA_ABSY] = 3;
+  sizes[kSTA_INDX] = 2;
+  sizes[kSTA_INDY] = 2;
+  sizes[kSTX_ZP] = 2;
+  sizes[kSTX_ZPY] = 2;
+  sizes[kSTX_ABS] = 3;
+  sizes[kSTY_ZP] = 2;
+  sizes[kSTY_ZPX] = 2;
+  sizes[kSTY_ABS] = 3;
+  sizes[kTAX] = 1;
+  sizes[kTAY] = 1;
+  sizes[kTSX] = 1;
+  sizes[kTXA] = 1;
+  sizes[kTXS] = 1;
+  sizes[kTYA] = 1;
+  return sizes;
+}
+
+constexpr std::array<uint8_t, 256> instruction_sizes = make_instruction_sizes();
 
 std::size_t CPU::byte_count(uint8_t opcode) {
   return instruction_sizes[opcode];

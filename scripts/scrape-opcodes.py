@@ -233,6 +233,9 @@ for title in soup.select("h3"):
 #         byte_count.append(0)
 # print(",".join(map(str, byte_count)))
 
+for code in opcodes:
+    print(f"sizes[{opcodes[code]['name']}] = {opcodes[code]['byte_count']}")
+
 
 # for code in sorted(opcodes):
 #     code = opcodes[code]
