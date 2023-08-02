@@ -46,15 +46,11 @@ void PPU::render_to_window() {
   // Setup viewport (full window)
   glfwGetFramebufferSize(&window_, &width, &height);
   glViewport(0, 0, width, height);
-  // Clear window contents
-  // glClear(GL_COLOR_BUFFER_BIT);
 
+  // Clear window contents
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   // chatgpt told me to write these two lines
-  glRasterPos2i(-1, -1);
-  glPixelZoom(1, -1);
 
-  // TODO: not working
   glDrawPixels(kScreenWidth, kScreenHeight, GL_RGB, GL_UNSIGNED_BYTE,
                internal_frame_buf_->data());
 
@@ -67,23 +63,24 @@ void PPU::render_to_window() {
 void PPU::render_to_framebuffer(frame_t& out) {
   // TODO: get color data from cpu
 
-  // TODO: Convert nes colors to RGB and write to buffer
-  // for (color_t* iter = out.begin(); iter != out.end(); ++iter) {
-  //   pixel_t nes_col = 0x19;  // TODO: get this color from cpu
-  //   color_t col;
+  for (int i = 0; i < kScreenWidth * kScreenHeight; i++) {
+    pixel_t nes_col = 0x16;  // TODO: get this color from cpu
+    color_t col;
 
-  //   try {
-  //     col = kColorTable.at(nes_col);
-  //   } catch (...) {
-  //     BOOST_LOG_TRIVIAL(error) << "Bad color from CPU when rendering frame: "
-  //                              << util::fmt_hex(nes_col) << "\n";
-  //     // default to black
-  //     col = 0x0;
-  //   }
+    try {
+      col = kColorTable.at(nes_col);
+    } catch (...) {
+      BOOST_LOG_TRIVIAL(error) << "Bad color from CPU when rendering frame: "
+                               << util::fmt_hex(nes_col) << "\n";
+      // default to black
+      col = 0x0;
+    }
 
-  //   // Update value in buffer
-  //   *iter = col;
-  // }
+    // Update values in buffer
+    out[i * 3] = (col >> 16) & 0xFF;
+    out[i * 3 + 1] = (col >> 8) & 0xFF;
+    out[i * 3 + 2] = col & 0xFF;
+  }
 }
 
 }  // namespace ppu

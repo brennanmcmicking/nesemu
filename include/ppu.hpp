@@ -32,7 +32,7 @@ class PPU {
 
   // An RGB color, suitable for rendering into a frame (after being split into
   // R, G, B)
-  using color_t = uint16_t;
+  using color_t = uint32_t;
 
   // A frame, suitable to be drawn to the window. Every three elements represent
   // a color (e.g. the first pixel in the array has red value at [0], green at
