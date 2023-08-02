@@ -38,7 +38,7 @@ target_link_libraries(util PUBLIC Boost::log)
 
 # deliverables
 add_executable(nesemu app/nesemu.cpp)
-target_link_libraries(nesemu PUBLIC cpu ppu cartridge debugger util Boost::log Boost::program_options)
+target_link_libraries(nesemu PUBLIC cpu ppu cartridge debugger util Boost::log Boost::program_options glfw)
 
 add_executable(nesemu-cpu app/nesemu-cpu.cpp)
 target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge util Boost::log)

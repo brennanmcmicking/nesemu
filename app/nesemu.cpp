@@ -1,3 +1,5 @@
+#include <GLFW/glfw3.h>
+
 #include <boost/log/trivial.hpp>
 #include <boost/program_options.hpp>
 #include <cstdint>
@@ -36,6 +38,40 @@ class DummyMapper : public cartridge::Mapper {
   uint8_t prg_read(uint16_t addr) override { return 0; };
   void prg_write(uint16_t addr, uint8_t data) override{};
 };
+
+/**
+ * @brief Create the window to display PPU output.
+ *
+ * @returns A handle to the newly created window
+ */
+GLFWwindow* init_window() {
+  if (!glfwInit()) {
+    BOOST_LOG_TRIVIAL(fatal) << "Could not initialize window\n";
+    glfwTerminate();
+    exit(1);
+  }
+
+  GLFWwindow* window = glfwCreateWindow(
+      ppu::PPU::kScreenWidth, ppu::PPU::kScreenHeight, "nesemu", NULL, NULL);
+
+  if (!window) {
+    // Window creation failed
+    BOOST_LOG_TRIVIAL(fatal) << "GLFW window creation failed\n";
+    exit(1);
+  }
+
+  // Create OpenGL context and setup opengl stuff
+  glfwMakeContextCurrent(window);
+  glfwSwapInterval(1);
+
+  glDisable(GL_DEPTH_TEST);
+
+  // Create callback to close the window when expected
+  // TODO:
+  // glfwSetWindowCloseCallback(window_, []())
+
+  // TODO: initialize key callbacks here
+}
 
 int main(int argc, char* argv[]) {
   // Declare the supported options. Sourced from
@@ -80,7 +116,9 @@ int main(int argc, char* argv[]) {
 
   util::init_log_level();
 
-  ppu::PPU ppu;
+  GLFWwindow* window_handle = init_window();
+
+  ppu::PPU ppu(*window_handle);
   std::ifstream in(input_filename);
   if (!in.is_open()) {
     BOOST_LOG_TRIVIAL(fatal)
@@ -101,5 +139,8 @@ int main(int argc, char* argv[]) {
   } else {
     cpu.begin_cpu_loop();
   }
+
+  // Cleanup
+  glfwTerminate();
   return 0;
 }

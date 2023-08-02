@@ -30,12 +30,15 @@ class PPU {
   // A color, as it is represented in the NES
   using pixel_t = uint8_t;
 
-  // An RGB color, suitable for rendering into a frame
+  // An RGB color, suitable for rendering into a frame (after being split into
+  // R, G, B)
   using color_t = uint16_t;
 
-  // A frame, suitable to be drawn to the window. Note: a frame_t takes 61kB of
-  // storage. Be careful with default initializing!
-  using frame_t = std::array<color_t, kScreenWidth * kScreenHeight>;
+  // A frame, suitable to be drawn to the window. Every three elements represent
+  // a color (e.g. the first pixel in the array has red value at [0], green at
+  // [1], and blue at [2]). Note: a frame_t takes 184kB of storage. Be careful
+  // with default initializing!
+  using frame_t = std::array<uint8_t, kScreenWidth * kScreenHeight * 3>;
 
   // Color map converts value represented by NES into RGB. Taken from 2C02
   // palette https://www.nesdev.org/wiki/PPU_palettes.
@@ -59,7 +62,7 @@ class PPU {
       {0x38, 0xE2E1AE}, {0x39, 0xD5E8AE}, {0x3A, 0xC9EBBB}, {0x3B, 0xC2EBCF},
       {0x3C, 0xC2E6E7}, {0x3D, 0xB8B8B8}, {0x3E, 0x000000}, {0x3F, 0x000000}};
 
-  PPU();
+  PPU(GLFWwindow& window);
   ~PPU();
 
   PPU(PPU&) = delete;
@@ -71,46 +74,26 @@ class PPU {
   // sends it to the output: a window (but ideally can be extensible)
 
   /**
-   * @brief Create the window to display PPU output
-   */
-  void init_window();
-
-  /**
    * @brief Using the data currently visible from the CPU, renders a single
-   * frame into an internal framebuffer. Use draw() to display the rendered
+   * frame into the given window. Use draw() to display the rendered
    * frame, or get_frame_buffer() if you need to consume it in another way.
-   *
-   * @param out The rendered frame
    */
-  void render_frame();
+  void render_to_window();
 
   /**
-   * @brief Draw a rendered frame to the window. Precondition: init_window() has
-   * been called already.
+   * @brief Like render_to_window except writes the result to a buffer.
    *
-   * @param frame Frame object to be rendered
+   * @param out Overwritten with the resulting buffer
    */
-  void draw();
-
-  /**
-   * @brief Get a reference to the internal frame buffer object. For consuming a
-   * frame in some other way than rendering to the window. Note: do not modify.
-   * If you need to modify, make a copy instead!
-   *
-   * @param out Overwritten with the internal framebuffer
-   */
-  void get_frame_buffer(frame_t& out);
+  void render_to_framebuffer(frame_t& out);
 
  private:
-  // Handle to the window. Nullptr before the window is created. Needs to be a
-  // raw pointer because GLFWwindow is an opaque type and it's overly
-  // complicated to make it into a smart pointer
-  GLFWwindow* window_;
+  // Internal buffer to which frames are rendered when rendering to window.
+  // Stored in a private variable to avoid having to reallocate the whole frame
+  // array every frame. Only allocated on first render_to_window.
+  std::unique_ptr<frame_t> internal_frame_buf_;
 
-  // Internal buffer to which frames are rendered
-  frame_t frame_buffer_;
-
-  void debug_make_solid_color(pixel_t color, frame_t& out);
+  GLFWwindow& window_;
 };
 
 }  // namespace ppu
