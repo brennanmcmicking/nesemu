@@ -8,7 +8,7 @@ uint8_t CPU::read(uint16_t addr) {
       return ram_[addr % 0x800];
     case 0x2000 ... 0x3FFF: {  // PPU Registers
       if (!ppu_.has_value()) {
-        BOOST_LOG_TRIVIAL(fatal)
+        BOOST_LOG_TRIVIAL(trace)
             << "Read from PPU register without attached PPU: " << addr;
         return 0xAA;
       }
@@ -45,7 +45,7 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       return true;
     case 0x2000 ... 0x3FFF: {  // TODO: PPU Registers
       if (!ppu_.has_value()) {
-        BOOST_LOG_TRIVIAL(fatal)
+        BOOST_LOG_TRIVIAL(trace)
             << "Read from PPU register without attached PPU: " << addr;
         return false;
       }
