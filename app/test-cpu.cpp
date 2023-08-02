@@ -41,8 +41,7 @@ class VectorMapper : public cartridge::Mapper {
 #define MAKE_CPU(bytecode)                                            \
   std::unique_ptr<VectorMapper> __mapper(new VectorMapper(bytecode)); \
   cartridge::Cartridge __cart(std::move(__mapper));                   \
-  ppu::PPU __ppu;                                                     \
-  CPU cpu(__ppu, __cart);
+  CPU cpu(__cart);
 
 TEST_CASE("trivial load and store") {
   // clang-format off

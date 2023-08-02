@@ -3,6 +3,8 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <functional>
+#include <optional>
 
 #include "cartridge.hpp"
 #include "ppu.hpp"
@@ -53,7 +55,8 @@ class CPU {
       kTimePerFrame * 1000};               // Milliseconds
   const double kCyclesPerFrame = 29780.5;  // taken from wiki
 
-  explicit CPU(PPU& ppu, Cartridge& cartridge);
+  explicit CPU(Cartridge& cartridge,
+               std::optional<std::reference_wrapper<PPU>> ppu = std::nullopt);
 
   CPU() = delete;
   CPU(CPU&) = delete;
@@ -147,7 +150,7 @@ class CPU {
   bool get_negative();
 
  private:
-  PPU& ppu_;
+  std::optional<std::reference_wrapper<PPU>> ppu_;
   Cartridge& cart_;
 
   // True iff the program was started in debug mode. If true, the program will
