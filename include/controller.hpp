@@ -1,3 +1,5 @@
+#ifndef CONTROLLER_HPP
+#define CONTROLLER_HPP
 #include <GLFW/glfw3.h>
 
 #include <cstdint>
@@ -20,3 +22,4 @@ class Controller {
   bool strobe_;
 };
 }  // namespace controller
+#endif  // CONTROLLER_HPP
