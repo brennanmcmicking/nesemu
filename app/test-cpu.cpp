@@ -482,7 +482,7 @@ TEST_CASE("Unit: STA_ZP") {
 TEST_CASE("Unit: STA_ZPX") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF - 0x05);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
-  uint8_t offset = 0x05;
+  uint8_t offset = GENERATE(0x00, 0x01, 0x05);
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, data,    //
       kLDX_IMM, offset,  //
@@ -520,10 +520,106 @@ TEST_CASE("Unit: STA_ABS") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr) == (int)data);
 }
-TEST_CASE("Unit: STA_ABSX") {}
-TEST_CASE("Unit: STA_ABSY") {}
-TEST_CASE("Unit: STA_INDX") {}
-TEST_CASE("Unit: STA_INDY") {}
+TEST_CASE("Unit: STA_ABSX") {
+  uint16_t addr =
+      GENERATE(0x0013, 0x00015, 0x00FF, 0x0100, 0x1000, 0x2000 - 0x05 - 1);
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  uint8_t offset = GENERATE(0x00, 0x01, 0x05);
+  CAPTURE(fmt_hex(addr), fmt_hex(data), fmt_hex(offset));
+
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  data,       //
+      kLDX_IMM,  offset,     //
+      kSTA_ABSX, U16(addr),  //
+  };
+
+  MAKE_CPU(bytecode);
+  cpu.write(addr + offset, data + 1);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.X() == offset);
+
+  cpu.advance_cycles(5);
+  REQUIRE((int)cpu.read(addr + offset) == (int)data);
+}
+TEST_CASE("Unit: STA_ABSY") {
+  uint16_t addr =
+      GENERATE(0x0000, 0x0001, 0x00FF, 0x0100, 0x1000, 0x1FFF - 0x05);
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  uint8_t offset = GENERATE(0x00, 0x01, 0x05);
+  CAPTURE(fmt_hex(addr), fmt_hex(data), fmt_hex(offset));
+
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  data,       //
+      kLDY_IMM,  offset,     //
+      kSTA_ABSY, U16(addr),  //
+  };
+
+  MAKE_CPU(bytecode);
+  cpu.write(addr + offset, data + 1);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.Y() == offset);
+
+  cpu.advance_cycles(5);
+  REQUIRE((int)cpu.read(addr + offset) == (int)data);
+}
+TEST_CASE("Unit: STA_INDX") {
+  uint8_t zp_addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF - 0x10);
+  uint16_t addr =
+      GENERATE(0x000E, 0x0023, 0x00FA, 0x0100, 0x1000, 0x1111, 0x2000 - 2);
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  uint8_t offset = GENERATE(0x00, 0x01, 0x05, 0x10);
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  data,     //
+      kLDX_IMM,  offset,   //
+      kSTA_INDX, zp_addr,  //
+  };
+  CAPTURE(fmt_hex(zp_addr), fmt_hex(addr), fmt_hex(data), fmt_hex(offset));
+
+  MAKE_CPU(bytecode);
+  cpu.write16(zp_addr + offset, addr);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.X() == offset);
+
+  cpu.advance_cycles(6);
+  REQUIRE((int)cpu.read(addr) == (int)data);
+}
+TEST_CASE("Unit: STA_INDY") {
+  uint8_t zp_addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  uint16_t addr = GENERATE(0x000E, 0x0023, 0x00FA, 0x0100, 0x1000, 0x1111,
+                           0x2000 - 2 - 0x10);
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  uint8_t offset = GENERATE(0x00, 0x01, 0x05, 0x10);
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  data,     //
+      kLDY_IMM,  offset,   //
+      kSTA_INDY, zp_addr,  //
+  };
+  CAPTURE(fmt_hex(zp_addr), fmt_hex(addr), fmt_hex(data), fmt_hex(offset));
+
+  MAKE_CPU(bytecode);
+  cpu.write16(zp_addr, addr);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.Y() == offset);
+
+  cpu.advance_cycles(6);
+  REQUIRE((int)cpu.read(addr + offset) == (int)data);
+}
 TEST_CASE("Unit: STX_ZP") {}
 TEST_CASE("Unit: STX_ZPY") {}
 TEST_CASE("Unit: STX_ABS") {}
