@@ -145,7 +145,7 @@ int main(int argc, char* argv[]) {
     ppu = std::make_shared<ppu::PPU>(*window_handle);
     controller = std::make_shared<controller::Controller>(*window_handle);
     cpu =
-        std::make_shared<cpu::CPU>(cart, std::ref(*ppu), std::ref(controller));
+        std::make_shared<cpu::CPU>(cart, std::ref(*ppu), std::ref(*controller));
   } else {
     BOOST_LOG_TRIVIAL(trace) << "Creating CPU (no window)";
     cpu = std::make_shared<cpu::CPU>(cart);
