@@ -56,8 +56,12 @@ bool Debugger::read_command() {
     cmd_help();
 
   } else if (strcmp(cmd, "step") == 0) {
-    _unimplemented();  // TODO:
+    uint8_t opcode = cpu_->read(cpu_->PC());
+    std::cout << "opcode: $" << std::hex << std::uppercase << unsigned(opcode)
+              << std::dec << std::nouppercase << "\n";
+    cpu_->advance_instruction();
 
+    cmd_registers();
   } else if (strcmp(cmd, "continue") == 0) {
     _unimplemented();  // TODO:
 
@@ -158,6 +162,8 @@ bool Debugger::read_command() {
 
   } else if (strcmp(cmd, "") == 0) {
     // empty check for newline to allow spamming w/o error messages
+  } else if (strcmp(cmd, "exit") == 0) {
+    exit(0);
   } else {
     // unrecognized command
     std::cout << "Command '" << cmd_name << "' not recognized\n";

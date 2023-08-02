@@ -450,13 +450,14 @@ void CPU::execute(uint8_t opcode) {
     }
     case kJMP_IND: {
       // JMP, Indirect, 3 bytes, 5 cycles
-      PC_ = value_fetch(kIndirect);
+      PC_ = addr_fetch(kIndirect);
       break;
     }
     case kJSR_ABS: {
       // JSR, Absolute, 3 bytes, 6 cycles
       push_stack16(PC_ + byte_count(kJSR_ABS) - 1);
-      PC_ = addr_fetch(kAbsolute);
+      uint16_t a = addr_fetch(kAbsolute);
+      PC_ = read16(a);
       break;
     }
     case kLDA_IMM: {
