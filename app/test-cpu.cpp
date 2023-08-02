@@ -225,6 +225,7 @@ TEST_CASE("Unit: ADC_IMM") {
     REQUIRE(cpu.get_overflow() == true);
   };
 }
+
 TEST_CASE("Unit: ADC_ZP") {
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x01,  //
@@ -247,6 +248,7 @@ TEST_CASE("Unit: ADC_ZP") {
   cpu.advance_cycles(3);
   REQUIRE(cpu.A() == 2);
 }
+
 TEST_CASE("Unit: ADC_ZPX") {
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x05,  //
@@ -273,6 +275,7 @@ TEST_CASE("Unit: ADC_ZPX") {
   cpu.advance_cycles(4);
   REQUIRE(cpu.A() == 10);
 }
+
 TEST_CASE("Unit: ADC_ABS") {
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x01,         //
@@ -295,6 +298,7 @@ TEST_CASE("Unit: ADC_ABS") {
   cpu.advance_cycles(4);
   REQUIRE(cpu.A() == 2);
 }
+
 TEST_CASE("Unit: ADC_ABSX") {
   SECTION("no page cross") {
     std::vector<uint8_t> bytecode = {
@@ -359,6 +363,7 @@ TEST_CASE("Unit: ADC_ABSX") {
     REQUIRE(cpu.read(0x1000) == 0x05);
   }
 }
+
 TEST_CASE("Unit: ADC_ABSY") {
   SECTION("no page cross") {
     std::vector<uint8_t> bytecode = {
@@ -423,6 +428,7 @@ TEST_CASE("Unit: ADC_ABSY") {
     REQUIRE(cpu.read(0x1000) == 0x05);
   }
 }
+
 TEST_CASE("Unit: ADC_INDX") {
   std::vector<uint8_t> bytecode = {
       kLDA_IMM,  0x05,         //
@@ -452,20 +458,35 @@ TEST_CASE("Unit: ADC_INDX") {
   REQUIRE(cpu.A() == 10);
   REQUIRE(cpu.read(0x1000) == 0x05);
 }
+
 TEST_CASE("Unit: ADC_INDY") {}
+
 TEST_CASE("Unit: AND_IMM") {}
+
 TEST_CASE("Unit: AND_ZP") {}
+
 TEST_CASE("Unit: AND_ZPX") {}
+
 TEST_CASE("Unit: AND_ABS") {}
+
 TEST_CASE("Unit: AND_ABSX") {}
+
 TEST_CASE("Unit: AND_ABSY") {}
+
 TEST_CASE("Unit: AND_INDX") {}
+
 TEST_CASE("Unit: AND_INDY") {}
+
 TEST_CASE("Unit: ASL_A") {}
+
 TEST_CASE("Unit: ASL_ZP") {}
+
 TEST_CASE("Unit: ASL_ZPX") {}
+
 TEST_CASE("Unit: ASL_ABS") {}
+
 TEST_CASE("Unit: ASL_ABSX") {}
+
 TEST_CASE("Unit: BCC_REL") {
   // branch if carry clear
   std::vector<uint8_t> bytecode = {
@@ -513,6 +534,7 @@ TEST_CASE("Unit: BCC_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: BCS_REL") {
   // branch if carry set
   std::vector<uint8_t> bytecode = {
@@ -560,6 +582,7 @@ TEST_CASE("Unit: BCS_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: BEQ_REL") {
   // branch if equal (i.e. zero set)
   std::vector<uint8_t> bytecode = {
@@ -608,8 +631,11 @@ TEST_CASE("Unit: BEQ_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: BIT_ZP") {}
+
 TEST_CASE("Unit: BIT_ABS") {}
+
 TEST_CASE("Unit: BMI_REL") {
   // branch if minus
   std::vector<uint8_t> bytecode = {
@@ -657,6 +683,7 @@ TEST_CASE("Unit: BMI_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: BNE_REL") {
   // branch if not equal
   std::vector<uint8_t> bytecode = {
@@ -704,6 +731,7 @@ TEST_CASE("Unit: BNE_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: BPL_REL") {
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x02,  //
@@ -749,7 +777,9 @@ TEST_CASE("Unit: BPL_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: BRK") {}
+
 TEST_CASE("Unit: BVC_REL") {
   // branch if overflow clear
   std::vector<uint8_t> bytecode = {
@@ -798,6 +828,7 @@ TEST_CASE("Unit: BVC_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: BVS_REL") {
   // branch if overflow set
   std::vector<uint8_t> bytecode = {
@@ -846,44 +877,83 @@ TEST_CASE("Unit: BVS_REL") {
 
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
+
 TEST_CASE("Unit: CLC") {}
+
 TEST_CASE("Unit: CLD") {}
+
 TEST_CASE("Unit: CLI") {}
+
 TEST_CASE("Unit: CLV") {}
+
 TEST_CASE("Unit: CMP_IMM") {}
+
 TEST_CASE("Unit: CMP_ZP") {}
+
 TEST_CASE("Unit: CMP_ZPX") {}
+
 TEST_CASE("Unit: CMP_ABS") {}
+
 TEST_CASE("Unit: CMP_ABSX") {}
+
 TEST_CASE("Unit: CMP_ABSY") {}
+
 TEST_CASE("Unit: CMP_INDX") {}
+
 TEST_CASE("Unit: CMP_INDY") {}
+
 TEST_CASE("Unit: CPX_IMM") {}
+
 TEST_CASE("Unit: CPX_ZP") {}
+
 TEST_CASE("Unit: CPX_ABS") {}
+
 TEST_CASE("Unit: CPY_IMM") {}
+
 TEST_CASE("Unit: CPY_ZP") {}
+
 TEST_CASE("Unit: CPY_ABS") {}
+
 TEST_CASE("Unit: DEC_ZP") {}
+
 TEST_CASE("Unit: DEC_ZPX") {}
+
 TEST_CASE("Unit: DEC_ABS") {}
+
 TEST_CASE("Unit: DEC_ABSX") {}
+
 TEST_CASE("Unit: DEX") {}
+
 TEST_CASE("Unit: DEY") {}
+
 TEST_CASE("Unit: EOR_IMM") {}
+
 TEST_CASE("Unit: EOR_ZP") {}
+
 TEST_CASE("Unit: EOR_ZPX") {}
+
 TEST_CASE("Unit: EOR_ABS") {}
+
 TEST_CASE("Unit: EOR_ABSX") {}
+
 TEST_CASE("Unit: EOR_ABSY") {}
+
 TEST_CASE("Unit: EOR_INDX") {}
+
 TEST_CASE("Unit: EOR_INDY") {}
+
 TEST_CASE("Unit: INC_ZP") {}
+
 TEST_CASE("Unit: INC_ZPX") {}
+
 TEST_CASE("Unit: INC_ABS") {}
+
 TEST_CASE("Unit: INC_ABSX") {}
+
 TEST_CASE("Unit: INX") {}
+
 TEST_CASE("Unit: INY") {}
+
 TEST_CASE("Unit: JMP_ABS") {
   std::vector<uint8_t> bytecode = {
       kJMP_ABS, U16(0xABCD)  //
@@ -896,6 +966,7 @@ TEST_CASE("Unit: JMP_ABS") {
   REQUIRE(cpu.PC() == 0xABCD);
   REQUIRE(cpu.P() == 0x34);
 }
+
 TEST_CASE("Unit: JMP_IND") {
   std::vector<uint8_t> bytecode = {
       kJMP_IND, U16(0x0010)  //
@@ -912,6 +983,7 @@ TEST_CASE("Unit: JMP_IND") {
   REQUIRE(cpu.PC() == 0x1234);
   REQUIRE(cpu.P() == 0x34);
 }
+
 TEST_CASE("Unit: JSR_ABS") {
   std::vector<uint8_t> bytecode = {
       kJSR_ABS, U16(0x0010),  //
@@ -2032,46 +2104,87 @@ TEST_CASE("Unit: LDY_ABSX") {
 }
 
 TEST_CASE("Unit: LSR_A") {}
+
 TEST_CASE("Unit: LSR_ZP") {}
+
 TEST_CASE("Unit: LSR_ZPX") {}
+
 TEST_CASE("Unit: LSR_ABS") {}
+
 TEST_CASE("Unit: LSR_ABSX") {}
+
 TEST_CASE("Unit: NOP") {}
+
 TEST_CASE("Unit: ORA_IMM") {}
+
 TEST_CASE("Unit: ORA_ZP") {}
+
 TEST_CASE("Unit: ORA_ZPX") {}
+
 TEST_CASE("Unit: ORA_ABS") {}
+
 TEST_CASE("Unit: ORA_ABSX") {}
+
 TEST_CASE("Unit: ORA_ABSY") {}
+
 TEST_CASE("Unit: ORA_INDX") {}
+
 TEST_CASE("Unit: ORA_INDY") {}
+
 TEST_CASE("Unit: PHA") {}
+
 TEST_CASE("Unit: PHP") {}
+
 TEST_CASE("Unit: PLA") {}
+
 TEST_CASE("Unit: PLP") {}
+
 TEST_CASE("Unit: ROL_A") {}
+
 TEST_CASE("Unit: ROL_ZP") {}
+
 TEST_CASE("Unit: ROL_ZPX") {}
+
 TEST_CASE("Unit: ROL_ABS") {}
+
 TEST_CASE("Unit: ROL_ABSX") {}
+
 TEST_CASE("Unit: ROR_A") {}
+
 TEST_CASE("Unit: ROR_ZP") {}
+
 TEST_CASE("Unit: ROR_ZPX") {}
+
 TEST_CASE("Unit: ROR_ABS") {}
+
 TEST_CASE("Unit: ROR_ABSX") {}
+
 TEST_CASE("Unit: RTI") {}
+
 TEST_CASE("Unit: RTS") {}
+
 TEST_CASE("Unit: SBC_IMM") {}
+
 TEST_CASE("Unit: SBC_ZP") {}
+
 TEST_CASE("Unit: SBC_ZPX") {}
+
 TEST_CASE("Unit: SBC_ABS") {}
+
 TEST_CASE("Unit: SBC_ABSX") {}
+
 TEST_CASE("Unit: SBC_ABSY") {}
+
 TEST_CASE("Unit: SBC_INDX") {}
+
 TEST_CASE("Unit: SBC_INDY") {}
+
 TEST_CASE("Unit: SEC") {}
+
 TEST_CASE("Unit: SED") {}
+
 TEST_CASE("Unit: SEI") {}
+
 TEST_CASE("Unit: STA_ZP") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2092,6 +2205,7 @@ TEST_CASE("Unit: STA_ZP") {
   REQUIRE(cpu.A() == data);
   REQUIRE(cpu.P() == flags);
 }
+
 TEST_CASE("Unit: STA_ZPX") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF - 0x05);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2114,6 +2228,7 @@ TEST_CASE("Unit: STA_ZPX") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr + offset) == (int)data);
 }
+
 TEST_CASE("Unit: STA_ABS") {
   uint16_t addr = GENERATE(0x0000, 0x0001, 0x00FF, 0x0100, 0x1000, 0x1FFF);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2133,6 +2248,7 @@ TEST_CASE("Unit: STA_ABS") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr) == (int)data);
 }
+
 TEST_CASE("Unit: STA_ABSX") {
   uint16_t addr =
       GENERATE(0x0013, 0x00015, 0x00FF, 0x0100, 0x1000, 0x2000 - 0x05 - 1);
@@ -2158,6 +2274,7 @@ TEST_CASE("Unit: STA_ABSX") {
   cpu.advance_cycles(5);
   REQUIRE((int)cpu.read(addr + offset) == (int)data);
 }
+
 TEST_CASE("Unit: STA_ABSY") {
   uint16_t addr =
       GENERATE(0x0000, 0x0001, 0x00FF, 0x0100, 0x1000, 0x1FFF - 0x05);
@@ -2183,6 +2300,7 @@ TEST_CASE("Unit: STA_ABSY") {
   cpu.advance_cycles(5);
   REQUIRE((int)cpu.read(addr + offset) == (int)data);
 }
+
 TEST_CASE("Unit: STA_INDX") {
   uint8_t zp_addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF - 0x10);
   uint16_t addr =
@@ -2208,6 +2326,7 @@ TEST_CASE("Unit: STA_INDX") {
   cpu.advance_cycles(6);
   REQUIRE((int)cpu.read(addr) == (int)data);
 }
+
 TEST_CASE("Unit: STA_INDY") {
   uint8_t zp_addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   uint16_t addr = GENERATE(0x000E, 0x0023, 0x00FA, 0x0100, 0x1000, 0x1111,
@@ -2233,6 +2352,7 @@ TEST_CASE("Unit: STA_INDY") {
   cpu.advance_cycles(6);
   REQUIRE((int)cpu.read(addr + offset) == (int)data);
 }
+
 TEST_CASE("Unit: STX_ZP") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2253,6 +2373,7 @@ TEST_CASE("Unit: STX_ZP") {
   REQUIRE(cpu.X() == data);
   REQUIRE(cpu.P() == flags);
 }
+
 TEST_CASE("Unit: STX_ZPY") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF - 0x05);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2275,6 +2396,7 @@ TEST_CASE("Unit: STX_ZPY") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr + offset) == (int)data);
 }
+
 TEST_CASE("Unit: STX_ABS") {
   uint16_t addr = GENERATE(0x0000, 0x0001, 0x00FF, 0x0100, 0x1000, 0x1FFF);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2294,6 +2416,7 @@ TEST_CASE("Unit: STX_ABS") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr) == (int)data);
 }
+
 TEST_CASE("Unit: STY_ZP") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2314,6 +2437,7 @@ TEST_CASE("Unit: STY_ZP") {
   REQUIRE(cpu.Y() == data);
   REQUIRE(cpu.P() == flags);
 }
+
 TEST_CASE("Unit: STY_ZPX") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF - 0x05);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2336,6 +2460,7 @@ TEST_CASE("Unit: STY_ZPX") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr + offset) == (int)data);
 }
+
 TEST_CASE("Unit: STY_ABS") {
   uint16_t addr = GENERATE(0x0000, 0x0001, 0x00FF, 0x0100, 0x1000, 0x1FFF);
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
@@ -2355,6 +2480,7 @@ TEST_CASE("Unit: STY_ABS") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr) == (int)data);
 }
+
 TEST_CASE("Unit: TAX") {
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   std::vector<uint8_t> bytecode = {
@@ -2369,6 +2495,7 @@ TEST_CASE("Unit: TAX") {
   cpu.advance_cycles(2);
   REQUIRE(cpu.X() == data);
 }
+
 TEST_CASE("Unit: TAY") {
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   std::vector<uint8_t> bytecode = {
@@ -2384,6 +2511,7 @@ TEST_CASE("Unit: TAY") {
   cpu.advance_cycles(2);
   REQUIRE(cpu.Y() == data);
 }
+
 TEST_CASE("Unit: TSX") {
   std::vector<uint8_t> bytecode = {
       kTSX,  //
@@ -2396,6 +2524,7 @@ TEST_CASE("Unit: TSX") {
   cpu.advance_cycles(2);
   REQUIRE((int)cpu.X() == 0xFD);
 }
+
 TEST_CASE("Unit: TXA") {
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   std::vector<uint8_t> bytecode = {
@@ -2411,6 +2540,7 @@ TEST_CASE("Unit: TXA") {
   cpu.advance_cycles(2);
   REQUIRE(cpu.A() == data);
 }
+
 TEST_CASE("Unit: TXS") {
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA);
   std::vector<uint8_t> bytecode = {
@@ -2426,6 +2556,7 @@ TEST_CASE("Unit: TXS") {
   cpu.advance_cycles(2);
   REQUIRE((int)cpu.SP() == (int)data);
 }
+
 TEST_CASE("Unit: TYA") {
   uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA);
   std::vector<uint8_t> bytecode = {
