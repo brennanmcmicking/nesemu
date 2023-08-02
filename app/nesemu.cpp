@@ -80,7 +80,8 @@ int main(int argc, char* argv[]) {
   // https://www.boost.org/doc/libs/1_82_0/doc/html/program_options/tutorial.html#id-1.3.30.4.3
   po::options_description desc("Allowed options");
   desc.add_options()("help,h", "produce help message")(
-      "debug,D", "run in debug mode")("input-file", "input file");
+      "debug,D", "run in debug mode")("input-file", "input file")(
+      "headless,H", "run in headless mode");
 
   // Add the file to load as a positional argument
   po::positional_options_description p;
@@ -95,6 +96,7 @@ int main(int argc, char* argv[]) {
   // Check args
   std::string input_filename;
   bool debug_mode = false;
+  bool headless_mode = false;
 
   if (vm.count("help")) {
     std::cout << help_msg;
@@ -112,15 +114,19 @@ int main(int argc, char* argv[]) {
   }
 
   if (vm.count("debug")) {
-    std::cout << "Running in debug mode.\n";
+    BOOST_LOG_TRIVIAL(info) << "Running in debug mode.\n";
     debug_mode = true;
+  }
+
+  if (vm.count("headless")) {
+    BOOST_LOG_TRIVIAL(info) << "Running in headless mode";
+    headless_mode = true;
   }
 
   util::init_log_level();
 
-  GLFWwindow* window_handle = init_window();
+  GLFWwindow* window_handle = nullptr;
 
-  ppu::PPU ppu(*window_handle);
   std::ifstream in(input_filename);
   if (!in.is_open()) {
     BOOST_LOG_TRIVIAL(fatal)
@@ -128,21 +134,38 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   cartridge::Cartridge cart(in);
-  cpu::CPU cpu(cart, std::ref(ppu));
-  BOOST_LOG_TRIVIAL(info) << "hello world\n";
-  BOOST_LOG_TRIVIAL(info)
-      << "this program will be the fully integrated nes emulator!\n";
+  cpu::CPU* cpu = nullptr;
+
+  if (!headless_mode) {
+    BOOST_LOG_TRIVIAL(trace) << "Creating window + CPU";
+    window_handle = init_window();
+    ppu::PPU ppu(*window_handle);
+    cpu = new cpu::CPU(cart, std::ref(ppu));
+  } else {
+    BOOST_LOG_TRIVIAL(trace) << "Creating CPU (no window)";
+    cpu = new cpu::CPU(cart);
+  }
+
+  if (cpu == nullptr) {
+    BOOST_LOG_TRIVIAL(fatal) << "Could not create CPU";
+    return 1;
+  } else {
+    BOOST_LOG_TRIVIAL(trace) << "Created CPU";
+  }
 
   if (debug_mode) {
     // Only when the program was started in debug mode can it be debugged
-    debugger::Debugger debugger(&cpu);
+    debugger::Debugger debugger(cpu);
     // Debugger runs infinite loop here
     debugger.debug();
   } else {
-    cpu.begin_cpu_loop();
+    cpu->begin_cpu_loop();
   }
 
   // Cleanup
-  glfwTerminate();
+  delete cpu;
+  if (!headless_mode) {
+    glfwTerminate();
+  }
   return 0;
 }

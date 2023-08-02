@@ -530,9 +530,11 @@ void CPU::advance_instruction() {
 }
 
 void CPU::advance_frame() {
-  // Render a frame using the current cpu data
-  CPU::PPU& ppu = ppu_->get();
-  ppu.render_to_window();
+  if (ppu_.has_value()) {
+    // Render a frame using the current cpu data
+    CPU::PPU& ppu = ppu_->get();
+    ppu.render_to_window();
+  }
   // TODO: what does 0.5 cycles mean and how to deal with that?
   advance_cycles(static_cast<std::size_t>(kCyclesPerFrame));
 }
@@ -667,6 +669,7 @@ void CPU::BIT(AddrMode addressingMode) {
 
 void CPU::BRANCH(OpCode opcode, bool doBranch) {
   // we must the read value as a signed integer to support backwards jumps
+  uint8_t unsigned_offset = value_fetch(kRelative);
   int8_t offset = static_cast<int8_t>(value_fetch(kRelative));
   // from the docs: "As the program counter itself is incremented during
   // instruction execution by two the effective address range for the target
@@ -674,12 +677,15 @@ void CPU::BRANCH(OpCode opcode, bool doBranch) {
   // i.e. we must increment the PC *before* applying the offset
   PC_ += byte_count(opcode);
   if (doBranch) {
+    BOOST_LOG_TRIVIAL(trace)
+        << "Branch succeeded, offset: " << signed(offset)
+        << ", unsigned offset: " << unsigned(unsigned_offset);
     PC_ += offset;
   }
 }
 
 void CPU::CMP(uint8_t reg, uint8_t other) {
-  set_carry(reg >= other);
+  set_carry(reg < other);
   set_zero(reg == other);
   set_negative(reg < other);
 }
