@@ -8,7 +8,7 @@ uint8_t CPU::read(uint16_t addr) {
       return ram_[addr % 0x800];
     case 0x2000 ... 0x3FFF: {  // PPU Registers
       if (!ppu_.has_value()) {
-        BOOST_LOG_TRIVIAL(fatal)
+        BOOST_LOG_TRIVIAL(trace)
             << "Read from PPU register without attached PPU: " << addr;
         return 0xAA;
       }
@@ -20,13 +20,23 @@ uint8_t CPU::read(uint16_t addr) {
           return ppu.get_OAMDATA();
         case 0x2007:  // PPUDATA (r/w)
           return ppu.get_PPUDATA();
+        default:
+          BOOST_LOG_TRIVIAL(trace) << "Invalid PPU register read: " << addr;
+          return 0xAA;
       };
     }
     case 0x4000 ... 0x4015:  // Sound
       BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
       return 0xAA;
     case 0x4016 ... 0x4017:  // TODO: Controller IO
-      return 0xAA;
+      if (!controller_.has_value()) {
+        BOOST_LOG_TRIVIAL(trace)
+            << "Read from controller register without attached controller: "
+            << addr;
+        return 0xAA;
+      }
+      Controller& controller = controller_.value().get();
+      return controller.read_joy1();
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
       BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
       return 0xAA;
@@ -45,7 +55,7 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       return true;
     case 0x2000 ... 0x3FFF: {  // TODO: PPU Registers
       if (!ppu_.has_value()) {
-        BOOST_LOG_TRIVIAL(fatal)
+        BOOST_LOG_TRIVIAL(trace)
             << "Read from PPU register without attached PPU: " << addr;
         return false;
       }
@@ -79,7 +89,15 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
       return false;
     case 0x4016 ... 0x4017:  // TODO: Controller IO
-      return false;
+      if (!controller_.has_value()) {
+        BOOST_LOG_TRIVIAL(trace)
+            << "Write to controller register without attached controller: "
+            << addr;
+        return false;
+      }
+      Controller& controller = controller_.value().get();
+      controller.write_strobe(data);
+      return true;
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
       BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
       return false;

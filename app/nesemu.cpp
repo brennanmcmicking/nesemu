@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "cartridge.hpp"
+#include "controller.hpp"
 #include "cpu.hpp"
 #include "debugger.hpp"
 #include "ppu.hpp"
@@ -134,17 +135,20 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   cartridge::Cartridge cart(in);
-  cpu::CPU* cpu = nullptr;
-  ppu::PPU* ppu = nullptr;
+  std::shared_ptr<cpu::CPU> cpu;
+  std::shared_ptr<ppu::PPU> ppu;
+  std::shared_ptr<controller::Controller> controller;
 
   if (!headless_mode) {
     BOOST_LOG_TRIVIAL(trace) << "Creating window + CPU";
     window_handle = init_window();
-    ppu = new ppu::PPU(*window_handle);
-    cpu = new cpu::CPU(cart, std::ref(*ppu));
+    ppu = std::make_shared<ppu::PPU>(*window_handle);
+    controller = std::make_shared<controller::Controller>(*window_handle);
+    cpu =
+        std::make_shared<cpu::CPU>(cart, std::ref(*ppu), std::ref(controller));
   } else {
     BOOST_LOG_TRIVIAL(trace) << "Creating CPU (no window)";
-    cpu = new cpu::CPU(cart);
+    cpu = std::make_shared<cpu::CPU>(cart);
   }
 
   if (cpu == nullptr) {
@@ -156,7 +160,7 @@ int main(int argc, char* argv[]) {
 
   if (debug_mode) {
     // Only when the program was started in debug mode can it be debugged
-    debugger::Debugger debugger(cpu);
+    debugger::Debugger debugger(cpu.get());
     // Debugger runs infinite loop here
     debugger.debug();
   } else {
@@ -164,8 +168,6 @@ int main(int argc, char* argv[]) {
   }
 
   // Cleanup
-  if (ppu != nullptr) delete ppu;
-  delete cpu;
   if (!headless_mode) {
     glfwTerminate();
   }

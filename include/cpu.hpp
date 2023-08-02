@@ -7,6 +7,7 @@
 #include <optional>
 
 #include "cartridge.hpp"
+#include "controller.hpp"
 #include "ppu.hpp"
 
 // Forward declaration to deal with circular dependency
@@ -48,6 +49,7 @@ class CPU {
  public:
   using Cartridge = cartridge::Cartridge;
   using PPU = ppu::PPU;
+  using Controller = controller::Controller;
 
   const double kFramerate = 60.0988;              // Hz
   const double kTimePerFrame = 1.0 / kFramerate;  // seconds
@@ -56,7 +58,9 @@ class CPU {
   const double kCyclesPerFrame = 29780.5;  // taken from wiki
 
   explicit CPU(Cartridge& cartridge,
-               std::optional<std::reference_wrapper<PPU>> ppu = std::nullopt);
+               std::optional<std::reference_wrapper<PPU>> ppu = std::nullopt,
+               std::optional<std::reference_wrapper<Controller>> controller =
+                   std::nullopt);
 
   CPU() = delete;
   CPU(CPU&) = delete;
@@ -74,20 +78,21 @@ class CPU {
   /**
    * @brief Runs a blocking infinite loop
    *
-   * Once this function is run, it will loop until the program terminates. It
-   * handles running the clock at a consistent speed, invoking various
-   * components of the system at appropriate times, and sleeping in between
-   * cycles.
+   * Once this function is run, it will loop until the program
+   * terminates. It handles running the clock at a consistent
+   * speed, invoking various components of the system at
+   * appropriate times, and sleeping in between cycles.
    */
   void begin_cpu_loop();
 
   /**
    * @brief Executes the next cycle of the ALU.
    *
-   * Most (if not all) instructions take more than 1 cycle to execute. To
-   * accurately emulate CPU behaviour, the ALU will execute the entire
-   * functionality of the instruction in the first cycle and then NOP for
-   * the remaining cycles of that instruction.
+   * Most (if not all) instructions take more than 1 cycle to
+   * execute. To accurately emulate CPU behaviour, the ALU will
+   * execute the entire functionality of the instruction in the
+   * first cycle and then NOP for the remaining cycles of that
+   * instruction.
    */
   void cycle();
 
@@ -102,7 +107,8 @@ class CPU {
   void advance_instruction();
 
   /**
-   * @brief Renders a frame, then advances a frame's worth of CPU cycles.
+   * @brief Renders a frame, then advances a frame's worth of CPU
+   * cycles.
    */
   void advance_frame();
 
@@ -123,13 +129,13 @@ class CPU {
   /**
    * @brief Writes the given value to the absolute memory address
    *
-   * The given address and value are forwarded to the relevant component
-   * based on the table in the [NesDEV Memory Map Wiki Page]
-   * (https://www.nesdev.org/wiki/CPU_memory_map)
+   * The given address and value are forwarded to the relevant
+   * component based on the table in the [NesDEV Memory Map Wiki
+   * Page] (https://www.nesdev.org/wiki/CPU_memory_map)
    *
-   * Instead of throwing an exception, a boolean value of false will be returned
-   * if an attempt is made to write to a read-only section of memory (i.e.
-   * controller state).
+   * Instead of throwing an exception, a boolean value of false
+   * will be returned if an attempt is made to write to a read-only
+   * section of memory (i.e. controller state).
    *
    * @param addr The address to write to
    * @param value The value to write to it
@@ -161,10 +167,12 @@ class CPU {
 
  private:
   std::optional<std::reference_wrapper<PPU>> ppu_;
+  std::optional<std::reference_wrapper<Controller>> controller_;
   Cartridge& cart_;
 
-  // True iff the program was started in debug mode. If true, the program will
-  // stop execution on breakpoints //TODO: make that happen
+  // True iff the program was started in debug mode. If true, the
+  // program will stop execution on breakpoints //TODO: make that
+  // happen
   bool debug_mode_;
 
   /**
@@ -194,7 +202,8 @@ class CPU {
   uint8_t value_fetch(AddrMode mode);
 
   /**
-   * @brief Pushes a byte onto the stack and updates the stack pointer
+   * @brief Pushes a byte onto the stack and updates the stack
+   * pointer
    *
    * Complains if SP is invalid
    *
@@ -204,7 +213,8 @@ class CPU {
   void push_stack16(uint16_t value);
 
   /**
-   * @brief Pops the top byte off of the stack and decrements the stack pointer
+   * @brief Pops the top byte off of the stack and decrements the
+   * stack pointer
    *
    * Complains if SP is invalid
    *
