@@ -66,6 +66,8 @@ GLFWwindow* init_window() {
 
   glDisable(GL_DEPTH_TEST);
 
+  return window;
+
   // Create callback to close the window when expected
   // TODO:
   // glfwSetWindowCloseCallback(window_, []())
