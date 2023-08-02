@@ -615,13 +615,33 @@ void CPU::set_negative(bool value) {
   }
 }
 
-void CPU::ADC(uint8_t value) {
-  A_ += value;
+bool detectOverflow(uint8_t a, uint8_t b, uint8_t result) {
+  bool aNeg = (a & 0b10000000) != 0;
+  bool bNeg = (b & 0b10000000) != 0;
+  if (aNeg != bNeg) {
+    // If the signs are different, overflow cannot occur.
+    return false;
+  }
 
-  set_carry(A_ < (static_cast<uint16_t>(A_) + value));
-  set_zero(A_ == 0);
-  // set_overflow( ??? );
-  set_negative((A_ & 0b10000000) > 0);
+  // Then, check if the sign of the result is different from the signs of a and
+  // b.
+  bool resultNeg = (result & 0b10000000) != 0;
+  bool differentSigns = (aNeg != resultNeg) && (bNeg != resultNeg);
+
+  // If the signs are the same and the result has a different sign, overflow
+  // occurred.
+  return differentSigns;
+}
+
+void CPU::ADC(uint8_t value) {
+  uint16_t newA_ = A_ + value + get_carry();
+
+  set_overflow(detectOverflow(A_, value, newA_));
+  set_carry((newA_ >> 8) != 0);
+  set_zero((newA_ & 0xFF) == 0);
+  set_negative((newA_ & 0b10000000) > 0);
+
+  A_ = newA_ & 0xFF;
 }
 
 void CPU::ASL_a() {
