@@ -917,6 +917,7 @@ void CPU::execute(uint8_t opcode) {
       X_ = A_;
       set_zero(X_ == 0);
       set_negative((X_ & 0b10000000) > 0);
+      PC_ += byte_count(kTAX);
       break;
     }
     case kTAY: {
@@ -924,6 +925,7 @@ void CPU::execute(uint8_t opcode) {
       Y_ = A_;
       set_zero(Y_ == 0);
       set_negative((Y_ & 0b10000000) > 0);
+      PC_ += byte_count(kTAY);
       break;
     }
     case kTSX: {
@@ -931,6 +933,7 @@ void CPU::execute(uint8_t opcode) {
       X_ = SP_;
       set_zero(X_ == 0);
       set_negative((X_ & 0b10000000) > 0);
+      PC_ += byte_count(kTSX);
       break;
     }
     case kTXA: {
@@ -938,11 +941,13 @@ void CPU::execute(uint8_t opcode) {
       A_ = X_;
       set_zero(A_ == 0);
       set_negative((A_ & 0b10000000) > 0);
+      PC_ += byte_count(kTXA);
       break;
     }
     case kTXS: {
       // TXS, Implied, 1 bytes, 2 cycles
       SP_ = X_;
+      PC_ += byte_count(kTXS);
       break;
     }
     case kTYA: {
@@ -950,6 +955,7 @@ void CPU::execute(uint8_t opcode) {
       A_ = Y_;
       set_zero(A_ == 0);
       set_negative((A_ & 0b10000000) > 0);
+      PC_ += byte_count(kTYA);
       break;
     }
 
