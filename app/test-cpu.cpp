@@ -614,7 +614,7 @@ TEST_CASE("Unit: BVC_REL") {
   cpu.advance_instruction();  // CMP #$01
 
   REQUIRE_FALSE(cpu.get_negative());
-  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_carry());
   REQUIRE_FALSE(cpu.get_overflow());
 
   uint16_t old_pc = cpu.PC();
@@ -648,11 +648,11 @@ TEST_CASE("Unit: BVS_REL") {
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x7F,  //
       kADC_IMM, 0x01,  //
-      kBVC_REL, 0x06,  // jump 6 (+2)
+      kBVS_REL, 0x06,  // jump 6 (+2)
       kADC_IMM, 0x00,  //
       kNOP,     kNOP,  //
       kNOP,     kNOP,  //
-      kBVC_REL, 0xF8,  // jump -8 (+2)
+      kBVS_REL, 0xF8,  // jump -8 (+2)
       kNOP,     kNOP   //
   };
 
