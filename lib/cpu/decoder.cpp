@@ -495,84 +495,112 @@ void CPU::execute(uint8_t opcode) {
       // LDA, Absolute,X, 3 bytes, 4 (+1 if page crossed)
       A_ = value_fetch(kAbsoluteX);
       PC_ += byte_count(kLDA_ABSX);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDA_ABSY: {
       // LDA, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
       A_ = value_fetch(kAbsoluteY);
       PC_ += byte_count(kLDA_ABSY);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDA_INDX: {
       // LDA, (Indirect,X), 2 bytes, 6 cycles
       A_ = value_fetch(kIndexedIndirect);
       PC_ += byte_count(kLDA_INDX);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDA_INDY: {
       // LDA, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
       A_ = value_fetch(kIndirectIndexed);
       PC_ += byte_count(kLDA_INDY);
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       break;
     }
     case kLDX_IMM: {
       // LDX, Immediate, 2 bytes, 2 cycles
       X_ = value_fetch(kImmediate);
       PC_ += byte_count(kLDX_IMM);
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
       break;
     }
     case kLDX_ZP: {
       // LDX, Zero Page, 2 bytes, 3 cycles
       X_ = value_fetch(kZeroPage);
       PC_ += byte_count(kLDX_ZP);
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
       break;
     }
     case kLDX_ZPY: {
       // LDX, Zero Page,Y, 2 bytes, 4 cycles
       X_ = value_fetch(kZeroPageY);
       PC_ += byte_count(kLDX_ZPY);
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
       break;
     }
     case kLDX_ABS: {
       // LDX, Absolute, 3 bytes, 4 cycles
       X_ = value_fetch(kAbsolute);
       PC_ += byte_count(kLDX_ABS);
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
       break;
     }
     case kLDX_ABSY: {
       // LDX, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
       X_ = value_fetch(kAbsoluteY);
       PC_ += byte_count(kLDX_ABSY);
+      set_zero(X_ == 0);
+      set_negative((X_ & 0b10000000) > 0);
       break;
     }
     case kLDY_IMM: {
       // LDY, Immediate, 2 bytes, 2 cycles
       Y_ = value_fetch(kImmediate);
       PC_ += byte_count(kLDY_IMM);
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
       break;
     }
     case kLDY_ZP: {
       // LDY, Zero Page, 2 bytes, 3 cycles
       Y_ = value_fetch(kZeroPage);
       PC_ += byte_count(kLDY_ZP);
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
       break;
     }
     case kLDY_ZPX: {
       // LDY, Zero Page,X, 2 bytes, 4 cycles
       Y_ = value_fetch(kZeroPageX);
       PC_ += byte_count(kLDY_ZPX);
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
       break;
     }
     case kLDY_ABS: {
       // LDY, Absolute, 3 bytes, 4 cycles
       Y_ = value_fetch(kAbsolute);
       PC_ += byte_count(kLDY_ABS);
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
       break;
     }
     case kLDY_ABSX: {
       // LDY, Absolute,X, 3 bytes, 4 (+1 if page crossed)
       Y_ = value_fetch(kAbsoluteX);
       PC_ += byte_count(kLDY_ABSX);
+      set_zero(Y_ == 0);
+      set_negative((Y_ & 0b10000000) > 0);
       break;
     }
     case kLSR_A: {
