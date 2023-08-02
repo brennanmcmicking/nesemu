@@ -84,6 +84,8 @@ class Debugger {
       // TODO: add description of flag bits to help message here
       "set <register> <value> \n"
       "  Set the specified register's value \n"
+      "exit\n"
+      "  exit the program\n"
       "\n";
 
   cpu::CPU* cpu_;

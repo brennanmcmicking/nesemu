@@ -116,11 +116,6 @@ uint16_t CPU::addr_fetch(AddrMode mode) {
       uint16_t addr = read(PC_ + 1);
       return (addr + Y_) & 0xFF;
     }
-    case kRelative: {
-      int8_t offset = static_cast<int8_t>(read(PC_ + 1));
-      uint8_t instruction_length = 1 + 1;  // opcode + operand
-      return PC_ + instruction_length + offset;
-    }
     case kAbsolute: {
       uint16_t addr = read16(PC_ + 1);
       return addr;
@@ -157,6 +152,7 @@ uint8_t CPU::value_fetch(AddrMode mode) {
     case kAccumulator: {
       return A_;
     }
+    case kRelative:
     case kImmediate: {
       return read(PC_ + 1);
     }
