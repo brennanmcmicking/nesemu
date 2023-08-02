@@ -930,7 +930,7 @@ void CPU::execute(uint8_t opcode) {
     }
     case kSTY_ZPX: {
       // STY, Zero Page,X, 2 bytes, 4 cycles
-      STY(kZeroPageY);
+      STY(kZeroPageX);
       PC_ += byte_count(kSTY_ZPX);
       break;
     }
