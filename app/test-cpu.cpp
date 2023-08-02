@@ -4,7 +4,6 @@
 
 #include "cartridge.hpp"
 #include "cpu.hpp"
-#include "ppu.hpp"
 
 using namespace cpu;
 
