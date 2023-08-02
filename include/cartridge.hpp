@@ -46,7 +46,5 @@ class Cartridge {
   std::unique_ptr<Mapper> mapper_;
 };
 
-Cartridge make_cartridge(std::string input_file);
-
 }  // namespace cartridge
 #endif  // CARTRIDGE_HPP
