@@ -38,6 +38,7 @@ class Mapper0 : public Mapper {
         }
         return prg_rom_[addr - 0x8000];
     }
+    return 0xAA;
   };
   void prg_write(uint16_t addr, uint8_t data) override {
     switch (addr) {
