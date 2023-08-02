@@ -1,5 +1,6 @@
 #include "cartridge.hpp"
 
+#include <algorithm>
 #include <cstring>
 #include <format>
 #include <fstream>
@@ -31,7 +32,7 @@ class Mapper0 : public Mapper {
       case 0x6000 ... 0x7FFF:
         // TODO ?
         break;
-      case 0x8000 ... 0xBFFF:
+      case 0x8000 ... 0xFFFF:
         return prg_rom_[addr - 0x8000];
     }
   };
@@ -45,8 +46,9 @@ class Mapper0 : public Mapper {
       case 0x6000 ... 0x7FFF:
         // TODO ?
         break;
-      case 0x8000 ... 0xBFFF:
+      case 0x8000 ... 0xFFFF:
         prg_rom_[addr - 0x8000] = data;
+        break;
     }
   };
 
@@ -91,6 +93,11 @@ Cartridge::Cartridge(std::istream &in) {
   uint8_t mapper_number = (header[6] >> 4) || (header[7] && 0xFF00);
   switch (mapper_number) {
     case 0:
+      if (prg_rom_size_ == 16 * (1 << 10)) {
+        // https://stackoverflow.com/questions/17636690/nice-way-to-append-a-vector-to-itself
+        std::copy_n(prg_rom.begin(), 16 * (1 << 10),
+                    std::back_inserter(prg_rom));
+      }
       mapper_ =
           std::make_unique<Mapper0>(std::move(prg_rom), std::move(chr_rom));
       break;
