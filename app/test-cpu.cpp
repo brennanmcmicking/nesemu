@@ -682,11 +682,7 @@ TEST_CASE("Unit: LDA_INDY") {
   SECTION("Positive") {
     cpu.write(0x07, 0x09);
 
-    cpu.DEBUG();
-
     cpu.cycle();
-
-    cpu.DEBUG();
 
     REQUIRE(cpu.A() == 9);
     REQUIRE_FALSE(cpu.get_zero());
