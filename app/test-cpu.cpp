@@ -4,7 +4,9 @@
 
 #include "cartridge.hpp"
 #include "cpu.hpp"
+#include "util.hpp"
 
+using namespace util;
 using namespace cpu;
 
 class VectorMapper : public cartridge::Mapper {
@@ -35,7 +37,7 @@ class VectorMapper : public cartridge::Mapper {
   uint16_t entrypoint_;
 };
 
-#define U16(x) ((x)&0xFF), ((x) >> 8)
+#define U16(x) static_cast<uint8_t>((x)&0xFFu), static_cast<uint8_t>((x) >> 8u)
 
 #define MAKE_CPU(bytecode)                                            \
   std::unique_ptr<VectorMapper> __mapper(new VectorMapper(bytecode)); \
@@ -458,33 +460,28 @@ TEST_CASE("Unit: SEC") {}
 TEST_CASE("Unit: SED") {}
 TEST_CASE("Unit: SEI") {}
 TEST_CASE("Unit: STA_ZP") {
-  // uint8_t addr = GENERATE(range(0x00, 0xFF));
-  // uint8_t data = GENERATE(range(0x00, 0xFF));
-  uint8_t addr = 0x05;
-  uint8_t data = 0x09;
+  uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, data,  //
       kSTA_ZP, addr,   //
   };
 
   MAKE_CPU(bytecode);
-
   cpu.write(addr, data + 1);
 
   cpu.advance_cycles(2);
-
   REQUIRE(cpu.A() == data);
   auto flags = cpu.P();
 
   cpu.advance_cycles(3);
-
   REQUIRE(cpu.read(addr) == data);
   REQUIRE(cpu.A() == data);
   REQUIRE(cpu.P() == flags);
 }
 TEST_CASE("Unit: STA_ZPX") {
-  uint8_t addr = 0x05;
-  uint8_t data = 0x09;
+  uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF - 0x05);
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
   uint8_t offset = 0x05;
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, data,    //
@@ -502,9 +499,27 @@ TEST_CASE("Unit: STA_ZPX") {
   REQUIRE(cpu.X() == offset);
 
   cpu.advance_cycles(4);
-  REQUIRE(cpu.read(addr + offset) == data);
+  REQUIRE((int)cpu.read(addr + offset) == (int)data);
 }
-TEST_CASE("Unit: STA_ABS") {}
+TEST_CASE("Unit: STA_ABS") {
+  uint16_t addr = GENERATE(0x0000, 0x0001, 0x00FF, 0x0100, 0x1000, 0x1FFF);
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  CAPTURE(fmt_hex(addr), fmt_hex(data));
+
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, data,       //
+      kSTA_ABS, U16(addr),  //
+  };
+
+  MAKE_CPU(bytecode);
+  cpu.write(addr, data + 1);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+
+  cpu.advance_cycles(4);
+  REQUIRE((int)cpu.read(addr) == (int)data);
+}
 TEST_CASE("Unit: STA_ABSX") {}
 TEST_CASE("Unit: STA_ABSY") {}
 TEST_CASE("Unit: STA_INDX") {}
