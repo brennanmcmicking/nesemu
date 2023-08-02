@@ -149,6 +149,16 @@ class CPU {
   bool get_overflow();
   bool get_negative();
 
+  /**
+   * @brief Peeks the top of the stack without decrementing
+   *
+   * Does not complain if SP is invalid
+   *
+   * @return uint8_t
+   */
+  uint8_t peek_stack();
+  uint16_t peek_stack16();
+
  private:
   std::optional<std::reference_wrapper<PPU>> ppu_;
   Cartridge& cart_;
@@ -202,16 +212,6 @@ class CPU {
    */
   uint8_t pop_stack();
   uint16_t pop_stack16();
-
-  /**
-   * @brief Peeks the top of the stack without decrementing
-   *
-   * Does not complain if SP is invalid
-   *
-   * @return uint8_t
-   */
-  uint8_t peek_stack();
-  uint16_t peek_stack16();
 
   void set_carry(bool value);
   void set_zero(bool value);

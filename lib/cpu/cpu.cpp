@@ -11,11 +11,11 @@ CPU::CPU(CPU::Cartridge& cartridge,
     : ppu_(ppu),
       cart_(cartridge),
       PC_(0),
-      SP_(0xFF),
+      SP_(0xFD),
       A_(0),
       X_(0),
       Y_(0),
-      P_(0),
+      P_(0x34),
       cycles_todo_(0),
       ram_({}) {
   // read reset vector to get entry point
@@ -33,8 +33,8 @@ void CPU::push_stack(uint8_t value) {
   if (SP_ == 0x00) {
     BOOST_LOG_TRIVIAL(fatal) << "Stack overflow detected\n";
   }
-  SP_ -= 1;
   write(0x0100 | SP_, value);
+  SP_ -= 1;
 }
 
 void CPU::push_stack16(uint16_t value) {
@@ -42,8 +42,8 @@ void CPU::push_stack16(uint16_t value) {
     BOOST_LOG_TRIVIAL(fatal) << "Stack overflow detected\n";
   }
 
+  write16(0x0100 | (SP_ - 1), value);
   SP_ -= 2;
-  write16(0x0100 | SP_, value);
 }
 
 uint8_t CPU::pop_stack() {
@@ -62,7 +62,8 @@ uint16_t CPU::pop_stack16() {
   return read16(0x0100 | (SP_ - 2));
 }
 
-uint8_t CPU::peek_stack() { return read(SP_); }
+uint8_t CPU::peek_stack() { return read(0x0100 | (SP_ + 1)); }
+uint16_t CPU::peek_stack16() { return read16(0x0100 | (SP_ + 1)); }
 
 void CPU::begin_cpu_loop() {
   while (1) {
