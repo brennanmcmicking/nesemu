@@ -33,8 +33,12 @@ class Mapper0 : public Mapper {
         // TODO ?
         break;
       case 0x8000 ... 0xFFFF:
+        if (prg_rom_.size() == 16 * (1 << 10)) {
+          addr -= 0x4000;
+        }
         return prg_rom_[addr - 0x8000];
     }
+    return 0xAA;
   };
   void prg_write(uint16_t addr, uint8_t data) override {
     switch (addr) {
@@ -47,6 +51,9 @@ class Mapper0 : public Mapper {
         // TODO ?
         break;
       case 0x8000 ... 0xFFFF:
+        if (prg_rom_.size() == 16 * (1 << 10)) {
+          addr -= 0x4000;
+        }
         prg_rom_[addr - 0x8000] = data;
         break;
     }
@@ -77,7 +84,7 @@ Cartridge::Cartridge(std::istream &in) {
   if (has_trainer) {
     char trainer[512];
     in.read(trainer, 512);
-    // discard for now
+    // discard >:3
   }
 
   std::vector<uint8_t> prg_rom(prg_rom_size_);
@@ -93,11 +100,6 @@ Cartridge::Cartridge(std::istream &in) {
   uint8_t mapper_number = (header[6] >> 4) || (header[7] && 0xFF00);
   switch (mapper_number) {
     case 0:
-      if (prg_rom_size_ == 16 * (1 << 10)) {
-        // https://stackoverflow.com/questions/17636690/nice-way-to-append-a-vector-to-itself
-        std::copy_n(prg_rom.begin(), 16 * (1 << 10),
-                    std::back_inserter(prg_rom));
-      }
       mapper_ =
           std::make_unique<Mapper0>(std::move(prg_rom), std::move(chr_rom));
       break;
