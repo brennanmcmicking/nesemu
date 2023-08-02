@@ -105,7 +105,7 @@ void PPU::render_to_framebuffer(frame_t& out) {
       // Attribute is for palette selection. It's one byte for color selection
       // for each 16x16px quadrant of the 32x32px tile from current palette (2
       // bits for each quadrant)
-      uint8_t attribute = read(attr_table_start + i * 8);
+      uint8_t attribute = read(attr_table_start + i / 16);
 
       // Mask color out of attribute depending on quadrant
       pixel_t quadrant_color_idx = (attribute >> quadrant_idx) & 0b11;
@@ -161,19 +161,20 @@ uint8_t PPU::read(uint16_t addr) {
           << "Pattern tables not implemented: " << util::fmt_hex(addr);
       return 0xAA;
     case 0x2000 ... 0x2FFF:  // Nametables
-      BOOST_LOG_TRIVIAL(info) << "Read from nametable: " << util::fmt_hex(addr);
+                             // BOOST_LOG_TRIVIAL(info) << "Read from nametable:
+                             // " << util::fmt_hex(addr);
     case 0x3000 ... 0x3EFF:  // Nametable mirror
       return nametables_[addr - 0x2000];
-      BOOST_LOG_TRIVIAL(info)
-          << "Read from nametable mirror: " << util::fmt_hex(addr);
+      // BOOST_LOG_TRIVIAL(info)
+      // << "Read from nametable mirror: " << util::fmt_hex(addr);
       return nametables_[addr - 0x3000];
     case 0x3F00 ... 0x3F1F:  // Palette RAM
-      BOOST_LOG_TRIVIAL(info)
-          << "Read from palette ram: " << util::fmt_hex(addr);
+      // BOOST_LOG_TRIVIAL(info)
+      // << "Read from palette ram: " << util::fmt_hex(addr);
       return palette_ram_[addr - 0x3F00];
     case 0x3F20 ... 0x3FFF:  // Palette RAM mirror
-      BOOST_LOG_TRIVIAL(info)
-          << "Read from palette ram mirror: " << util::fmt_hex(addr);
+      // BOOST_LOG_TRIVIAL(info)
+      // << "Read from palette ram mirror: " << util::fmt_hex(addr);
       return palette_ram_[addr - 0x3F20];
     default:
       BOOST_LOG_TRIVIAL(info)
@@ -189,22 +190,23 @@ bool PPU::write(uint16_t addr, uint8_t data) {
           << "Pattern tables not implemented: " << util::fmt_hex(addr);
       return false;
     case 0x2000 ... 0x2FFF:  // Nametables
-      BOOST_LOG_TRIVIAL(info) << "Write to nametable: " << util::fmt_hex(addr);
+      // BOOST_LOG_TRIVIAL(info) << "Write to nametable: " <<
+      // util::fmt_hex(addr);
       nametables_[addr - 0x2000] = data;
       return true;
     case 0x3000 ... 0x3EFF:  // Nametable mirror
-      BOOST_LOG_TRIVIAL(info)
-          << "Write to nametable mirror: " << util::fmt_hex(addr);
+      // BOOST_LOG_TRIVIAL(info)
+      // << "Write to nametable mirror: " << util::fmt_hex(addr);
       nametables_[addr - 0x3000] = data;
       return true;
     case 0x3F00 ... 0x3F1F:  // Palette RAM
-      BOOST_LOG_TRIVIAL(info)
-          << "Write to palette ram: " << util::fmt_hex(addr);
+      // BOOST_LOG_TRIVIAL(info)
+      // << "Write to palette ram: " << util::fmt_hex(addr);
       palette_ram_[addr - 0x3F00] = data;
       return true;
     case 0x3F20 ... 0x3FFF:  // Palette RAM mirror
-      BOOST_LOG_TRIVIAL(info)
-          << "Write to palette ram mirror: " << util::fmt_hex(addr);
+      // BOOST_LOG_TRIVIAL(info)
+      // << "Write to palette ram mirror: " << util::fmt_hex(addr);
       palette_ram_[addr - 0x3F20] = data;
       return true;
     default:
