@@ -45,14 +45,14 @@ add_executable(nesemu app/nesemu.cpp)
 target_link_libraries(nesemu PUBLIC cpu ppu cartridge controller debugger util Boost::log Boost::program_options glfw)
 
 add_executable(nesemu-cpu app/nesemu-cpu.cpp)
-target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge util Boost::log)
+target_link_libraries(nesemu-cpu PUBLIC cpu ppu controller cartridge util Boost::log)
 
 add_executable(nesemu-cartridge app/nesemu-cartridge.cpp)
 target_link_libraries(nesemu-cartridge PUBLIC cartridge util Boost::log)
 
 # testing
 add_executable(test-cpu app/catch2_main.cpp app/test-cpu.cpp)
-target_link_libraries(test-cpu PUBLIC cpu ppu cartridge util Boost::log)
+target_link_libraries(test-cpu PUBLIC cpu ppu cartridge controller util Boost::log)
 
 add_executable(test-ppu app/catch2_main.cpp app/test-ppu.cpp)
 target_link_libraries(test-ppu PUBLIC ppu util Boost::log)
