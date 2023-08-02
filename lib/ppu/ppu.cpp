@@ -8,13 +8,11 @@
 #include "util.hpp"
 
 namespace ppu {
-PPU::PPU() : window_(nullptr) {
+PPU::PPU(GLFWwindow& window) : internal_frame_buf_(), window_(window) {
   // Function called whenever glfw errors
   glfwSetErrorCallback([](int err, const char* desc) {
     BOOST_LOG_TRIVIAL(error) << "GLFW error" << err << ": " << desc << "\n";
   });
-  // Setup window
-  init_window();
 };
 
 PPU::~PPU() {
@@ -22,85 +20,70 @@ PPU::~PPU() {
   glfwTerminate();
 }
 
-void PPU::init_window() {
-  if (window_) {
-    // Window was already created
-    BOOST_LOG_TRIVIAL(warning) << "Window already initialized\n";
-    return;
-  }
-
-  if (!glfwInit()) {
-    BOOST_LOG_TRIVIAL(fatal) << "Could not initialize window\n";
-    glfwTerminate();
-    exit(1);
-  }
-
-  window_ = glfwCreateWindow(kScreenWidth, kScreenHeight, "nesemu", NULL, NULL);
-
-  if (!window_) {
-    // Window creation failed
-    BOOST_LOG_TRIVIAL(fatal) << "GLFW window creation failed\n";
-  }
-
-  // Create OpenGL context and setup opengl stuff
-  glfwMakeContextCurrent(window_);
-  glfwSwapInterval(1);
-
-  glDisable(GL_DEPTH_TEST);
-
-  // Create callback to close the window when expected
-  // TODO:
-  // glfwSetWindowCloseCallback(window_, []())
-
-  // TODO: initialize key callbacks here
-}
-
 // TODO: where we gonna get cpu data. bus??
-void PPU::render_frame() {
-  for (color_t* iter = frame_buffer_.begin(); iter != frame_buffer_.end();
-       ++iter) {
-    pixel_t nes_col = 0x19;  // TODO: get color from cpu
-    color_t col;
+void PPU::render_to_window() {
+  if (!internal_frame_buf_) {
+    // Unallocated, allocate it
     try {
-      col = kColorTable.at(nes_col);
-    } catch (...) {
-      BOOST_LOG_TRIVIAL(error) << "Bad color from CPU when rendering frame: "
-                               << util::fmt_hex(nes_col) << "\n";
-      // default to black
-      col = 0x0;
+      internal_frame_buf_ = std::make_unique<frame_t>();
+    } catch (const std::bad_alloc&) {
+      BOOST_LOG_TRIVIAL(error) << "render_to_window: Error when allocating "
+                                  "memory for internal framebuffer\n";
+      throw;
     }
-
-    *iter = col;
   }
-}
 
-void PPU::draw() {
+  // Render current cpu data to internal buf
+  render_to_framebuffer(*internal_frame_buf_);
+
+  // TODO: draw it to the window
+
   // Actual size of window
   int width, height;
   // TODO: glfwSetFramebufferSizeCallback to be notified when window size
   // changes
 
   // Setup viewport (full window)
-  glfwGetFramebufferSize(window_, &width, &height);
+  glfwGetFramebufferSize(&window_, &width, &height);
   glViewport(0, 0, width, height);
   // Clear window contents
-  glClear(GL_COLOR_BUFFER_BIT);
+  // glClear(GL_COLOR_BUFFER_BIT);
 
-  glDrawPixels(kScreenWidth, kScreenHeight, GL_RGB, GL_UNSIGNED_SHORT_4_4_4_4,
-               frame_buffer_.data());
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  // chatgpt told me to write these two lines
+  glRasterPos2i(-1, -1);
+  glPixelZoom(1, -1);
+
+  // TODO: not working
+  glDrawPixels(kScreenWidth, kScreenHeight, GL_RGB, GL_UNSIGNED_BYTE,
+               internal_frame_buf_->data());
 
   // glfw windows are double buffered
-  glfwSwapBuffers(window_);
+  glfwSwapBuffers(&window_);
   // process all waiting events
   glfwPollEvents();  // TODO: window refresh callback as in fn hint
 }
 
-void PPU::get_frame_buffer(frame_t& out) { out = frame_buffer_; }
+void PPU::render_to_framebuffer(frame_t& out) {
+  // TODO: get color data from cpu
 
-void PPU::debug_make_solid_color(pixel_t color, frame_t& out) {
-  for (color_t* iter = out.begin(); iter != out.end(); ++iter) {
-    *iter = color;
-  }
+  // TODO: Convert nes colors to RGB and write to buffer
+  // for (color_t* iter = out.begin(); iter != out.end(); ++iter) {
+  //   pixel_t nes_col = 0x19;  // TODO: get this color from cpu
+  //   color_t col;
+
+  //   try {
+  //     col = kColorTable.at(nes_col);
+  //   } catch (...) {
+  //     BOOST_LOG_TRIVIAL(error) << "Bad color from CPU when rendering frame: "
+  //                              << util::fmt_hex(nes_col) << "\n";
+  //     // default to black
+  //     col = 0x0;
+  //   }
+
+  //   // Update value in buffer
+  //   *iter = col;
+  // }
 }
 
 }  // namespace ppu

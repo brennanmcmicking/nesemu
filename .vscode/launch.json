@@ -15,6 +15,7 @@
           "value": "${env:PATH}:${command:cmake.getLaunchTargetDirectory}"
         }
       ],
+      "envFile": "${workspaceFolder}/.devcontainer/devcontainer.env",
       "MIMode": "gdb",
       "setupCommands": [
         {
