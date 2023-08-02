@@ -87,13 +87,52 @@ class PPU {
    */
   void render_to_framebuffer(frame_t& out);
 
+  void set_PPUCTRL(uint8_t val);
+  void set_PPUMASK(uint8_t val);
+  uint8_t get_PPUSTATUS();
+  void set_OAMADDR(uint8_t val);
+  void set_OAMDATA(uint8_t val);
+  uint8_t get_OAMDATA();
+  void set_PPUSCROLL(uint8_t val);
+  void set_PPUADDR(uint8_t val);
+  uint8_t get_PPUDATA();
+  void set_PPUDATA(uint8_t val);
+
+  // Helpers to get common attributes from ppu registers
+  // TODO: unimplemented
+  bool greyscale();
+  bool show_background();
+  bool in_vblank();
+
  private:
+  // Instead of storing whole ram array, since much of it is unused, only
+  // storing used parts: nametables and palette ram indices.
+
+  static constexpr size_t kNametableSize_ = 0x0400;  // size of one nametable
+  std::array<uint8_t, kNametableSize_ * 4> nametables_;
+  std::array<uint8_t, 0x0020> palette_ram_;
+
   // Internal buffer to which frames are rendered when rendering to window.
-  // Stored in a private variable to avoid having to reallocate the whole frame
-  // array every frame. Only allocated on first render_to_window.
+  // Stored in a private variable to avoid having to reallocate the whole
+  // frame array every frame. Only allocated on first render_to_window.
   std::unique_ptr<frame_t> internal_frame_buf_;
 
   GLFWwindow& window_;
+
+  // Registers
+  uint8_t PPUCTRL_;    // w
+  uint8_t PPUMASK_;    // w
+  uint8_t PPUSTATUS_;  // r
+  uint8_t OAMADDR_;    // w (unused)
+  uint8_t OAMDATA_;    // r/w (unused)
+  uint8_t PPUSCROLL_;  // w (unused)
+  uint16_t PPUADDR_;   // w (note: written one byte at a time)
+  uint8_t PPUDATA_;    // r/w
+
+  // Reading/writing internal ppu ram (only accessible from within PPU or via
+  // PPUADDR/PPUDATA registers)
+  uint8_t read(uint16_t addr);
+  bool write(uint16_t addr, uint8_t data);
 };
 
 }  // namespace ppu

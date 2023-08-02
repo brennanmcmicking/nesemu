@@ -6,9 +6,22 @@ uint8_t CPU::read(uint16_t addr) {
   switch (addr) {
     case 0x0000 ... 0x1FFF:  // Internal RAM
       return ram_[addr % 0x800];
-    case 0x2000 ... 0x3FFF:  // TODO: PPU Registers
-      switch (addr % 8) {};
-      return 0xAA;
+    case 0x2000 ... 0x3FFF: {  // PPU Registers
+      if (!ppu_.has_value()) {
+        BOOST_LOG_TRIVIAL(fatal)
+            << "Read from PPU register without attached PPU: " << addr;
+        return 0xAA;
+      }
+      PPU& ppu = ppu_.value().get();
+      switch (addr % 8) {
+        case 0x2002:  // PPUSTATUS
+          return ppu.get_PPUSTATUS();
+        case 0x2004:  // OAMDATA (r/w)
+          return ppu.get_OAMDATA();
+        case 0x2007:  // PPUDATA (r/w)
+          return ppu.get_PPUDATA();
+      };
+    }
     case 0x4000 ... 0x4015:  // Sound
       BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
       return 0xAA;
@@ -30,9 +43,38 @@ bool CPU::write(uint16_t addr, uint8_t data) {
     case 0x0000 ... 0x1FFF:  // Internal RAM
       ram_[addr % 0x800] = data;
       return true;
-    case 0x2000 ... 0x3FFF:  // TODO: PPU Registers
-      switch (addr % 8) {};
+    case 0x2000 ... 0x3FFF: {  // TODO: PPU Registers
+      if (!ppu_.has_value()) {
+        BOOST_LOG_TRIVIAL(fatal)
+            << "Read from PPU register without attached PPU: " << addr;
+        return false;
+      }
+      PPU& ppu = ppu_.value().get();
+      switch (addr % 8) {
+        case 0x2000:  // PPUCTRL
+          ppu.set_PPUCTRL(data);
+          return true;
+        case 0x2001:  // PPUMASK
+          ppu.set_PPUMASK(data);
+          return true;
+        case 0x2003:  // OAMADDR
+          ppu.set_OAMADDR(data);
+          return true;
+        case 0x2004:  // OAMDATA (r/w)
+          ppu.set_OAMDATA(data);
+          return true;
+        case 0x2005:  // PPUSCROLL
+          ppu.set_PPUSCROLL(data);
+          return true;
+        case 0x2006:  // PPUADDR
+          ppu.set_PPUADDR(data);
+          return true;
+        case 0x2007:  // PPUDATA (r/w)
+          ppu.set_PPUDATA(data);
+          return true;
+      };
       return false;
+    }
     case 0x4000 ... 0x4015:  // Sound
       BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
       return false;
