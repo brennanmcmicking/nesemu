@@ -135,12 +135,13 @@ int main(int argc, char* argv[]) {
   }
   cartridge::Cartridge cart(in);
   cpu::CPU* cpu = nullptr;
+  ppu::PPU* ppu = nullptr;
 
   if (!headless_mode) {
     BOOST_LOG_TRIVIAL(trace) << "Creating window + CPU";
     window_handle = init_window();
-    ppu::PPU ppu(*window_handle);
-    cpu = new cpu::CPU(cart, std::ref(ppu));
+    ppu = new ppu::PPU(*window_handle);
+    cpu = new cpu::CPU(cart, std::ref(*ppu));
   } else {
     BOOST_LOG_TRIVIAL(trace) << "Creating CPU (no window)";
     cpu = new cpu::CPU(cart);
@@ -163,6 +164,7 @@ int main(int argc, char* argv[]) {
   }
 
   // Cleanup
+  if (ppu != nullptr) delete ppu;
   delete cpu;
   if (!headless_mode) {
     glfwTerminate();
