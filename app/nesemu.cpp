@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "cartridge.hpp"
+#include "controller.hpp"
 #include "cpu.hpp"
 #include "debugger.hpp"
 #include "ppu.hpp"
@@ -140,7 +141,8 @@ int main(int argc, char* argv[]) {
     BOOST_LOG_TRIVIAL(trace) << "Creating window + CPU";
     window_handle = init_window();
     ppu::PPU ppu(*window_handle);
-    cpu = new cpu::CPU(cart, std::ref(ppu));
+    controller::Controller controller(*window_handle);
+    cpu = new cpu::CPU(cart, std::ref(ppu), std::ref(controller));
   } else {
     BOOST_LOG_TRIVIAL(trace) << "Creating CPU (no window)";
     cpu = new cpu::CPU(cart);

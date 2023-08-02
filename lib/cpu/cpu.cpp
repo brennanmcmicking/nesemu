@@ -7,8 +7,10 @@
 namespace cpu {
 
 CPU::CPU(CPU::Cartridge& cartridge,
-         std::optional<std::reference_wrapper<CPU::PPU>> ppu)
+         std::optional<std::reference_wrapper<CPU::PPU>> ppu,
+         std::optional<std::reference_wrapper<CPU::Controller>> controller)
     : ppu_(ppu),
+      controller_(controller),
       cart_(cartridge),
       PC_(0),
       SP_(0xFD),

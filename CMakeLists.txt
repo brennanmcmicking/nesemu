@@ -18,6 +18,7 @@ include_directories(${Boost_INCLUDE_DIR})
 file(GLOB CPU_SOURCES "lib/cpu/*.cpp")
 file(GLOB PPU_SOURCES "lib/ppu/*.cpp")
 file(GLOB CARTRIDGE_SOURCES "lib/cartridge/*.cpp")
+file(GLOB CONTROLLER_SOURCES "lib/controller/*.cpp")
 file(GLOB DEBUGGER_SOURCES "lib/debugger/*.cpp")
 file(GLOB UTIL_SOURCES "lib/util/*.cpp")
 
@@ -30,6 +31,9 @@ target_link_libraries(ppu PUBLIC Boost::log glfw OpenGL::GL)
 add_library(cartridge STATIC ${CARTRIDGE_SOURCES})
 target_link_libraries(cartridge PUBLIC Boost::log)
 
+add_library(controller STATIC ${CONTROLLER_SOURCES})
+target_link_libraries(controller PUBLIC Boost::log)
+
 add_library(debugger STATIC ${DEBUGGER_SOURCES})
 target_link_libraries(debugger PUBLIC Boost::log)
 
@@ -38,7 +42,7 @@ target_link_libraries(util PUBLIC Boost::log)
 
 # deliverables
 add_executable(nesemu app/nesemu.cpp)
-target_link_libraries(nesemu PUBLIC cpu ppu cartridge debugger util Boost::log Boost::program_options glfw)
+target_link_libraries(nesemu PUBLIC cpu ppu cartridge controller debugger util Boost::log Boost::program_options glfw)
 
 add_executable(nesemu-cpu app/nesemu-cpu.cpp)
 target_link_libraries(nesemu-cpu PUBLIC cpu ppu cartridge util Boost::log)
