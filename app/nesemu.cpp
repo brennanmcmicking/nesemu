@@ -126,7 +126,7 @@ int main(int argc, char* argv[]) {
     return 1;
   }
   cartridge::Cartridge cart(in);
-  cpu::CPU cpu(ppu, cart);
+  cpu::CPU cpu(cart, std::ref(ppu));
   BOOST_LOG_TRIVIAL(info) << "hello world\n";
   BOOST_LOG_TRIVIAL(info)
       << "this program will be the fully integrated nes emulator!\n";

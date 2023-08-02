@@ -76,4 +76,11 @@ RUN yum -y remove git git* && \
     # Reduce image size
     yum -y clean all && rm -rf /var/cache
 
+RUN yum install -y libGL-devel libXcursor-devel libXi-devel libXinerama-devel libXrandr-devel && \
+    git clone https://github.com/glfw/glfw.git && cd glfw && git checkout 3.2.1 && \
+    mkdir build && cd build && \
+    $DEVSHELL /opt/sde/packages/cmake-3.26.3/bin/cmake .. && $DEVSHELL make && $DEVSHELL make install
+
+RUN mkdir /dev/input
+
 CMD ["sleep", "infinity"] 

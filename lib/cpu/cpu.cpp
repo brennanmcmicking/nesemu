@@ -6,7 +6,8 @@
 
 namespace cpu {
 
-CPU::CPU(CPU::PPU& ppu, CPU::Cartridge& cartridge)
+CPU::CPU(CPU::Cartridge& cartridge,
+         std::optional<std::reference_wrapper<CPU::PPU>> ppu)
     : ppu_(ppu),
       cart_(cartridge),
       PC_(0),
