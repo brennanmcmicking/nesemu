@@ -1620,9 +1620,89 @@ TEST_CASE("Unit: STY_ABS") {
   cpu.advance_cycles(4);
   REQUIRE((int)cpu.read(addr) == (int)data);
 }
-TEST_CASE("Unit: TAX") {}
-TEST_CASE("Unit: TAY") {}
-TEST_CASE("Unit: TSX") {}
-TEST_CASE("Unit: TXA") {}
-TEST_CASE("Unit: TXS") {}
-TEST_CASE("Unit: TYA") {}
+TEST_CASE("Unit: TAX") {
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, data,  //
+      kTAX,            //
+  };
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.X() == data);
+}
+TEST_CASE("Unit: TAY") {
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, data,  //
+      kTAY,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.Y() == data);
+}
+TEST_CASE("Unit: TSX") {
+  std::vector<uint8_t> bytecode = {
+      kTSX,  //
+  };
+
+  MAKE_CPU(bytecode);
+  REQUIRE((int)cpu.SP() == 0xFD);
+  REQUIRE((int)cpu.X() != 0xFD);
+
+  cpu.advance_cycles(2);
+  REQUIRE((int)cpu.X() == 0xFD);
+}
+TEST_CASE("Unit: TXA") {
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, data,  //
+      kTXA,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.X() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+}
+TEST_CASE("Unit: TXS") {
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA);
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, data,  //
+      kTXS,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.X() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE((int)cpu.SP() == (int)data);
+}
+TEST_CASE("Unit: TYA") {
+  uint8_t data = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA);
+  std::vector<uint8_t> bytecode = {
+      kLDY_IMM, data,  //
+      kTYA,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.Y() == data);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == data);
+}
