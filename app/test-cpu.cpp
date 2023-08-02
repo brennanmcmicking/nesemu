@@ -295,8 +295,163 @@ TEST_CASE("Unit: ADC_ABS") {
   cpu.advance_cycles(4);
   REQUIRE(cpu.A() == 2);
 }
-TEST_CASE("Unit: ADC_ABSY") {}
-TEST_CASE("Unit: ADC_INDX") {}
+TEST_CASE("Unit: ADC_ABSX") {
+  SECTION("no page cross") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM,  0x05,             //
+        kSTA_ABS,  U16(0x1000 + 2),  //
+        kLDX_IMM,  0x02,             //
+        kADC_ABSX, U16(0x1000),      //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1002) == 0x00);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1002) == 0x05);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.X() == 2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1002) == 0x05);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 10);
+    REQUIRE(cpu.read(0x1002) == 0x05);
+  }
+  SECTION("page cross") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM,  0x05,             //
+        kSTA_ABS,  U16(0x1000),      //
+        kLDX_IMM,  0x02,             //
+        kADC_ABSX, U16(0x1000 - 2),  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x00);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.X() == 2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+
+    cpu.cycle();
+    REQUIRE(cpu.A() == 10);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+  }
+}
+TEST_CASE("Unit: ADC_ABSY") {
+  SECTION("no page cross") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM,  0x05,             //
+        kSTA_ABS,  U16(0x1000 + 2),  //
+        kLDY_IMM,  0x02,             //
+        kADC_ABSY, U16(0x1000),      //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1002) == 0x00);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1002) == 0x05);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.Y() == 2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1002) == 0x05);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 10);
+    REQUIRE(cpu.read(0x1002) == 0x05);
+  }
+  SECTION("page cross") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM,  0x05,             //
+        kSTA_ABS,  U16(0x1000),      //
+        kLDY_IMM,  0x02,             //
+        kADC_ABSY, U16(0x1000 - 2),  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x00);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+
+    cpu.advance_cycles(2);
+    REQUIRE(cpu.Y() == 2);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+
+    cpu.advance_cycles(4);
+    REQUIRE(cpu.A() == 5);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+
+    cpu.cycle();
+    REQUIRE(cpu.A() == 10);
+    REQUIRE(cpu.read(0x1000) == 0x05);
+  }
+}
+TEST_CASE("Unit: ADC_INDX") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x05,         //
+      kSTA_ABS,  U16(0x1000),  //
+      kLDX_IMM,  0x02,         //
+      kADC_INDX, 0x03,         //
+  };
+
+  MAKE_CPU(bytecode);
+  REQUIRE(cpu.A() == 0);
+  cpu.write16(0x0005, 0x1000);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1000) == 0x00);
+
+  cpu.advance_cycles(4);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1000) == 0x05);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.X() == 2);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1000) == 0x05);
+
+  cpu.advance_cycles(6);
+  REQUIRE(cpu.A() == 10);
+  REQUIRE(cpu.read(0x1000) == 0x05);
+}
 TEST_CASE("Unit: ADC_INDY") {}
 TEST_CASE("Unit: AND_IMM") {}
 TEST_CASE("Unit: AND_ZP") {}
