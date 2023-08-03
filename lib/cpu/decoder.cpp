@@ -6,7 +6,7 @@
 namespace cpu {
 
 void CPU::execute(uint8_t opcode) {
-  BOOST_LOG_TRIVIAL(trace) << std::format("execute({:02X})", opcode);
+  BOOST_LOG_TRIVIAL(trace) << std::format("execute: {}", print_instruction());
   // after each case statement, put the instruction assembly name,
   // addressing mode, byte count, and cycle count
   switch (opcode) {

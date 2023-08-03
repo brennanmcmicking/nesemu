@@ -2,6 +2,7 @@
 #include <format>
 
 #include "cpu.hpp"
+#include "util.hpp"
 
 namespace cpu {
 
@@ -504,7 +505,9 @@ std::size_t CPU::cycle_count(uint8_t opcode) {
     case kTYA:
       return 2;
   }
-  return 0;  // by default, don't wait, just skip over invalid opcodes
+  throw std::runtime_error(std::format("Invalid opcode: {} (PC = {})",
+                                       util::fmt_hex(opcode),
+                                       util::fmt_hex(PC_)));
 }
 
 void CPU::advance_cycles(std::size_t cycles) {
@@ -548,8 +551,9 @@ void CPU::advance_frame() {
 void CPU::cycle() {
   BOOST_LOG_TRIVIAL(trace) << "cycle()";
   BOOST_LOG_TRIVIAL(trace) << std::format(
-      "PC: {:04X}, SP: {:02X}, A: {:02X}, X: {:02X}, Y: {:02X}, P: {:02X}", PC_,
-      SP_, A_, X_, Y_, P_);
+      "PC: {}, SP: {}, A: {}, X: {}, Y: {}, P: {}", util::fmt_hex(PC_),
+      util::fmt_hex(SP_), util::fmt_hex(A_), util::fmt_hex(X_),
+      util::fmt_hex(Y_), util::fmt_hex(P_));
   BOOST_LOG_TRIVIAL(trace) << std::format("cycles_todo: {}", cycles_todo_);
 
   if (cycles_todo_ == 1) {
@@ -559,7 +563,8 @@ void CPU::cycle() {
     BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
     next_instr_ = read(PC_);
     cycles_todo_ = cycle_count(next_instr_);
-    BOOST_LOG_TRIVIAL(trace) << std::format("next_instr: {:02X}", next_instr_);
+    BOOST_LOG_TRIVIAL(trace)
+        << std::format("next_instr: {}", print_instruction());
   }
   cycles_todo_--;
 }
