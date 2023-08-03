@@ -28,7 +28,7 @@ uint8_t CPU::read(uint16_t addr) {
     case 0x4000 ... 0x4015:  // Sound
       BOOST_LOG_TRIVIAL(debug) << "Sound not implemented: " << addr;
       return 0xAA;
-    case 0x4016 ... 0x4017: {
+    case 0x4016: {
       if (!controller_.has_value()) {
         BOOST_LOG_TRIVIAL(debug)
             << "Read from controller register without attached controller: "
@@ -37,6 +37,9 @@ uint8_t CPU::read(uint16_t addr) {
       }
       Controller& controller = controller_.value().get();
       return controller.read_joy1();
+    }
+    case 0x4017: {
+      return 0x00;
     }
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
       BOOST_LOG_TRIVIAL(debug) << "Memory location disabled: " << addr;
@@ -89,7 +92,7 @@ bool CPU::write(uint16_t addr, uint8_t data) {
     case 0x4000 ... 0x4015:  // Sound
       BOOST_LOG_TRIVIAL(trace) << "Sound not implemented: " << addr;
       return false;
-    case 0x4016 ... 0x4017: {
+    case 0x4016: {
       if (!controller_.has_value()) {
         BOOST_LOG_TRIVIAL(debug)
             << "Write to controller register without attached controller: "
@@ -98,6 +101,9 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       }
       Controller& controller = controller_.value().get();
       controller.write_strobe(data);
+      return true;
+    }
+    case 0x4017: {
       return true;
     }
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled

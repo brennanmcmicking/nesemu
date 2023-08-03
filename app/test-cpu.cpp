@@ -459,7 +459,36 @@ TEST_CASE("Unit: ADC_INDX") {
   REQUIRE(cpu.read(0x1000) == 0x05);
 }
 
-TEST_CASE("Unit: ADC_INDY") {}
+TEST_CASE("Unit: ADC_INDY") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x05,         //
+      kSTA_ABS,  U16(0x1002),  //
+      kLDY_IMM,  0x02,         //
+      kADC_INDY, 0x03,         //
+  };
+
+  MAKE_CPU(bytecode);
+  REQUIRE(cpu.A() == 0);
+  cpu.write16(0x0003, 0x1000);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1000) == 0x00);
+
+  cpu.advance_cycles(4);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1002) == 0x05);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.Y() == 2);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1002) == 0x05);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.A() == 10);
+  REQUIRE(cpu.read(0x1002) == 0x05);
+}
 
 TEST_CASE("Unit: AND_IMM") {}
 
@@ -986,26 +1015,20 @@ TEST_CASE("Unit: JMP_IND") {
 
 TEST_CASE("Unit: JSR_ABS") {
   std::vector<uint8_t> bytecode = {
-      kJSR_ABS, U16(0x0010),  //
+      kJSR_ABS, U16(0x1234),  //
   };
 
   MAKE_CPU(bytecode);
 
-  cpu.write16(0x0010, 0x1234);
-
-  REQUIRE(cpu.read16(0x0010) == 0x1234);
   REQUIRE(cpu.SP() == 0xFD);
   uint16_t old_pc = cpu.PC();
 
-  cpu.advance_cycles(6);
+  cpu.advance_instruction();
 
   CAPTURE(old_pc);
 
   REQUIRE(cpu.SP() == 0xFB);
   REQUIRE(cpu.peek_stack16() == old_pc + 2);
-  REQUIRE(cpu.PC() == 0x1234);
-  // REQUIRE(cpu.read(cpu.SP() + 1) == 0x12);
-  // REQUIRE(cpu.read(cpu.SP() + 2) == 0x34);
 }
 
 TEST_CASE("Unit: LDA_IMM") {
@@ -2115,7 +2138,92 @@ TEST_CASE("Unit: LSR_ABSX") {}
 
 TEST_CASE("Unit: NOP") {}
 
-TEST_CASE("Unit: ORA_IMM") {}
+TEST_CASE("Unit: ORA_IMM") {
+  SECTION("Positive") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b1001,  //
+        kORA_IMM, 0b1100,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kLDA_IMM
+    cpu.cycle();
+    cpu.cycle();
+
+    // kORA_IMM - 1
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kORA_IMM
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b1001,       //
+        kORA_IMM, 0b1000'1100,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    // kLDA_IMM
+    cpu.cycle();
+    cpu.cycle();
+
+    // kORA_IMM - 1
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kORA_IMM
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1000'1101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0,  //
+        kORA_IMM, 0,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    // kLDA_IMM
+    cpu.cycle();
+    cpu.cycle();
+
+    // kORA_IMM - 1
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kORA_IMM
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+}
 
 TEST_CASE("Unit: ORA_ZP") {}
 
@@ -2161,7 +2269,56 @@ TEST_CASE("Unit: ROR_ABSX") {}
 
 TEST_CASE("Unit: RTI") {}
 
-TEST_CASE("Unit: RTS") {}
+TEST_CASE("Unit: RTS") {
+  uint16_t addr = 0x1234;
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,    0x01,       //
+      kADC_IMM,    0xFF,       //
+      kJSR_ABS,    U16(addr),  //
+      U16(0x5678),
+  };
+
+  MAKE_CPU(bytecode);
+
+  std::vector<uint8_t> function = {
+      kLDA_IMM, 0x08,  //
+      kADC_IMM, 0x7F,  //
+      kRTS,            //
+  };
+  uint16_t p = addr;
+  for (auto i : function) {
+    cpu.write(p++, i);
+  }
+
+  // util::set_log_level(util::log_level::trace);
+  REQUIRE(cpu.A() == 0x00);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x01);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x00);
+  // uint8_t flags_outer = cpu.P();
+  // uint16_t pc_outer = cpu.PC();
+
+  cpu.advance_instruction();
+  REQUIRE(fmt_hex(cpu.PC()) == fmt_hex(addr));
+  // REQUIRE(fmt_hex(cpu.peek_stack16()) ==
+  //         fmt_hex((uint16_t)(pc_outer + 2)));
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x08);
+
+  cpu.advance_instruction();
+  REQUIRE((int)cpu.A() == 0x7F + 0x08 + 1);  // carry bit is set!
+  // uint8_t flags_inner = cpu.P();
+  // REQUIRE(flags_inner != flags_outer);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read16(cpu.PC()) == 0x5678);
+  // REQUIRE(cpu.P() == flags_outer);
+  // util::set_log_level(util::log_level::info);
+}
 
 TEST_CASE("Unit: SBC_IMM") {}
 

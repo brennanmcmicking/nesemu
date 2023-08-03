@@ -1,9 +1,18 @@
+#ifndef UTIL_HPP
+#define UTIL_HPP
+#include <boost/log/core.hpp>
+#include <boost/log/expressions.hpp>
+#include <boost/log/trivial.hpp>
 #include <cstdint>
 #include <ios>
 #include <istream>
 
 namespace util {
+
+using log_level = boost::log::trivial::severity_level;
+
 void init_log_level();
+void set_log_level(boost::log::trivial::severity_level level);
 
 /**
  * @brief Format a given number to be pretty-printed in hex in the format
@@ -52,3 +61,4 @@ class IosFormatRAII {
   std::ios_base::fmtflags old_flags_;
 };
 }  // namespace util
+#endif  // UTIL_HPP
