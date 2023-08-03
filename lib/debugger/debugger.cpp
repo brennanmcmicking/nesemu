@@ -231,14 +231,15 @@ void Debugger::read_command() {
 
 void Debugger::cmd_help() { std::cout << help_msg_; }
 void Debugger::cmd_step(uint num_to_step) {
-  if (num_to_step != 1)
+  if (num_to_step != 1) {
     std::cout << "Stepping through: " << num_to_step << " instructions\n";
+  }
 
   for (uint step_count = 0; step_count < num_to_step; ++step_count) {
     if (num_to_step != 1) std::cout << "\nStep " << step_count + 1 << "\n";
 
     uint8_t opcode = cpu_->read(cpu_->PC());
-    std::cout << "opcode: " << util::fmt_hex(opcode) << "\n";
+    std::cout << "opcode: " << cpu_->print_instruction() << "\n";
     bool no_interrupt = true;
 
     std::size_t i;
@@ -252,6 +253,8 @@ void Debugger::cmd_step(uint num_to_step) {
     }
     cmd_registers();
   }
+  std::cout << "registers after instruction:\n";
+  cmd_registers();
 
   // TODO: display data in current PC so this is more useful?
   // address_t instr_addr = cpu_->
