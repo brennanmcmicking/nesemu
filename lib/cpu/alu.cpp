@@ -537,7 +537,7 @@ void CPU::advance_frame() {
 
     // NMI
     push_stack16(PC_);
-    push_stack16(P_);
+    push_stack(P_);
     PC_ = read16(0xFFFA);
   }
 

@@ -126,7 +126,8 @@ class PPU {
   uint8_t OAMDATA_;    // r/w (unused)
   uint8_t PPUSCROLL_;  // w (unused)
   uint16_t PPUADDR_;   // w (note: written one byte at a time)
-  uint8_t PPUDATA_;    // r/w
+  // there's no such thing as ppudata it's all a lie
+  // uint8_t PPUDATA_;    // r/w
 
   // Reading/writing internal ppu ram (only accessible from within PPU or via
   // PPUADDR/PPUDATA registers)
