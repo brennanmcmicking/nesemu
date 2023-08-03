@@ -56,15 +56,9 @@ bool Debugger::read_command() {
     cmd_help();
 
   } else if (strcmp(cmd, "step") == 0) {
-    uint8_t opcode = cpu_->read(cpu_->PC());
-    std::cout << "opcode: $" << std::hex << std::uppercase << unsigned(opcode)
-              << std::dec << std::nouppercase << "\n";
-    cpu_->advance_instruction();
-
-    cmd_registers();
+    cmd_step();
   } else if (strcmp(cmd, "continue") == 0) {
-    _unimplemented();  // TODO:
-
+    cmd_continue();
   } else if (strcmp(cmd, "break") == 0) {
     address_t addr;
     tmp_num = util::extract_num(input_stream);
@@ -175,15 +169,25 @@ bool Debugger::read_command() {
 
 void Debugger::cmd_help() { std::cout << help_msg_; }
 void Debugger::cmd_step() {
-  // TODO: display data in current PC so this is more useful?
-  // address_t instr_addr = cpu_->
+  uint8_t opcode = cpu_->read(cpu_->PC());
+  std::cout << "opcode: " << util::fmt_hex(opcode) << "\n";
   cpu_->advance_instruction();
 
-  std::cout << "Step: executed instruction at address"
-            << util::fmt_hex(cpu_->addr_fetch(cpu::kAbsolute)) << "\n";
+  cmd_registers();
+
+  // TODO: display data in current PC so this is more useful?
+  // address_t instr_addr = cpu_->
+  // cpu_->advance_instruction();
+
+  // std::cout << "Step: executed instruction at address"
+  // << util::fmt_hex(cpu_->addr_fetch(cpu::kAbsolute)) << "\n";
 }
 void Debugger::cmd_continue() {
-  // TODO:
+  while (!breakpoints_.contains(cpu_->PC())) {
+    cpu_->advance_instruction();
+  }
+  std::cout << "Breakpoint reached: " << util::fmt_hex(cpu_->PC()) << "\n";
+  cmd_registers();
 }
 void Debugger::cmd_break(address_t addr) {
   auto res = breakpoints_.insert(addr);

@@ -87,7 +87,7 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       return false;
     }
     case 0x4000 ... 0x4015:  // Sound
-      BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
+      BOOST_LOG_TRIVIAL(trace) << "Sound not implemented: " << addr;
       return false;
     case 0x4016 ... 0x4017: {
       if (!controller_.has_value()) {
