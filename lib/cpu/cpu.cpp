@@ -79,7 +79,6 @@ void CPU::begin_cpu_loop() {
     advance_frame();
 
     std::this_thread::sleep_until(frame_deadline);
-    BOOST_LOG_TRIVIAL(trace) << "tick\n";
   }
 }
 
