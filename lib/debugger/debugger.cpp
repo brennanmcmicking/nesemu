@@ -28,7 +28,7 @@ void Debugger::debug() {
             << std::endl;
 
   while (1) {
-    if (!read_command()) break;
+    read_command();
   }
 }
 
@@ -71,7 +71,15 @@ bool Debugger::smart_execute_cycle() {
   return exited_vblank;
 }
 
-bool Debugger::read_command() {
+bool cmd_is(const char* cmd, const char* name1, const char* name2) {
+  return (strcmp(cmd, name1) == 0) || (strcmp(cmd, name2) == 0);
+}
+
+bool cmd_is(const char* cmd, const char* name1) {
+  return (strcmp(cmd, name1) == 0);
+}
+
+void Debugger::read_command() {
   std::string input;
   std::cout << "> ";
 
@@ -92,49 +100,51 @@ bool Debugger::read_command() {
   input_stream >> cmd_name;
   const char* cmd = cmd_name.c_str();
 
-  if (strcmp(cmd, "help") == 0) {
+  if (cmd_is(cmd, "help", "h")) {
     cmd_help();
 
-  } else if (strcmp(cmd, "step") == 0) {
+  } else if (cmd_is(cmd, "step", "s")) {
     cmd_step();
-  } else if (strcmp(cmd, "continue") == 0) {
+
+  } else if (cmd_is(cmd, "continue", "c")) {
     cmd_continue();
-  } else if (strcmp(cmd, "break") == 0) {
+
+  } else if (cmd_is(cmd, "break")) {
     address_t addr;
     tmp_num = util::extract_num(input_stream);
     if (tmp_num == -1) {
       std::cout << "Please specify an address to add a new breakpoint\n";
-      return true;
+      return;
     }
     addr = tmp_num;
 
     cmd_break(addr);
 
-  } else if (strcmp(cmd, "delete") == 0) {
+  } else if (cmd_is(cmd, "delete")) {
     address_t addr;
     tmp_num = util::extract_num(input_stream);
     if (tmp_num == -1) {
       std::cout << "Please specify the address where a breakpoint should be "
                    "deleted\n";
-      return true;
+      return;
     }
     addr = tmp_num;
 
     cmd_delete(addr);
 
-  } else if (strcmp(cmd, "list") == 0) {
+  } else if (cmd_is(cmd, "list", "l")) {
     cmd_list();
 
-  } else if (strcmp(cmd, "clear") == 0) {
+  } else if (cmd_is(cmd, "clear")) {
     cmd_clear();
 
-  } else if (strcmp(cmd, "read") == 0) {
+  } else if (cmd_is(cmd, "read", "r")) {
     address_t addr;
     uint16_t bytes;
     tmp_num = util::extract_num(input_stream);
     if (tmp_num == -1) {
-      std::cout << "Bad address value\n";
-      return true;
+      std::cout << "Read failed: bad address value\n";
+      return;
     }
     addr = tmp_num;
 
@@ -149,21 +159,21 @@ bool Debugger::read_command() {
 
     cmd_read(addr, bytes);
 
-  } else if (strcmp(cmd, "write") == 0) {
+  } else if (cmd_is(cmd, "write", "w")) {
     address_t addr;
     uint8_t data;
 
     tmp_num = util::extract_num(input_stream);
     if (tmp_num == -1) {
-      std::cout << "Address parsing failed\n";
-      return true;
+      std::cout << "Write failed: couldn't parse address\n";
+      return;
     }
     addr = tmp_num;
 
     tmp_num = util::extract_num(input_stream);
     if (tmp_num == -1) {
-      std::cout << "Data parsing failed\n";
-      return true;
+      std::cout << "Write failed: couldn't parse data\n";
+      return;
     }
     data = tmp_num;
     if (data != tmp_num) {
@@ -172,39 +182,41 @@ bool Debugger::read_command() {
 
     cmd_write(addr, data);
 
-  } else if (strcmp(cmd, "registers") == 0) {
+  } else if (cmd_is(cmd, "registers", "reg")) {
     cmd_registers();
 
-  } else if (strcmp(cmd, "set") == 0) {
+  } else if (cmd_is(cmd, "set")) {
     std::string reg_name;
     uint16_t value;
 
     // Parse register name
     if (!(input_stream >> reg_name)) {
       std::cout << "No register specified\n";
-      return true;
+      return;
     }
 
     tmp_num = util::extract_num(input_stream);
     if (tmp_num == -1) {
       std::cout << "No value specified\n";
-      return true;
+      return;
     }
     value = tmp_num;
 
     cmd_set(reg_name, value);
 
-  } else if (strcmp(cmd, "") == 0) {
+  } else if (cmd_is(cmd, "")) {
     // empty check for newline to allow spamming w/o error messages
-  } else if (strcmp(cmd, "exit") == 0) {
+    return;
+  } else if (cmd_is(cmd, "exit")) {
     exit(0);
   } else {
     // unrecognized command
     std::cout << "Command '" << cmd_name << "' not recognized\n";
-    return true;
+    return;
   }
+  std::cout << std::endl;
 
-  return true;
+  return;
 }
 
 void Debugger::cmd_help() { std::cout << help_msg_; }
