@@ -73,13 +73,13 @@ GLFWwindow* init_window() {
 
   glDisable(GL_DEPTH_TEST);
 
+  // Create callback to close the window when expected (clicking the x)
+  glfwSetWindowCloseCallback(window, [](GLFWwindow* window) {
+    BOOST_LOG_TRIVIAL(info) << "Exiting\n";
+    exit(1);
+  });
+
   return window;
-
-  // Create callback to close the window when expected
-  // TODO:
-  // glfwSetWindowCloseCallback(window_, []())
-
-  // TODO: initialize key callbacks here
 }
 
 int main(int argc, char* argv[]) {
