@@ -534,7 +534,13 @@ void CPU::advance_frame() {
     // Render a frame using the current cpu data
     CPU::PPU& ppu = ppu_->get();
     ppu.render_to_window();
+
+    // NMI
+    push_stack16(PC_);
+    push_stack16(P_);
+    PC_ = read16(0xFFFA);
   }
+
   // TODO: what does 0.5 cycles mean and how to deal with that?
   advance_cycles(static_cast<std::size_t>(kCyclesPerFrame));
 }
