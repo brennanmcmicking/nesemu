@@ -10,7 +10,7 @@ namespace log = boost::log;
 
 namespace util {
 void init_log_level() {
-  char* log_level = std::getenv("LOG_LEVEL");
+  const char* log_level = std::getenv("LOG_LEVEL");
   if (log_level == nullptr) {
     log_level = "INFO";
   }
