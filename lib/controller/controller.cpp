@@ -2,6 +2,9 @@
 
 #include <GLFW/glfw3.h>
 
+#include <boost/log/trivial.hpp>
+#include <format>
+
 struct Input {
   bool A;
   bool B;
@@ -39,6 +42,15 @@ void Controller::write_strobe(uint8_t value) {
                      (input.Down << 5) |    //
                      (input.Left << 6) |    //
                      (input.Right << 7);
+
+    BOOST_LOG_TRIVIAL(debug)
+        << "polling controller with input: "
+        << std::format(
+               "A: {}, B: {}, Select: {}, "
+               "Start: {}, Up: {}, Down: {}, "
+               "Left: {}, Right: {}",
+               input.A, input.B, input.Select, input.Start, input.Up,
+               input.Down, input.Left, input.Right);
   }
   strobe_ = new_strobe;
 };
