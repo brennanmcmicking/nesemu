@@ -61,13 +61,15 @@ uint16_t CPU::pop_stack16() {
     BOOST_LOG_TRIVIAL(fatal) << "Stack underflow detected\n";
   }
   SP_ += 2;
-  return read16(0x0100 | (SP_ - 2));
+  return read16(0x0100 | (SP_ - 1));
 }
 
 uint8_t CPU::peek_stack() { return read(0x0100 | (SP_ + 1)); }
 uint16_t CPU::peek_stack16() { return read16(0x0100 | (SP_ + 1)); }
 
 void CPU::begin_cpu_loop() {
+  advance_cycles(kCyclesPerFrame);
+
   while (1) {
     // Each loop is one frame. Calculate how long the frame should take
     const auto frame_start = std::chrono::steady_clock::now();
