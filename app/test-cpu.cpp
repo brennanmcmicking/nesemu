@@ -2868,3 +2868,35 @@ TEST_CASE("Unit: TYA") {
   cpu.advance_cycles(2);
   REQUIRE(cpu.A() == data);
 }
+
+TEST_CASE("instruction printer") {
+  uint16_t addr = 0x0000;
+  std::vector<uint8_t> bytecode = {
+      kJMP_ABS, U16(addr),  //
+  };
+
+  std::vector<std::pair<std::vector<uint8_t>, std::string_view>> instructions =
+      {{{kNOP}, "NOP"},
+       {{kROR_A}, "ROR A"},
+       {{kLDA_IMM, 0x01}, "LDA #$01"},
+       {{kADC_ZP, 0xAF}, "ADC $AF"},
+       {{kSTY_ZPX, 0xD3}, "STY $D3,X"},
+       {{kSTX_ZPY, 0x82}, "STX $82,Y"},
+       {{kLDA_ABS, U16(0x1234)}, "LDA $1234"},
+       {{kLDA_ABSX, U16(0x5678)}, "LDA $5678,X"},
+       {{kLDA_ABSY, U16(0x9ABC)}, "LDA $9ABC,Y"},
+       {{kJMP_IND, U16(0x0F78)}, "JMP ($0F78)"},
+       {{kLDA_INDX, 0x42}, "LDA ($42,X)"},
+       {{kLDA_INDY, 0x21}, "LDA ($21),Y"}};
+
+  for (auto [instruction, expected] : instructions) {
+    MAKE_CPU(bytecode);
+    uint16_t p = addr;
+    for (uint8_t b : instruction) {
+      cpu.write(p++, b);
+    }
+    cpu.advance_cycles(3);
+    REQUIRE(cpu.PC() == addr);
+    CHECK(cpu.print_instruction() == expected);
+  }
+}

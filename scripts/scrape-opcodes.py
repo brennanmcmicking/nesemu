@@ -81,7 +81,7 @@ enum AddrMode {
 modeNames = {
     kAbsolute: "kAbsolute",
     kImmediate: "kImmediate",
-    kImplied: "UNIMPLEMENTED",
+    kImplied: "kImplied",
     kIndirect: "kIndirect",
     kIndexedIndirect: "kIndexedIndirect",
     kIndirectIndexed: "kIndirectIndexed",
@@ -234,7 +234,9 @@ for title in soup.select("h3"):
 # print(",".join(map(str, byte_count)))
 
 for code in opcodes:
-    print(f"sizes[{opcodes[code]['name']}] = {opcodes[code]['byte_count']}")
+    # print(f"sizes[{opcodes[code]['name']}] = {opcodes[code]['byte_count']};")
+    # print(f"names[{opcodes[code]['name']}] = \"{opcodes[code]['mnem']}\";")
+    print(f"modes[{opcodes[code]['name']}] = {modeNames[opcodes[code]['mode']]};")
 
 
 # for code in sorted(opcodes):

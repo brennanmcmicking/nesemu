@@ -24,6 +24,7 @@ namespace cpu {
 //
 // for everything except immediate or accumulator, the value at the address
 enum AddrMode {
+  kImplied,  // no value to address
   // 8-bit (value)
   kAccumulator,  // A
   kImmediate,    // #$00
@@ -165,6 +166,8 @@ class CPU {
   uint8_t peek_stack();
   uint16_t peek_stack16();
 
+  std::string print_instruction();
+
  private:
   std::optional<std::reference_wrapper<PPU>> ppu_;
   std::optional<std::reference_wrapper<Controller>> controller_;
@@ -198,7 +201,6 @@ class CPU {
   std::size_t byte_count(uint8_t opcode);
 
   uint16_t addr_fetch(AddrMode mode);
-
   uint8_t value_fetch(AddrMode mode);
 
   /**

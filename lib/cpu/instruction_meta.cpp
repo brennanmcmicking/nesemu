@@ -1,8 +1,10 @@
 #include <cstdint>
 
 #include "cpu.hpp"
+#include "util.hpp"
 
 namespace cpu {
+
 
 // generated using scripts/scrape-opcodes.py
 // missing instructions are default initialized to zero (invalid instruction)
@@ -162,10 +164,385 @@ consteval std::array<uint8_t, 256> make_instruction_sizes() {
   return sizes;
 }
 
+consteval std::array<std::string_view, 256> make_instruction_names() {
+  std::array<std::string_view, 256> names;
+  for (int i = 0; i < 256; ++i) {
+    names[i] = "???";
+  }
+  names[kADC_IMM] = "ADC";
+  names[kADC_ZP] = "ADC";
+  names[kADC_ZPX] = "ADC";
+  names[kADC_ABS] = "ADC";
+  names[kADC_ABSX] = "ADC";
+  names[kADC_ABSY] = "ADC";
+  names[kADC_INDX] = "ADC";
+  names[kADC_INDY] = "ADC";
+  names[kAND_IMM] = "AND";
+  names[kAND_ZP] = "AND";
+  names[kAND_ZPX] = "AND";
+  names[kAND_ABS] = "AND";
+  names[kAND_ABSX] = "AND";
+  names[kAND_ABSY] = "AND";
+  names[kAND_INDX] = "AND";
+  names[kAND_INDY] = "AND";
+  names[kASL_A] = "ASL";
+  names[kASL_ZP] = "ASL";
+  names[kASL_ZPX] = "ASL";
+  names[kASL_ABS] = "ASL";
+  names[kASL_ABSX] = "ASL";
+  names[kBCC_REL] = "BCC";
+  names[kBCS_REL] = "BCS";
+  names[kBEQ_REL] = "BEQ";
+  names[kBIT_ZP] = "BIT";
+  names[kBIT_ABS] = "BIT";
+  names[kBMI_REL] = "BMI";
+  names[kBNE_REL] = "BNE";
+  names[kBPL_REL] = "BPL";
+  names[kBRK] = "BRK";
+  names[kBVC_REL] = "BVC";
+  names[kBVS_REL] = "BVS";
+  names[kCLC] = "CLC";
+  names[kCLD] = "CLD";
+  names[kCLI] = "CLI";
+  names[kCLV] = "CLV";
+  names[kCMP_IMM] = "CMP";
+  names[kCMP_ZP] = "CMP";
+  names[kCMP_ZPX] = "CMP";
+  names[kCMP_ABS] = "CMP";
+  names[kCMP_ABSX] = "CMP";
+  names[kCMP_ABSY] = "CMP";
+  names[kCMP_INDX] = "CMP";
+  names[kCMP_INDY] = "CMP";
+  names[kCPX_IMM] = "CPX";
+  names[kCPX_ZP] = "CPX";
+  names[kCPX_ABS] = "CPX";
+  names[kCPY_IMM] = "CPY";
+  names[kCPY_ZP] = "CPY";
+  names[kCPY_ABS] = "CPY";
+  names[kDEC_ZP] = "DEC";
+  names[kDEC_ZPX] = "DEC";
+  names[kDEC_ABS] = "DEC";
+  names[kDEC_ABSX] = "DEC";
+  names[kDEX] = "DEX";
+  names[kDEY] = "DEY";
+  names[kEOR_IMM] = "EOR";
+  names[kEOR_ZP] = "EOR";
+  names[kEOR_ZPX] = "EOR";
+  names[kEOR_ABS] = "EOR";
+  names[kEOR_ABSX] = "EOR";
+  names[kEOR_ABSY] = "EOR";
+  names[kEOR_INDX] = "EOR";
+  names[kEOR_INDY] = "EOR";
+  names[kINC_ZP] = "INC";
+  names[kINC_ZPX] = "INC";
+  names[kINC_ABS] = "INC";
+  names[kINC_ABSX] = "INC";
+  names[kINX] = "INX";
+  names[kINY] = "INY";
+  names[kJMP_ABS] = "JMP";
+  names[kJMP_IND] = "JMP";
+  names[kJSR_ABS] = "JSR";
+  names[kLDA_IMM] = "LDA";
+  names[kLDA_ZP] = "LDA";
+  names[kLDA_ZPX] = "LDA";
+  names[kLDA_ABS] = "LDA";
+  names[kLDA_ABSX] = "LDA";
+  names[kLDA_ABSY] = "LDA";
+  names[kLDA_INDX] = "LDA";
+  names[kLDA_INDY] = "LDA";
+  names[kLDX_IMM] = "LDX";
+  names[kLDX_ZP] = "LDX";
+  names[kLDX_ZPY] = "LDX";
+  names[kLDX_ABS] = "LDX";
+  names[kLDX_ABSY] = "LDX";
+  names[kLDY_IMM] = "LDY";
+  names[kLDY_ZP] = "LDY";
+  names[kLDY_ZPX] = "LDY";
+  names[kLDY_ABS] = "LDY";
+  names[kLDY_ABSX] = "LDY";
+  names[kLSR_A] = "LSR";
+  names[kLSR_ZP] = "LSR";
+  names[kLSR_ZPX] = "LSR";
+  names[kLSR_ABS] = "LSR";
+  names[kLSR_ABSX] = "LSR";
+  names[kNOP] = "NOP";
+  names[kORA_IMM] = "ORA";
+  names[kORA_ZP] = "ORA";
+  names[kORA_ZPX] = "ORA";
+  names[kORA_ABS] = "ORA";
+  names[kORA_ABSX] = "ORA";
+  names[kORA_ABSY] = "ORA";
+  names[kORA_INDX] = "ORA";
+  names[kORA_INDY] = "ORA";
+  names[kPHA] = "PHA";
+  names[kPHP] = "PHP";
+  names[kPLA] = "PLA";
+  names[kPLP] = "PLP";
+  names[kROL_A] = "ROL";
+  names[kROL_ZP] = "ROL";
+  names[kROL_ZPX] = "ROL";
+  names[kROL_ABS] = "ROL";
+  names[kROL_ABSX] = "ROL";
+  names[kROR_A] = "ROR";
+  names[kROR_ZP] = "ROR";
+  names[kROR_ZPX] = "ROR";
+  names[kROR_ABS] = "ROR";
+  names[kROR_ABSX] = "ROR";
+  names[kRTI] = "RTI";
+  names[kRTS] = "RTS";
+  names[kSBC_IMM] = "SBC";
+  names[kSBC_ZP] = "SBC";
+  names[kSBC_ZPX] = "SBC";
+  names[kSBC_ABS] = "SBC";
+  names[kSBC_ABSX] = "SBC";
+  names[kSBC_ABSY] = "SBC";
+  names[kSBC_INDX] = "SBC";
+  names[kSBC_INDY] = "SBC";
+  names[kSEC] = "SEC";
+  names[kSED] = "SED";
+  names[kSEI] = "SEI";
+  names[kSTA_ZP] = "STA";
+  names[kSTA_ZPX] = "STA";
+  names[kSTA_ABS] = "STA";
+  names[kSTA_ABSX] = "STA";
+  names[kSTA_ABSY] = "STA";
+  names[kSTA_INDX] = "STA";
+  names[kSTA_INDY] = "STA";
+  names[kSTX_ZP] = "STX";
+  names[kSTX_ZPY] = "STX";
+  names[kSTX_ABS] = "STX";
+  names[kSTY_ZP] = "STY";
+  names[kSTY_ZPX] = "STY";
+  names[kSTY_ABS] = "STY";
+  names[kTAX] = "TAX";
+  names[kTAY] = "TAY";
+  names[kTSX] = "TSX";
+  names[kTXA] = "TXA";
+  names[kTXS] = "TXS";
+  names[kTYA] = "TYA";
+  return names;
+}
+
+consteval std::array<AddrMode, 256> make_instruction_addr_modes() {
+  std::array<AddrMode, 256> modes;
+  for (int i = 0; i < 256; ++i) {
+    modes[i] = AddrMode::kImplied;
+  }
+  modes[kADC_IMM] = kImmediate;
+  modes[kADC_ZP] = kZeroPage;
+  modes[kADC_ZPX] = kZeroPageX;
+  modes[kADC_ABS] = kAbsolute;
+  modes[kADC_ABSX] = kAbsoluteX;
+  modes[kADC_ABSY] = kAbsoluteY;
+  modes[kADC_INDX] = kIndexedIndirect;
+  modes[kADC_INDY] = kIndirectIndexed;
+  modes[kAND_IMM] = kImmediate;
+  modes[kAND_ZP] = kZeroPage;
+  modes[kAND_ZPX] = kZeroPageX;
+  modes[kAND_ABS] = kAbsolute;
+  modes[kAND_ABSX] = kAbsoluteX;
+  modes[kAND_ABSY] = kAbsoluteY;
+  modes[kAND_INDX] = kIndexedIndirect;
+  modes[kAND_INDY] = kIndirectIndexed;
+  modes[kASL_A] = kAccumulator;
+  modes[kASL_ZP] = kZeroPage;
+  modes[kASL_ZPX] = kZeroPageX;
+  modes[kASL_ABS] = kAbsolute;
+  modes[kASL_ABSX] = kAbsoluteX;
+  modes[kBCC_REL] = kRelative;
+  modes[kBCS_REL] = kRelative;
+  modes[kBEQ_REL] = kRelative;
+  modes[kBIT_ZP] = kZeroPage;
+  modes[kBIT_ABS] = kAbsolute;
+  modes[kBMI_REL] = kRelative;
+  modes[kBNE_REL] = kRelative;
+  modes[kBPL_REL] = kRelative;
+  modes[kBRK] = kImplied;
+  modes[kBVC_REL] = kRelative;
+  modes[kBVS_REL] = kRelative;
+  modes[kCLC] = kImplied;
+  modes[kCLD] = kImplied;
+  modes[kCLI] = kImplied;
+  modes[kCLV] = kImplied;
+  modes[kCMP_IMM] = kImmediate;
+  modes[kCMP_ZP] = kZeroPage;
+  modes[kCMP_ZPX] = kZeroPageX;
+  modes[kCMP_ABS] = kAbsolute;
+  modes[kCMP_ABSX] = kAbsoluteX;
+  modes[kCMP_ABSY] = kAbsoluteY;
+  modes[kCMP_INDX] = kIndexedIndirect;
+  modes[kCMP_INDY] = kIndirectIndexed;
+  modes[kCPX_IMM] = kImmediate;
+  modes[kCPX_ZP] = kZeroPage;
+  modes[kCPX_ABS] = kAbsolute;
+  modes[kCPY_IMM] = kImmediate;
+  modes[kCPY_ZP] = kZeroPage;
+  modes[kCPY_ABS] = kAbsolute;
+  modes[kDEC_ZP] = kZeroPage;
+  modes[kDEC_ZPX] = kZeroPageX;
+  modes[kDEC_ABS] = kAbsolute;
+  modes[kDEC_ABSX] = kAbsoluteX;
+  modes[kDEX] = kImplied;
+  modes[kDEY] = kImplied;
+  modes[kEOR_IMM] = kImmediate;
+  modes[kEOR_ZP] = kZeroPage;
+  modes[kEOR_ZPX] = kZeroPageX;
+  modes[kEOR_ABS] = kAbsolute;
+  modes[kEOR_ABSX] = kAbsoluteX;
+  modes[kEOR_ABSY] = kAbsoluteY;
+  modes[kEOR_INDX] = kIndexedIndirect;
+  modes[kEOR_INDY] = kIndirectIndexed;
+  modes[kINC_ZP] = kZeroPage;
+  modes[kINC_ZPX] = kZeroPageX;
+  modes[kINC_ABS] = kAbsolute;
+  modes[kINC_ABSX] = kAbsoluteX;
+  modes[kINX] = kImplied;
+  modes[kINY] = kImplied;
+  modes[kJMP_ABS] = kAbsolute;
+  modes[kJMP_IND] = kIndirect;
+  modes[kJSR_ABS] = kAbsolute;
+  modes[kLDA_IMM] = kImmediate;
+  modes[kLDA_ZP] = kZeroPage;
+  modes[kLDA_ZPX] = kZeroPageX;
+  modes[kLDA_ABS] = kAbsolute;
+  modes[kLDA_ABSX] = kAbsoluteX;
+  modes[kLDA_ABSY] = kAbsoluteY;
+  modes[kLDA_INDX] = kIndexedIndirect;
+  modes[kLDA_INDY] = kIndirectIndexed;
+  modes[kLDX_IMM] = kImmediate;
+  modes[kLDX_ZP] = kZeroPage;
+  modes[kLDX_ZPY] = kZeroPageY;
+  modes[kLDX_ABS] = kAbsolute;
+  modes[kLDX_ABSY] = kAbsoluteY;
+  modes[kLDY_IMM] = kImmediate;
+  modes[kLDY_ZP] = kZeroPage;
+  modes[kLDY_ZPX] = kZeroPageX;
+  modes[kLDY_ABS] = kAbsolute;
+  modes[kLDY_ABSX] = kAbsoluteX;
+  modes[kLSR_A] = kAccumulator;
+  modes[kLSR_ZP] = kZeroPage;
+  modes[kLSR_ZPX] = kZeroPageX;
+  modes[kLSR_ABS] = kAbsolute;
+  modes[kLSR_ABSX] = kAbsoluteX;
+  modes[kNOP] = kImplied;
+  modes[kORA_IMM] = kImmediate;
+  modes[kORA_ZP] = kZeroPage;
+  modes[kORA_ZPX] = kZeroPageX;
+  modes[kORA_ABS] = kAbsolute;
+  modes[kORA_ABSX] = kAbsoluteX;
+  modes[kORA_ABSY] = kAbsoluteY;
+  modes[kORA_INDX] = kIndexedIndirect;
+  modes[kORA_INDY] = kIndirectIndexed;
+  modes[kPHA] = kImplied;
+  modes[kPHP] = kImplied;
+  modes[kPLA] = kImplied;
+  modes[kPLP] = kImplied;
+  modes[kROL_A] = kAccumulator;
+  modes[kROL_ZP] = kZeroPage;
+  modes[kROL_ZPX] = kZeroPageX;
+  modes[kROL_ABS] = kAbsolute;
+  modes[kROL_ABSX] = kAbsoluteX;
+  modes[kROR_A] = kAccumulator;
+  modes[kROR_ZP] = kZeroPage;
+  modes[kROR_ZPX] = kZeroPageX;
+  modes[kROR_ABS] = kAbsolute;
+  modes[kROR_ABSX] = kAbsoluteX;
+  modes[kRTI] = kImplied;
+  modes[kRTS] = kImplied;
+  modes[kSBC_IMM] = kImmediate;
+  modes[kSBC_ZP] = kZeroPage;
+  modes[kSBC_ZPX] = kZeroPageX;
+  modes[kSBC_ABS] = kAbsolute;
+  modes[kSBC_ABSX] = kAbsoluteX;
+  modes[kSBC_ABSY] = kAbsoluteY;
+  modes[kSBC_INDX] = kIndexedIndirect;
+  modes[kSBC_INDY] = kIndirectIndexed;
+  modes[kSEC] = kImplied;
+  modes[kSED] = kImplied;
+  modes[kSEI] = kImplied;
+  modes[kSTA_ZP] = kZeroPage;
+  modes[kSTA_ZPX] = kZeroPageX;
+  modes[kSTA_ABS] = kAbsolute;
+  modes[kSTA_ABSX] = kAbsoluteX;
+  modes[kSTA_ABSY] = kAbsoluteY;
+  modes[kSTA_INDX] = kIndexedIndirect;
+  modes[kSTA_INDY] = kIndirectIndexed;
+  modes[kSTX_ZP] = kZeroPage;
+  modes[kSTX_ZPY] = kZeroPageY;
+  modes[kSTX_ABS] = kAbsolute;
+  modes[kSTY_ZP] = kZeroPage;
+  modes[kSTY_ZPX] = kZeroPageX;
+  modes[kSTY_ABS] = kAbsolute;
+  modes[kTAX] = kImplied;
+  modes[kTAY] = kImplied;
+  modes[kTSX] = kImplied;
+  modes[kTXA] = kImplied;
+  modes[kTXS] = kImplied;
+  modes[kTYA] = kImplied;
+  return modes;
+}
+
 constexpr std::array<uint8_t, 256> instruction_sizes = make_instruction_sizes();
 
 std::size_t CPU::byte_count(uint8_t opcode) {
   return instruction_sizes[opcode];
 };
+
+constexpr std::array<std::string_view, 256> instruction_names =
+    make_instruction_names();
+
+constexpr std::array<AddrMode, 256> instruction_addr_modes =
+    make_instruction_addr_modes();
+
+std::string CPU::print_instruction() {
+  std::stringstream ss;
+  uint8_t opcode = this->read(PC_);
+  ss << instruction_names[opcode];
+  AddrMode addr_mode = instruction_addr_modes[opcode];
+  switch (addr_mode) {
+    case kImplied:
+      break;
+    case kAccumulator:
+      ss << " A";
+      break;
+    case kImmediate:
+      ss << " #" << util::fmt_hex(read(PC_ + 1));
+      break;
+    case kZeroPage:
+      ss << " " << util::fmt_hex(read(PC_ + 1));
+      break;
+    case kZeroPageX:
+      ss << " " << util::fmt_hex(read(PC_ + 1)) << ",X";
+      break;
+    case kZeroPageY:
+      ss << " " << util::fmt_hex(read(PC_ + 1)) << ",Y";
+      break;
+    case kRelative:
+      ss << " " << util::fmt_hex(read(PC_ + 1));
+      break;
+    case kAbsolute:
+      ss << " " << util::fmt_hex(read16(PC_ + 1));
+      break;
+    case kAbsoluteX:
+      ss << " " << util::fmt_hex(read16(PC_ + 1)) << ",X";
+      break;
+    case kAbsoluteY:
+      ss << " " << util::fmt_hex(read16(PC_ + 1)) << ",Y";
+      break;
+    case kIndirect:
+      ss << " (" << util::fmt_hex(read16(PC_ + 1)) << ")";
+      break;
+    case kIndexedIndirect:
+      ss << " (" << util::fmt_hex(read(PC_ + 1)) << ",X)";
+      break;
+    case kIndirectIndexed:
+      ss << " (" << util::fmt_hex(read(PC_ + 1)) << "),Y";
+      break;
+    default:
+      ss << " <unknown addressing mode>";
+      break;
+  }
+  return ss.str();
+}
 
 };  // namespace cpu
