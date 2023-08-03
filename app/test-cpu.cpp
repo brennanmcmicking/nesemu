@@ -2144,7 +2144,92 @@ TEST_CASE("Unit: LSR_ABSX") {}
 
 TEST_CASE("Unit: NOP") {}
 
-TEST_CASE("Unit: ORA_IMM") {}
+TEST_CASE("Unit: ORA_IMM") {
+  SECTION("Positive") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b1001,  //
+        kORA_IMM, 0b1100,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kLDA_IMM
+    cpu.cycle();
+    cpu.cycle();
+
+    // kORA_IMM - 1
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kORA_IMM
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b1001,       //
+        kORA_IMM, 0b1000'1100,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    // kLDA_IMM
+    cpu.cycle();
+    cpu.cycle();
+
+    // kORA_IMM - 1
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kORA_IMM
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0b1000'1101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0,  //
+        kORA_IMM, 0,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    // kLDA_IMM
+    cpu.cycle();
+    cpu.cycle();
+
+    // kORA_IMM - 1
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    // kORA_IMM
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+}
 
 TEST_CASE("Unit: ORA_ZP") {}
 
