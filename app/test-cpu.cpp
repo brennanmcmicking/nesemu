@@ -2268,7 +2268,25 @@ TEST_CASE("Unit: PHA") {
   REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == 0x0A);
 }
 
-TEST_CASE("Unit: PHP") {}
+TEST_CASE("Unit: PHP") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x7F,  //
+      kADC_IMM, 0x01,  //
+      kPHP,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  uint8_t status_before = cpu.P();
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  uint8_t status_after = cpu.P();
+  REQUIRE(status_after != status_before);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == status_after);
+}
 
 TEST_CASE("Unit: PLA") {
   std::vector<uint8_t> bytecode = {
@@ -2290,7 +2308,7 @@ TEST_CASE("Unit: PLA") {
   cpu.advance_instruction();
   REQUIRE(cpu.A() == 0x0A);
   cpu.advance_instruction();
-  
+
   cpu.advance_instruction();
   REQUIRE(cpu.A() == 0x00);
 
@@ -2301,7 +2319,33 @@ TEST_CASE("Unit: PLA") {
   REQUIRE(cpu.A() == 0x09);
 }
 
-TEST_CASE("Unit: PLP") {}
+TEST_CASE("Unit: PLP") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x7F,  //
+      kADC_IMM, 0x01,  //
+      kPHP,            //
+      kLDA_IMM, 0xFF,  //
+      kADC_IMM, 0x01,  //
+      kPLP,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  uint8_t status_before = cpu.P();
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == status_before);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  uint8_t status_after = cpu.P();
+  REQUIRE(status_after != status_before);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.P() == status_before);
+}
 
 TEST_CASE("Unit: ROL_A") {}
 
