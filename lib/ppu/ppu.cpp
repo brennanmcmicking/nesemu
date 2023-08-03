@@ -9,7 +9,11 @@
 #include "util.hpp"
 
 namespace ppu {
-PPU::PPU(GLFWwindow& window) : internal_frame_buf_(), window_(window) {
+PPU::PPU(GLFWwindow& window)
+    : nametables_({}),
+      palette_ram_({}),
+      internal_frame_buf_(),
+      window_(window) {
   // Function called whenever glfw errors
   glfwSetErrorCallback([](int err, const char* desc) {
     BOOST_LOG_TRIVIAL(error) << "GLFW error" << err << ": " << desc << "\n";
@@ -163,8 +167,8 @@ uint8_t PPU::read(uint16_t addr) {
     case 0x2000 ... 0x2FFF:  // Nametables
                              // BOOST_LOG_TRIVIAL(info) << "Read from nametable:
                              // " << util::fmt_hex(addr);
-    case 0x3000 ... 0x3EFF:  // Nametable mirror
       return nametables_[addr - 0x2000];
+    case 0x3000 ... 0x3EFF:  // Nametable mirror
       // BOOST_LOG_TRIVIAL(info)
       // << "Read from nametable mirror: " << util::fmt_hex(addr);
       return nametables_[addr - 0x3000];
