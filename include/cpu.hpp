@@ -181,13 +181,6 @@ class CPU {
   // happen
   bool debug_mode_;
 
-  /**
-   * @brief Execute the instruction with given opcode
-   *
-   * @param opcode
-   */
-  void execute(uint8_t opcode);
-
   uint16_t PC_;  // program counter. points to next instruction
   uint8_t SP_;   // stack pointer
   uint8_t A_;    // accumulator
@@ -196,9 +189,15 @@ class CPU {
   uint8_t P_;    // processor status
 
   std::size_t cycles_todo_;  // cycles until the instruction is done
-  uint8_t next_instr_;
 
   std::array<uint8_t, 0x800> ram_;  // 2kb of RAM
+
+  /**
+   * @brief Execute the instruction with given opcode
+   *
+   * @param opcode
+   */
+  void execute(uint8_t opcode);
 
   std::size_t cycle_count(uint8_t opcode);
   std::size_t byte_count(uint8_t opcode);

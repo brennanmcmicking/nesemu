@@ -561,7 +561,6 @@ void CPU::cycle() {
     execute(read(PC_));
   } else if (cycles_todo_ == 0) {
     BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
-    next_instr_ = read(PC_);
     cycles_todo_ = cycle_count(read(PC_));
     BOOST_LOG_TRIVIAL(trace)
         << std::format("next_instr: {}", print_instruction());
