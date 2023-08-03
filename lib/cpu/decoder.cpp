@@ -191,7 +191,7 @@ void CPU::execute(uint8_t opcode) {
     }
     case kBRK: {
       // BRK, Implied, 1 bytes, 7 cycles
-      push_stack16(PC_ + 1);
+      push_stack16(PC_ + byte_count(kBRK));
       push_stack(P_);
       PC_ = read16(0xFFFE);
       set_break(true);
@@ -784,6 +784,7 @@ void CPU::execute(uint8_t opcode) {
       // RTI, Implied, 1 bytes, 6 cycles
       P_ = pop_stack();
       PC_ = pop_stack16();
+      // PC_ += byte_count(kRTI);
       // when returning from interrupt we do not increment the PC
       break;
     }

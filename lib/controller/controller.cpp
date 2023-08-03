@@ -5,6 +5,8 @@
 #include <boost/log/trivial.hpp>
 #include <format>
 
+#include "util.hpp"
+
 struct Input {
   bool A;
   bool B;
@@ -52,12 +54,17 @@ void Controller::write_strobe(uint8_t value) {
                input.A, input.B, input.Select, input.Start, input.Up,
                input.Down, input.Left, input.Right);
   }
+
+  BOOST_LOG_TRIVIAL(debug) << "~~~ write_strobe: val " << util::fmt_hex(value);
   strobe_ = new_strobe;
 };
 
 uint8_t Controller::read_joy1() {
   uint8_t bit = joy1_register_ & 0x01;
   joy1_register_ >>= 1;
+
+  BOOST_LOG_TRIVIAL(debug) << "~~~ read_joy1: bit is " << util::fmt_hex(bit);
+
   return bit;
 };
 

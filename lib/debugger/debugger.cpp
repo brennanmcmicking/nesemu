@@ -184,7 +184,7 @@ void Debugger::cmd_step() {
 }
 void Debugger::cmd_continue() {
   while (!breakpoints_.contains(cpu_->PC())) {
-    cpu_->advance_instruction();
+    cpu_->advance_frame();
   }
   std::cout << "Breakpoint reached: " << util::fmt_hex(cpu_->PC()) << "\n";
   cmd_registers();
