@@ -149,13 +149,19 @@ void PPU::set_PPUSCROLL(uint8_t val) { PPUSCROLL_ = val; }
 void PPU::set_PPUADDR(uint8_t val) { PPUADDR_ = (PPUADDR_ << 8) | val; }
 uint8_t PPU::get_PPUDATA() {
   // wiki: After access, the video memory address will increment by an amount
-  // determined by bit 2 of $2000
-  return PPUDATA_;
+  // determined by bit 2 of $2000 (1 if 0, 32 if 1)
+  // TODO:
+  uint8_t val = read(PPUADDR_);
+  bool address_inc_bit = PPUCTRL_ & 0b100;
+  PPUADDR_ += address_inc_bit ? 32 : 1;
+  return val;
 }
 void PPU::set_PPUDATA(uint8_t val) {
   // wiki: After access, the video memory address will increment by an amount
-  // determined by bit 2 of $2000.
-  PPUDATA_ = val;
+  // determined by bit 2 of $2000 (1 if 0, 32 if 1)
+  write(PPUADDR_, val);
+  bool address_inc_bit = PPUCTRL_ & 0b100;
+  PPUADDR_ += address_inc_bit ? 32 : 1;
 }
 
 bool PPU::greyscale() { return PPUMASK_ & 0b1; }
