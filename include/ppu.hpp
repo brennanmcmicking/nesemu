@@ -99,7 +99,6 @@ class PPU {
   void set_PPUDATA(uint8_t val);
 
   // Helpers to get common attributes from ppu registers
-  // TODO: unimplemented
   bool greyscale();
   bool show_background();
   bool in_vblank();
