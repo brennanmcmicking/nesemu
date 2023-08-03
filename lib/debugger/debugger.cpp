@@ -39,27 +39,35 @@ void _unimplemented() {
 
 bool Debugger::smart_execute_cycle() {
   bool exited_vblank = false;
-  if (cycles_todo_in_frame_ == 0) {
-    std::this_thread::sleep_until(frame_deadline_);
-    frame_start_ = std::chrono::steady_clock::now();
-    frame_deadline_ = frame_start_ + cpu::CPU::kTimePerFrameMillis;
-    cycles_todo_in_frame_ = cpu::CPU::kCyclesPerFrame;
+  try {
+    if (cycles_todo_in_frame_ == 0) {
+      std::this_thread::sleep_until(frame_deadline_);
+      frame_start_ = std::chrono::steady_clock::now();
+      frame_deadline_ = frame_start_ + cpu::CPU::kTimePerFrameMillis;
+      cycles_todo_in_frame_ = cpu::CPU::kCyclesPerFrame;
 
-    if (cpu_->ppu_.has_value()) {
-      // Render a frame using the current cpu data
-      cpu::CPU::PPU& ppu = cpu_->ppu_->get();
-      ppu.render_to_window();
+      if (cpu_->ppu_.has_value()) {
+        // Render a frame using the current cpu data
+        cpu::CPU::PPU& ppu = cpu_->ppu_->get();
+        ppu.render_to_window();
+      }
+
+      // NMI. Program finishes current instruction before the interrupt happens
+
+      if (cpu_->cycles_todo_ > 1) {
+        cpu_->advance_cycles(cpu_->cycles_todo_ - 1);
+      }
+      cpu_->push_stack16(cpu_->PC());
+      cpu_->push_stack(cpu_->P());
+      cpu_->PC_ = cpu_->read16(0xFFFA);
+      exited_vblank = true;
     }
 
-    // NMI
-    cpu_->push_stack16(cpu_->PC());
-    cpu_->push_stack(cpu_->P());
-    cpu_->PC_ = cpu_->read16(0xFFFA);
-    exited_vblank = true;
+    cpu_->cycle();
+    cycles_todo_in_frame_ -= 1;
+  } catch (std::exception e) {
+    std::cout << e.what() << "\n";
   }
-
-  cpu_->cycle();
-  cycles_todo_in_frame_ -= 1;
   return exited_vblank;
 }
 

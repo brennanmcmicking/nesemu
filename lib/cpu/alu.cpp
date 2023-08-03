@@ -537,7 +537,9 @@ void CPU::advance_frame() {
     ppu.render_to_window();
 
     // NMI. Program finishes current instruction before the interrupt happens
-    advance_instruction();
+    if (cycles_todo_ > 1) {
+      advance_cycles(cycles_todo_ - 1);
+    }
     push_stack16(PC_);
     push_stack(P_);
     PC_ = read16(0xFFFA);
