@@ -459,7 +459,36 @@ TEST_CASE("Unit: ADC_INDX") {
   REQUIRE(cpu.read(0x1000) == 0x05);
 }
 
-TEST_CASE("Unit: ADC_INDY") {}
+TEST_CASE("Unit: ADC_INDY") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x05,         //
+      kSTA_ABS,  U16(0x1002),  //
+      kLDY_IMM,  0x02,         //
+      kADC_INDY, 0x03,         //
+  };
+
+  MAKE_CPU(bytecode);
+  REQUIRE(cpu.A() == 0);
+  cpu.write16(0x0003, 0x1000);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1000) == 0x00);
+
+  cpu.advance_cycles(4);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1002) == 0x05);
+
+  cpu.advance_cycles(2);
+  REQUIRE(cpu.Y() == 2);
+  REQUIRE(cpu.A() == 5);
+  REQUIRE(cpu.read(0x1002) == 0x05);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.A() == 10);
+  REQUIRE(cpu.read(0x1002) == 0x05);
+}
 
 TEST_CASE("Unit: AND_IMM") {}
 
@@ -2246,7 +2275,53 @@ TEST_CASE("Unit: ROR_ABSX") {}
 
 TEST_CASE("Unit: RTI") {}
 
-TEST_CASE("Unit: RTS") {}
+TEST_CASE("Unit: RTS") {
+  uint16_t addr = 0x1234;
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x01,       //
+      kADC_IMM, 0xFF,       //
+      kJSR_ABS, U16(addr),  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  std::vector<uint8_t> function = {
+      kLDA_IMM, 0x01,  //
+      kADC_IMM, 0x7F,  //
+      kRTS,            //
+  };
+  uint16_t p = addr;
+  for (auto i : function) {
+    cpu.write(p++, i);
+  }
+
+  REQUIRE(cpu.A() == 0x00);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x01);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x00);
+  // uint8_t flags_outer = cpu.P();
+  uint16_t pc_outer = cpu.PC();  // expected return value is +2
+
+  cpu.advance_instruction();
+  REQUIRE(fmt_hex(cpu.PC()) == fmt_hex(addr));
+  // REQUIRE(fmt_hex(cpu.peek_stack16()) ==
+  //         fmt_hex((uint16_t)(pc_outer + 2)));
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x01);
+
+  cpu.advance_instruction();
+  REQUIRE((int)cpu.A() == 0x80);
+  // uint8_t flags_inner = cpu.P();
+  // REQUIRE(flags_inner != flags_outer);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.PC() == pc_outer + 2);
+  // REQUIRE(cpu.P() == flags_outer);
+}
 
 TEST_CASE("Unit: SBC_IMM") {}
 
