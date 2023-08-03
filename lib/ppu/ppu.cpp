@@ -158,6 +158,10 @@ void PPU::set_PPUDATA(uint8_t val) {
   PPUDATA_ = val;
 }
 
+bool PPU::greyscale() { return PPUMASK_ & 0b1; }
+bool PPU::show_background() { return PPUMASK_ & 0b1000; }
+bool PPU::in_vblank() { return PPUSTATUS_ & 0b1000'0000; }
+
 uint8_t PPU::read(uint16_t addr) {
   switch (addr) {
     case 0x0000 ... 0x1FFF:  // Pattern table 0
