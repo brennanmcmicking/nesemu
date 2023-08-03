@@ -191,7 +191,7 @@ void CPU::execute(uint8_t opcode) {
     }
     case kBRK: {
       // BRK, Implied, 1 bytes, 7 cycles
-      push_stack16(PC_);
+      push_stack16(PC_ + 1);
       push_stack(P_);
       PC_ = read16(0xFFFE);
       set_break(true);
