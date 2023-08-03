@@ -2245,11 +2245,61 @@ TEST_CASE("Unit: ORA_INDX") {}
 
 TEST_CASE("Unit: ORA_INDY") {}
 
-TEST_CASE("Unit: PHA") {}
+TEST_CASE("Unit: PHA") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x09,  //
+      kPHA,            //
+      kLDA_IMM, 0x0A,  //
+      kPHA,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x09);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == 0x09);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x0A);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == 0x0A);
+}
 
 TEST_CASE("Unit: PHP") {}
 
-TEST_CASE("Unit: PLA") {}
+TEST_CASE("Unit: PLA") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x09,  //
+      kPHA,            //
+      kLDA_IMM, 0x0A,  //
+      kPHA,            //
+      kLDA_IMM, 0x00,  //
+      kPLA,            //
+      kPLA,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x09);
+  cpu.advance_instruction();
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x0A);
+  cpu.advance_instruction();
+  
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x00);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x0A);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x09);
+}
 
 TEST_CASE("Unit: PLP") {}
 
