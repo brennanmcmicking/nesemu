@@ -8,29 +8,29 @@ uint8_t CPU::read(uint16_t addr) {
       return ram_[addr % 0x800];
     case 0x2000 ... 0x3FFF: {  // PPU Registers
       if (!ppu_.has_value()) {
-        BOOST_LOG_TRIVIAL(trace)
+        BOOST_LOG_TRIVIAL(debug)
             << "Read from PPU register without attached PPU: " << addr;
         return 0xAA;
       }
       PPU& ppu = ppu_.value().get();
       switch (addr % 8) {
-        case 0x2002:  // PPUSTATUS
+        case 0x02:  // PPUSTATUS
           return ppu.get_PPUSTATUS();
-        case 0x2004:  // OAMDATA (r/w)
+        case 0x04:  // OAMDATA (r/w)
           return ppu.get_OAMDATA();
-        case 0x2007:  // PPUDATA (r/w)
+        case 0x07:  // PPUDATA (r/w)
           return ppu.get_PPUDATA();
         default:
-          BOOST_LOG_TRIVIAL(trace) << "Invalid PPU register read: " << addr;
+          BOOST_LOG_TRIVIAL(debug) << "Invalid PPU register read: " << addr;
           return 0xAA;
       };
     }
     case 0x4000 ... 0x4015:  // Sound
-      BOOST_LOG_TRIVIAL(fatal) << "Sound not implemented: " << addr;
+      BOOST_LOG_TRIVIAL(debug) << "Sound not implemented: " << addr;
       return 0xAA;
     case 0x4016 ... 0x4017: {
       if (!controller_.has_value()) {
-        BOOST_LOG_TRIVIAL(trace)
+        BOOST_LOG_TRIVIAL(debug)
             << "Read from controller register without attached controller: "
             << addr;
         return 0xAA;
@@ -39,7 +39,7 @@ uint8_t CPU::read(uint16_t addr) {
       return controller.read_joy1();
     }
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
-      BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
+      BOOST_LOG_TRIVIAL(debug) << "Memory location disabled: " << addr;
       return 0xAA;
     case 0x4020 ... 0xFFFF:  // TODO: Cartridge space
       return cart_.cpu_read(addr);
@@ -56,7 +56,7 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       return true;
     case 0x2000 ... 0x3FFF: {  // TODO: PPU Registers
       if (!ppu_.has_value()) {
-        BOOST_LOG_TRIVIAL(trace)
+        BOOST_LOG_TRIVIAL(debug)
             << "Read from PPU register without attached PPU: " << addr;
         return false;
       }
@@ -91,7 +91,7 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       return false;
     case 0x4016 ... 0x4017: {
       if (!controller_.has_value()) {
-        BOOST_LOG_TRIVIAL(trace)
+        BOOST_LOG_TRIVIAL(debug)
             << "Write to controller register without attached controller: "
             << addr;
         return false;

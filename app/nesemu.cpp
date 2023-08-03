@@ -36,8 +36,14 @@ namespace po = boost::program_options;
 class DummyMapper : public cartridge::Mapper {
  public:
   DummyMapper(){};
-  uint8_t prg_read(uint16_t addr) override { return 0; };
-  void prg_write(uint16_t addr, uint8_t data) override{};
+  uint8_t prg_read(uint16_t addr) override {
+    (void)addr;
+    return 0;
+  };
+  void prg_write(uint16_t addr, uint8_t data) override {
+    (void)addr;
+    (void)data;
+  };
 };
 
 /**
@@ -140,14 +146,14 @@ int main(int argc, char* argv[]) {
   std::shared_ptr<controller::Controller> controller;
 
   if (!headless_mode) {
-    BOOST_LOG_TRIVIAL(trace) << "Creating window + CPU";
+    BOOST_LOG_TRIVIAL(debug) << "Creating window + CPU";
     window_handle = init_window();
     ppu = std::make_shared<ppu::PPU>(*window_handle);
     controller = std::make_shared<controller::Controller>(*window_handle);
     cpu =
         std::make_shared<cpu::CPU>(cart, std::ref(*ppu), std::ref(*controller));
   } else {
-    BOOST_LOG_TRIVIAL(trace) << "Creating CPU (no window)";
+    BOOST_LOG_TRIVIAL(debug) << "Creating CPU (no window)";
     cpu = std::make_shared<cpu::CPU>(cart);
   }
 
@@ -155,7 +161,7 @@ int main(int argc, char* argv[]) {
     BOOST_LOG_TRIVIAL(fatal) << "Could not create CPU";
     return 1;
   } else {
-    BOOST_LOG_TRIVIAL(trace) << "Created CPU";
+    BOOST_LOG_TRIVIAL(debug) << "Created CPU";
   }
 
   if (debug_mode) {
