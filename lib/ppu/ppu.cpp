@@ -216,19 +216,19 @@ bool PPU::write(uint16_t addr, uint8_t data) {
       nametables_[addr - 0x3000] = data;
       return true;
     case 0x3F00 ... 0x3F1F:  // Palette RAM
-      BOOST_LOG_TRIVIAL(info)
+      BOOST_LOG_TRIVIAL(debug)
           << "Write to palette ram. Addr: " << util::fmt_hex(addr)
           << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
       palette_ram_[addr - 0x3F00] = data;
       return true;
     case 0x3F20 ... 0x3FFF:  // Palette RAM mirror
-      BOOST_LOG_TRIVIAL(info)
+      BOOST_LOG_TRIVIAL(debug)
           << "Write to palette ram mirror. Addr: " << util::fmt_hex(addr)
           << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
       palette_ram_[addr - 0x3F20] = data;
       return true;
     default:
-      BOOST_LOG_TRIVIAL(info)
+      BOOST_LOG_TRIVIAL(warning)
           << "Invalid PPU memory address write: " << util::fmt_hex(addr);
       return false;
   }

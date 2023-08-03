@@ -2,11 +2,13 @@
 #include <cstdint>
 
 #include "cpu.hpp"
+#include "util.hpp"
 
 namespace cpu {
 
 void CPU::execute(uint8_t opcode) {
-  BOOST_LOG_TRIVIAL(trace) << std::format("execute: {}", print_instruction());
+  BOOST_LOG_TRIVIAL(trace) << std::format("{}: {}", util::fmt_hex(PC_),
+                                          print_instruction());
   // after each case statement, put the instruction assembly name,
   // addressing mode, byte count, and cycle count
   switch (opcode) {
