@@ -46,4 +46,9 @@ void init_log_level() {
   log::core::get()->set_filter(log::trivial::severity >= level);
   return;
 }
+
+void set_log_level(log::trivial::severity_level level) {
+  log::core::get()->set_filter(log::trivial::severity >= level);
+  return;
+}
 }  // namespace util

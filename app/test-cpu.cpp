@@ -2193,15 +2193,16 @@ TEST_CASE("Unit: RTI") {}
 TEST_CASE("Unit: RTS") {
   uint16_t addr = 0x1234;
   std::vector<uint8_t> bytecode = {
-      kLDA_IMM, 0x01,       //
-      kADC_IMM, 0xFF,       //
-      kJSR_ABS, U16(addr),  //
+      kLDA_IMM,    0x01,       //
+      kADC_IMM,    0xFF,       //
+      kJSR_ABS,    U16(addr),  //
+      U16(0x5678),
   };
 
   MAKE_CPU(bytecode);
 
   std::vector<uint8_t> function = {
-      kLDA_IMM, 0x01,  //
+      kLDA_IMM, 0x08,  //
       kADC_IMM, 0x7F,  //
       kRTS,            //
   };
@@ -2210,6 +2211,7 @@ TEST_CASE("Unit: RTS") {
     cpu.write(p++, i);
   }
 
+  // util::set_log_level(util::log_level::trace);
   REQUIRE(cpu.A() == 0x00);
 
   cpu.advance_instruction();
@@ -2218,7 +2220,7 @@ TEST_CASE("Unit: RTS") {
   cpu.advance_instruction();
   REQUIRE(cpu.A() == 0x00);
   // uint8_t flags_outer = cpu.P();
-  uint16_t pc_outer = cpu.PC();  // expected return value is +2
+  // uint16_t pc_outer = cpu.PC();
 
   cpu.advance_instruction();
   REQUIRE(fmt_hex(cpu.PC()) == fmt_hex(addr));
@@ -2226,16 +2228,17 @@ TEST_CASE("Unit: RTS") {
   //         fmt_hex((uint16_t)(pc_outer + 2)));
 
   cpu.advance_instruction();
-  REQUIRE(cpu.A() == 0x01);
+  REQUIRE(cpu.A() == 0x08);
 
   cpu.advance_instruction();
-  REQUIRE((int)cpu.A() == 0x80);
+  REQUIRE((int)cpu.A() == 0x7F + 0x08 + 1);  // carry bit is set!
   // uint8_t flags_inner = cpu.P();
   // REQUIRE(flags_inner != flags_outer);
 
   cpu.advance_instruction();
-  REQUIRE(cpu.PC() == pc_outer + 2);
+  REQUIRE(cpu.read16(cpu.PC()) == 0x5678);
   // REQUIRE(cpu.P() == flags_outer);
+  // util::set_log_level(util::log_level::info);
 }
 
 TEST_CASE("Unit: SBC_IMM") {}
