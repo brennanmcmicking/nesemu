@@ -87,6 +87,11 @@ class PPU {
    */
   void render_to_framebuffer(frame_t& out);
 
+  // Note: the way we're handling ppu memory access from the cpu ignores the PPU
+  // open bus behaviour, where reading a value from a register may pass along
+  // stale data. This is used by some niche games
+  // https://www.nesdev.org/wiki/Open_bus_behavior#PPU_open_bus
+
   void set_PPUCTRL(uint8_t val);
   void set_PPUMASK(uint8_t val);
   uint8_t get_PPUSTATUS();

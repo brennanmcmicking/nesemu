@@ -72,8 +72,8 @@ void CPU::begin_cpu_loop() {
 
   while (1) {
     // Each loop is one frame. Calculate how long the frame should take
-    const auto frame_start = std::chrono::steady_clock::now();
-    const auto frame_deadline = frame_start + kTimePerFrameMillis;
+    const time_point frame_start = std::chrono::steady_clock::now();
+    const time_point frame_deadline = frame_start + kTimePerFrameMillis;
 
     // Do all logic: CPU, PPU, etc.
     advance_frame();

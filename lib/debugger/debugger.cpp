@@ -7,13 +7,19 @@
 #include <ios>
 #include <iostream>
 #include <sstream>
+#include <thread>
 
 #include "util.hpp"
 
 namespace debugger {
 
 // Must construct from a ptr to an existing CPU
-Debugger::Debugger(cpu::CPU* cpu) : cpu_(cpu), breakpoints_{} {}
+Debugger::Debugger(cpu::CPU* cpu)
+    : cpu_(cpu),
+      breakpoints_{},
+      cycles_todo_in_frame_(cpu::CPU::kCyclesPerFrame),
+      frame_start_(std::chrono::steady_clock::now()),
+      frame_deadline_(frame_start_ + cpu::CPU::kTimePerFrameMillis) {}
 
 void Debugger::debug() {
   // Loop while debugging. Listen for a command and execute it.
@@ -29,6 +35,32 @@ void Debugger::debug() {
 // temporary fn to make results more clear during implementation
 void _unimplemented() {
   BOOST_LOG_TRIVIAL(info) << "Command not yet implemented\n";
+}
+
+bool Debugger::smart_execute_cycle() {
+  bool exited_vblank = false;
+  if (cycles_todo_in_frame_ == 0) {
+    std::this_thread::sleep_until(frame_deadline_);
+    frame_start_ = std::chrono::steady_clock::now();
+    frame_deadline_ = frame_start_ + cpu::CPU::kTimePerFrameMillis;
+    cycles_todo_in_frame_ = cpu::CPU::kCyclesPerFrame;
+
+    if (cpu_->ppu_.has_value()) {
+      // Render a frame using the current cpu data
+      cpu::CPU::PPU& ppu = cpu_->ppu_->get();
+      ppu.render_to_window();
+    }
+
+    // NMI
+    cpu_->push_stack16(cpu_->PC());
+    cpu_->push_stack(cpu_->P());
+    cpu_->PC_ = cpu_->read16(0xFFFA);
+    exited_vblank = true;
+  }
+
+  cpu_->cycle();
+  cycles_todo_in_frame_ -= 1;
+  return exited_vblank;
 }
 
 bool Debugger::read_command() {
@@ -171,8 +203,17 @@ void Debugger::cmd_help() { std::cout << help_msg_; }
 void Debugger::cmd_step() {
   uint8_t opcode = cpu_->read(cpu_->PC());
   std::cout << "opcode: " << util::fmt_hex(opcode) << "\n";
-  cpu_->advance_instruction();
+  bool no_interrupt = true;
 
+  std::size_t i;
+  for (i = 0; (i < cpu_->cycle_count(opcode)) && no_interrupt; i++) {
+    no_interrupt = !smart_execute_cycle();
+  }
+
+  std::cout << "true cycles executed: " << i << "\n";
+  if (!no_interrupt) {
+    std::cout << "interrupt occurred\n";
+  }
   cmd_registers();
 
   // TODO: display data in current PC so this is more useful?
@@ -183,12 +224,25 @@ void Debugger::cmd_step() {
   // << util::fmt_hex(cpu_->addr_fetch(cpu::kAbsolute)) << "\n";
 }
 void Debugger::cmd_continue() {
+  // while (!breakpoints_.contains(cpu_->PC())) {
+  //   cpu_->advance_frame();
+  // }
+
+  bool frame_crossed = false;
+
   while (!breakpoints_.contains(cpu_->PC())) {
-    cpu_->advance_frame();
+    if (smart_execute_cycle()) {
+      frame_crossed = true;
+    }
+  }
+  if (frame_crossed) {
+    std::cout << "A frame ended and NMI was triggered during execution. Linear "
+                 "execution may have been interrupted.\n";
   }
   std::cout << "Breakpoint reached: " << util::fmt_hex(cpu_->PC()) << "\n";
   cmd_registers();
 }
+
 void Debugger::cmd_break(address_t addr) {
   auto res = breakpoints_.insert(addr);
   if (res.second) {

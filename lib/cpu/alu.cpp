@@ -772,6 +772,8 @@ void CPU::ROL_m(AddrMode addressingMode) {
   set_carry((val & 0b10000000) > 0);
   val = val << 1;
   val |= old_carry ? 1 : 0;
+  set_zero(A_ == 0);
+  set_negative((A_ & 0b10000000) > 0);
   write(addr, val);
 }
 

@@ -93,6 +93,17 @@ class Debugger {
   // Set of breakpoints. Not using unordered set for ease of iterating
   std::set<address_t> breakpoints_;
 
+  std::size_t cycles_todo_in_frame_;
+
+  cpu::CPU::time_point frame_start_;
+  cpu::CPU::time_point frame_deadline_;
+
+  /**
+   * @brief Executes 1 cycle, correctly pausing on frame boundaries/vBlank
+   *
+   */
+  bool smart_execute_cycle();
+
   /**
    * @brief Read line from stdin and parse it into a command.
    *

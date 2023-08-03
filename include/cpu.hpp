@@ -52,11 +52,14 @@ class CPU {
   using PPU = ppu::PPU;
   using Controller = controller::Controller;
 
-  const double kFramerate = 60.0988;              // Hz
-  const double kTimePerFrame = 1.0 / kFramerate;  // seconds
-  const std::chrono::duration<double, std::milli> kTimePerFrameMillis{
-      kTimePerFrame * 1000};               // Milliseconds
-  const double kCyclesPerFrame = 29780.5;  // taken from wiki
+  using time_point = class std::chrono::time_point<
+      std::chrono::_V2::steady_clock,
+      std::chrono::duration<double, std::chrono::_V2::system_clock::period>>;
+  static constexpr double kFramerate = 60.0988;              // Hz
+  static constexpr double kTimePerFrame = 1.0 / kFramerate;  // seconds
+  static constexpr std::chrono::duration<double, std::milli>
+      kTimePerFrameMillis{kTimePerFrame * 1000};      // Milliseconds
+  static constexpr double kCyclesPerFrame = 29780.5;  // taken from wiki
 
   explicit CPU(Cartridge& cartridge,
                std::optional<std::reference_wrapper<PPU>> ppu = std::nullopt,
