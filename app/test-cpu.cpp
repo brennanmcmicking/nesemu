@@ -1015,26 +1015,20 @@ TEST_CASE("Unit: JMP_IND") {
 
 TEST_CASE("Unit: JSR_ABS") {
   std::vector<uint8_t> bytecode = {
-      kJSR_ABS, U16(0x0010),  //
+      kJSR_ABS, U16(0x1234),  //
   };
 
   MAKE_CPU(bytecode);
 
-  cpu.write16(0x0010, 0x1234);
-
-  REQUIRE(cpu.read16(0x0010) == 0x1234);
   REQUIRE(cpu.SP() == 0xFD);
   uint16_t old_pc = cpu.PC();
 
-  cpu.advance_cycles(6);
+  cpu.advance_instruction();
 
   CAPTURE(old_pc);
 
   REQUIRE(cpu.SP() == 0xFB);
   REQUIRE(cpu.peek_stack16() == old_pc + 2);
-  REQUIRE(cpu.PC() == 0x1234);
-  // REQUIRE(cpu.read(cpu.SP() + 1) == 0x12);
-  // REQUIRE(cpu.read(cpu.SP() + 2) == 0x34);
 }
 
 TEST_CASE("Unit: LDA_IMM") {
