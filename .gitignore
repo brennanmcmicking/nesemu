@@ -6,6 +6,10 @@
 build/
 vendor/build/
 
+# proprietary roms (that we definitely dumped with a cartridge dumper ;3)
+vendor/out/donkey_kong.nes
+vendor/out/donkey_kong_1.nes
+
 # misc
 tmp/
 sde

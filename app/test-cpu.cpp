@@ -2316,13 +2316,107 @@ TEST_CASE("Unit: ORA_INDX") {}
 
 TEST_CASE("Unit: ORA_INDY") {}
 
-TEST_CASE("Unit: PHA") {}
+TEST_CASE("Unit: PHA") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x09,  //
+      kPHA,            //
+      kLDA_IMM, 0x0A,  //
+      kPHA,            //
+  };
 
-TEST_CASE("Unit: PHP") {}
+  MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: PLA") {}
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x09);
 
-TEST_CASE("Unit: PLP") {}
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == 0x09);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x0A);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == 0x0A);
+}
+
+TEST_CASE("Unit: PHP") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x7F,  //
+      kADC_IMM, 0x01,  //
+      kPHP,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  uint8_t status_before = cpu.P();
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  uint8_t status_after = cpu.P();
+  REQUIRE(status_after != status_before);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == status_after);
+}
+
+TEST_CASE("Unit: PLA") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x09,  //
+      kPHA,            //
+      kLDA_IMM, 0x0A,  //
+      kPHA,            //
+      kLDA_IMM, 0x00,  //
+      kPLA,            //
+      kPLA,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x09);
+  cpu.advance_instruction();
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x0A);
+  cpu.advance_instruction();
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x00);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x0A);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x09);
+}
+
+TEST_CASE("Unit: PLP") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x7F,  //
+      kADC_IMM, 0x01,  //
+      kPHP,            //
+      kLDA_IMM, 0xFF,  //
+      kADC_IMM, 0x01,  //
+      kPLP,            //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  uint8_t status_before = cpu.P();
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.read(0x100 + cpu.SP() + 1) == status_before);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  uint8_t status_after = cpu.P();
+  REQUIRE(status_after != status_before);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.P() == status_before);
+}
 
 TEST_CASE("Unit: ROL_A") {
   SECTION("Only carry set") {
@@ -2904,4 +2998,36 @@ TEST_CASE("Unit: TYA") {
 
   cpu.advance_cycles(2);
   REQUIRE(cpu.A() == data);
+}
+
+TEST_CASE("instruction printer") {
+  uint16_t addr = 0x0000;
+  std::vector<uint8_t> bytecode = {
+      kJMP_ABS, U16(addr),  //
+  };
+
+  std::vector<std::pair<std::vector<uint8_t>, std::string_view>> instructions =
+      {{{kNOP}, "NOP"},
+       {{kROR_A}, "ROR A"},
+       {{kLDA_IMM, 0x01}, "LDA #$01"},
+       {{kADC_ZP, 0xAF}, "ADC $AF"},
+       {{kSTY_ZPX, 0xD3}, "STY $D3,X"},
+       {{kSTX_ZPY, 0x82}, "STX $82,Y"},
+       {{kLDA_ABS, U16(0x1234)}, "LDA $1234"},
+       {{kLDA_ABSX, U16(0x5678)}, "LDA $5678,X"},
+       {{kLDA_ABSY, U16(0x9ABC)}, "LDA $9ABC,Y"},
+       {{kJMP_IND, U16(0x0F78)}, "JMP ($0F78)"},
+       {{kLDA_INDX, 0x42}, "LDA ($42,X)"},
+       {{kLDA_INDY, 0x21}, "LDA ($21),Y"}};
+
+  for (auto [instruction, expected] : instructions) {
+    MAKE_CPU(bytecode);
+    uint16_t p = addr;
+    for (uint8_t b : instruction) {
+      cpu.write(p++, b);
+    }
+    cpu.advance_cycles(3);
+    REQUIRE(cpu.PC() == addr);
+    CHECK(cpu.print_instruction() == expected);
+  }
 }
