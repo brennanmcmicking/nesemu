@@ -456,8 +456,7 @@ void CPU::execute(uint8_t opcode) {
     case kJSR_ABS: {
       // JSR, Absolute, 3 bytes, 6 cycles
       push_stack16(PC_ + byte_count(kJSR_ABS) - 1);
-      uint16_t a = addr_fetch(kAbsolute);
-      PC_ = read16(a);
+      PC_ = addr_fetch(kAbsolute);
       break;
     }
     case kLDA_IMM: {
