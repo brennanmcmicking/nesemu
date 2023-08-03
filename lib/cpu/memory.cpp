@@ -14,11 +14,11 @@ uint8_t CPU::read(uint16_t addr) {
       }
       PPU& ppu = ppu_.value().get();
       switch (addr % 8) {
-        case 0x2002:  // PPUSTATUS
+        case 0x02:  // PPUSTATUS
           return ppu.get_PPUSTATUS();
-        case 0x2004:  // OAMDATA (r/w)
+        case 0x04:  // OAMDATA (r/w)
           return ppu.get_OAMDATA();
-        case 0x2007:  // PPUDATA (r/w)
+        case 0x07:  // PPUDATA (r/w)
           return ppu.get_PPUDATA();
         default:
           BOOST_LOG_TRIVIAL(trace) << "Invalid PPU register read: " << addr;
@@ -62,25 +62,25 @@ bool CPU::write(uint16_t addr, uint8_t data) {
       }
       PPU& ppu = ppu_.value().get();
       switch (addr % 8) {
-        case 0x2000:  // PPUCTRL
+        case 0x00:  // PPUCTRL
           ppu.set_PPUCTRL(data);
           return true;
-        case 0x2001:  // PPUMASK
+        case 0x01:  // PPUMASK
           ppu.set_PPUMASK(data);
           return true;
-        case 0x2003:  // OAMADDR
+        case 0x03:  // OAMADDR
           ppu.set_OAMADDR(data);
           return true;
-        case 0x2004:  // OAMDATA (r/w)
+        case 0x04:  // OAMDATA (r/w)
           ppu.set_OAMDATA(data);
           return true;
-        case 0x2005:  // PPUSCROLL
+        case 0x05:  // PPUSCROLL
           ppu.set_PPUSCROLL(data);
           return true;
-        case 0x2006:  // PPUADDR
+        case 0x06:  // PPUADDR
           ppu.set_PPUADDR(data);
           return true;
-        case 0x2007:  // PPUDATA (r/w)
+        case 0x07:  // PPUDATA (r/w)
           ppu.set_PPUDATA(data);
           return true;
       };
