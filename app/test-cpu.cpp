@@ -2231,7 +2231,78 @@ TEST_CASE("Unit: ORA_IMM") {
   };
 }
 
-TEST_CASE("Unit: ORA_ZP") {}
+TEST_CASE("Unit: ORA_ZP") {
+  SECTION("Positive") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0b0110'0100,  //
+        kSTX_ZP,  0x10,         //
+
+        kLDA_IMM, 0b0011'1001,  //
+        kORA_ZP,  0x10,         //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b0111'1101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0b1000'0100,  //
+        kSTX_ZP,  0x10,         //
+
+        kLDA_IMM, 0b0000'1001,  //
+        kORA_ZP,  0x10,         //
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b1000'1101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0,     //
+        kSTX_ZP,  0x10,  //
+
+        kLDA_IMM, 0,     //
+        kORA_ZP,  0x10,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+}
 
 TEST_CASE("Unit: ORA_ZPX") {}
 
@@ -2253,7 +2324,67 @@ TEST_CASE("Unit: PLA") {}
 
 TEST_CASE("Unit: PLP") {}
 
-TEST_CASE("Unit: ROL_A") {}
+TEST_CASE("Unit: ROL_A") {
+  SECTION("Only carry set") {
+    std::vector<uint8_t> bytecode = {
+        kSEC,           // set carry flag
+        kLDA_IMM, 0b0,  //
+        kROL_A,         // shift bits in A one to the left
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.A() == 0);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b1);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+  }
+
+  SECTION("All but carry") {
+    std::vector<uint8_t> bytecode = {
+        // carry not set
+        kLDA_IMM, 0b1111'1111,  //
+        kROL_A,                 // shift bits in A one to the left
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b1111'1110);
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+  }
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        // carry not set
+        kLDA_IMM, 0b0,  //
+        kROL_A,         // shift bits in A one to the left
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+  }
+}
 
 TEST_CASE("Unit: ROL_ZP") {}
 

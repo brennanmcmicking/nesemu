@@ -717,9 +717,11 @@ void CPU::execute(uint8_t opcode) {
     case kROL_A: {
       // ROL, Accumulator, 1 bytes, 2 cycles
       bool old_carry = get_carry();
-      set_carry((A_ & 0b10000000) > 0);
+      set_carry((A_ & 0b1000'0000) > 0);
       A_ = A_ << 1;
       A_ |= old_carry ? 1 : 0;
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       PC_ += byte_count(kROL_A);
       break;
     }
