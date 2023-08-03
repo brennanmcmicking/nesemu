@@ -1,5 +1,6 @@
 #include "boost/log/trivial.hpp"
 #include "cpu.hpp"
+#include "util.hpp"
 
 namespace cpu {
 uint8_t CPU::read(uint16_t addr) {
@@ -21,7 +22,9 @@ uint8_t CPU::read(uint16_t addr) {
         case 0x07:  // PPUDATA (r/w)
           return ppu.get_PPUDATA();
         default:
-          BOOST_LOG_TRIVIAL(debug) << "Invalid PPU register read: " << addr;
+          BOOST_LOG_TRIVIAL(debug)
+              << "Invalid PPU register read: " << util::fmt_hex(addr)
+              << " (mod 8 is " << util::fmt_hex((uint16_t)(addr % 8)) << ")";
           return 0xAA;
       };
     }
