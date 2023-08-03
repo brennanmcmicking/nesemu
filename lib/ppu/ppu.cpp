@@ -104,7 +104,7 @@ void PPU::render_to_framebuffer(frame_t& out) {
 
       // Hardcoded to 1; bit 1 of four in palette (0 is transparent). This data
       // is from pattern table!
-      uint8_t index_into_palette = 0x1;
+      uint8_t index_into_palette = 0x01;
 
       // Attribute is for palette selection. It's one byte for color selection
       // for each 16x16px quadrant of the 32x32px tile from current palette (2
@@ -178,11 +178,13 @@ uint8_t PPU::read(uint16_t addr) {
       return nametables_[addr - 0x3000];
     case 0x3F00 ... 0x3F1F:  // Palette RAM
       // BOOST_LOG_TRIVIAL(info)
-      // << "Read from palette ram: " << util::fmt_hex(addr);
+      // << "Read from palette ram. Addr: " << util::fmt_hex(addr)
+      // << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
       return palette_ram_[addr - 0x3F00];
     case 0x3F20 ... 0x3FFF:  // Palette RAM mirror
       // BOOST_LOG_TRIVIAL(info)
-      // << "Read from palette ram mirror: " << util::fmt_hex(addr);
+      //     << "Read from palette ram mirror. Addr: " << util::fmt_hex(addr)
+      //     << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
       return palette_ram_[addr - 0x3F20];
     default:
       BOOST_LOG_TRIVIAL(info)
@@ -208,13 +210,15 @@ bool PPU::write(uint16_t addr, uint8_t data) {
       nametables_[addr - 0x3000] = data;
       return true;
     case 0x3F00 ... 0x3F1F:  // Palette RAM
-      // BOOST_LOG_TRIVIAL(info)
-      // << "Write to palette ram: " << util::fmt_hex(addr);
+      BOOST_LOG_TRIVIAL(info)
+          << "Write to palette ram. Addr: " << util::fmt_hex(addr)
+          << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
       palette_ram_[addr - 0x3F00] = data;
       return true;
     case 0x3F20 ... 0x3FFF:  // Palette RAM mirror
-      // BOOST_LOG_TRIVIAL(info)
-      // << "Write to palette ram mirror: " << util::fmt_hex(addr);
+      BOOST_LOG_TRIVIAL(info)
+          << "Write to palette ram mirror. Addr: " << util::fmt_hex(addr)
+          << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
       palette_ram_[addr - 0x3F20] = data;
       return true;
     default:
