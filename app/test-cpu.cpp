@@ -11,8 +11,9 @@ using namespace cpu;
 
 class VectorMapper : public cartridge::Mapper {
  public:
-  VectorMapper(std::vector<uint8_t> bytecode, uint16_t entrypoint = 0x8000u)
-      : bytes_(bytecode), entrypoint_(entrypoint){};
+  VectorMapper(std::vector<uint8_t> bytecode, uint16_t brk_isr = 0xFFFFu,
+               uint16_t entrypoint = 0x8000u)
+      : bytes_(bytecode), entrypoint_(entrypoint), brk_isr_(brk_isr){};
   uint8_t prg_read(uint16_t addr) override {
     if (addr < 0x8000) {
       return 0xAA;
@@ -20,6 +21,10 @@ class VectorMapper : public cartridge::Mapper {
       return entrypoint_ & 0xFF;
     } else if (addr == 0xFFFD) {
       return entrypoint_ >> 8;
+    } else if (addr == 0xFFFE) {
+      return brk_isr_ & 0xFF;
+    } else if (addr == 0xFFFF) {
+      return brk_isr_ >> 8;
     }
     addr -= 0x8000;
     if (addr >= bytes_.size()) {
@@ -35,6 +40,7 @@ class VectorMapper : public cartridge::Mapper {
  private:
   std::vector<uint8_t> bytes_;
   uint16_t entrypoint_;
+  uint16_t brk_isr_;
 };
 
 #define U16(x) static_cast<uint8_t>((x)&0xFFu), static_cast<uint8_t>((x) >> 8u)
@@ -2267,7 +2273,55 @@ TEST_CASE("Unit: ROR_ABS") {}
 
 TEST_CASE("Unit: ROR_ABSX") {}
 
-TEST_CASE("Unit: RTI") {}
+TEST_CASE("Unit: RTI") {
+  uint16_t addr = 0x1234;
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,    0x01,  //
+      kADC_IMM,    0xFF,  //
+      kBRK,               //
+      U16(0x5678),
+  };
+
+  std::unique_ptr<VectorMapper> __mapper(new VectorMapper(bytecode, addr));
+  cartridge::Cartridge __cart(std::move(__mapper));
+  CPU cpu(__cart);
+
+  std::vector<uint8_t> function = {
+      kLDA_IMM, 0x01,  //
+      kADC_IMM, 0x7F,  //
+      kRTI,            //
+  };
+  uint16_t p = addr;
+  for (auto i : function) {
+    cpu.write(p++, i);
+  }
+
+  REQUIRE(cpu.A() == 0x00);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x01);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x00);
+  uint8_t flags_outer = cpu.P();
+
+  cpu.advance_instruction();
+  REQUIRE(fmt_hex(cpu.PC()) == fmt_hex(addr));
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.A() == 0x01);
+
+  cpu.advance_instruction();
+  REQUIRE((int)cpu.A() == 0x7F + 0x01 + 1);  // carry bit is set!
+  uint8_t flags_inner = cpu.P();
+  CAPTURE(fmt_hex(flags_inner), fmt_hex(flags_outer));
+  REQUIRE(flags_inner != flags_outer);
+
+  cpu.advance_instruction();
+  CAPTURE(fmt_hex(cpu.PC()), fmt_hex(cpu.read16(cpu.PC())));
+  REQUIRE(cpu.read16(cpu.PC()) == 0x5678);
+  REQUIRE(cpu.P() == flags_outer);
+}
 
 TEST_CASE("Unit: RTS") {
   uint16_t addr = 0x1234;
@@ -2290,7 +2344,6 @@ TEST_CASE("Unit: RTS") {
     cpu.write(p++, i);
   }
 
-  // util::set_log_level(util::log_level::trace);
   REQUIRE(cpu.A() == 0x00);
 
   cpu.advance_instruction();
@@ -2298,26 +2351,18 @@ TEST_CASE("Unit: RTS") {
 
   cpu.advance_instruction();
   REQUIRE(cpu.A() == 0x00);
-  // uint8_t flags_outer = cpu.P();
-  // uint16_t pc_outer = cpu.PC();
 
   cpu.advance_instruction();
   REQUIRE(fmt_hex(cpu.PC()) == fmt_hex(addr));
-  // REQUIRE(fmt_hex(cpu.peek_stack16()) ==
-  //         fmt_hex((uint16_t)(pc_outer + 2)));
 
   cpu.advance_instruction();
   REQUIRE(cpu.A() == 0x08);
 
   cpu.advance_instruction();
   REQUIRE((int)cpu.A() == 0x7F + 0x08 + 1);  // carry bit is set!
-  // uint8_t flags_inner = cpu.P();
-  // REQUIRE(flags_inner != flags_outer);
 
   cpu.advance_instruction();
   REQUIRE(cpu.read16(cpu.PC()) == 0x5678);
-  // REQUIRE(cpu.P() == flags_outer);
-  // util::set_log_level(util::log_level::info);
 }
 
 TEST_CASE("Unit: SBC_IMM") {}

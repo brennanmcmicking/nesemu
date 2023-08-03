@@ -53,7 +53,7 @@ uint8_t CPU::pop_stack() {
     BOOST_LOG_TRIVIAL(fatal) << "Stack underflow detected\n";
   }
   SP_ += 1;
-  return read(0x0100 | (SP_ - 1));
+  return read(0x0100 | SP_);
 }
 
 uint16_t CPU::pop_stack16() {
