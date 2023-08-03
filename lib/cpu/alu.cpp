@@ -521,9 +521,7 @@ void CPU::advance_instruction() {
   auto cycles = cycle_count(instruction);
 
   if (cycles_todo_ != 0) {
-    // TODO: is this a problem?
-    BOOST_LOG_TRIVIAL(info) << "Step: previous command not finished cycling\n";
-    // advance them manually (doesn't execute) //TODO: test
+    BOOST_LOG_TRIVIAL(trace) << "Advancing one instruction before NMI";
     advance_cycles(cycles_todo_);
   }
 
@@ -538,7 +536,10 @@ void CPU::advance_frame() {
     CPU::PPU& ppu = ppu_->get();
     ppu.render_to_window();
 
-    // NMI
+    // NMI. Program finishes current instruction before the interrupt happens
+    if (cycles_todo_ > 1) {
+      advance_cycles(cycles_todo_ - 1);
+    }
     push_stack16(PC_);
     push_stack(P_);
     PC_ = read16(0xFFFA);
