@@ -192,7 +192,7 @@ void CPU::execute(uint8_t opcode) {
     case kBRK: {
       // BRK, Implied, 1 bytes, 7 cycles
       push_stack16(PC_);
-      push_stack16(P_);
+      push_stack(P_);
       PC_ = read16(0xFFFE);
       set_break(true);
       break;
@@ -695,7 +695,7 @@ void CPU::execute(uint8_t opcode) {
     }
     case kPHP: {
       // PHP, Implied, 1 bytes, 3 cycles
-      push_stack16(P_);
+      push_stack(P_);
       PC_ += byte_count(kPHP);
       break;
     }
@@ -783,14 +783,14 @@ void CPU::execute(uint8_t opcode) {
     }
     case kRTI: {
       // RTI, Implied, 1 bytes, 6 cycles
-      P_ = pop_stack16();
+      P_ = pop_stack();
       PC_ = pop_stack16();
       // when returning from interrupt we do not increment the PC
       break;
     }
     case kRTS: {
       // RTS, Implied, 1 bytes, 6 cycles
-      PC_ = pop_stack();
+      PC_ = pop_stack16();
       // JSR stores the byte before the next memory location before jumping
       // so we need to add 1 to the value from the stack to get the true
       // next instruction location
