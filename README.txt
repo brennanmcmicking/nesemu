@@ -18,4 +18,19 @@ We are using the Google C++ style guidelines. Please use clang-format and skim
 over the style guide to ensure that your code conforms.
 https://google.github.io/styleguide/cppguide.html
 
-This project requires Catch2 (v2), Boost, & GLFW
+This project requires Catch2 (v2), Boost, OpenGL, and GLFW
+
+=== Building + Running
+
+Building the main emulator program: 
+
+1. Run CMake
+2. `./nesemu <repo-root>/vendor/out/<rom-name>.nes`
+   For example: `build/nesemu vendor/out/color_test_nosprites.nes`
+
+=== Caveats
+
+1. Some memory addresses are clear-on-read and reading them from the debugger
+will clear them. For example: reading `$2002` when the VBlank bit is set will
+clear the VBlank bit. As a result, the cartridge you're running may end up being
+acting in unexpected ways.
