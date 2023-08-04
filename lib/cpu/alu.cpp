@@ -769,10 +769,7 @@ void CPU::LSR_a() {
   set_carry((A_ & 0b1) == 1);
   A_ = A_ >> 1;
   set_zero(A_ == 0);
-  if (get_carry()) {
-    A_ |= 0b10000000;
-    set_negative(true);
-  }
+  set_negative(false);
 }
 
 void CPU::LSR_m(AddrMode addressingMode) {
@@ -781,10 +778,7 @@ void CPU::LSR_m(AddrMode addressingMode) {
   set_carry((val & 0b1) == 1);
   val = val >> 1;
   set_zero(val == 0);
-  if (get_carry()) {
-    val |= 0b10000000;
-    set_negative(true);
-  }
+  set_negative(false);
   write(addr, val);
 }
 

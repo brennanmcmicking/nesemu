@@ -3363,15 +3363,195 @@ TEST_CASE("Unit: LDY_ABSX") {
   };
 }
 
-TEST_CASE("Unit: LSR_A") {}
+TEST_CASE("Unit: LSR_A") {
+  SECTION("Zero flag") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000000,  //
+        kLDX_IMM, 0x02,        //
+        kLSR_A                 //
+    };
 
-TEST_CASE("Unit: LSR_ZP") {}
+    MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: LSR_ZPX") {}
+    cpu.advance_instruction();
+    cpu.advance_instruction();
 
-TEST_CASE("Unit: LSR_ABS") {}
+    REQUIRE(cpu.A() == 0b00000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
 
-TEST_CASE("Unit: LSR_ABSX") {}
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Can not be negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b10000000,  //
+        kLDX_IMM, 0x01,        //
+        kLSR_A                 //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b10000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b01000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Carry") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000011,  //
+        kLSR_A                 //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000011);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b00000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE(cpu.get_carry());
+  };
+}
+
+TEST_CASE("Unit: LSR_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kLSR_ZP, 0x05  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE(cpu.A() == 0);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  SECTION("Zero flag") {
+    cpu.write(0x05, 0b00000000);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b00000000);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Not Negative") {
+    cpu.write(0x05, 0b10000000);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b01000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Carry") {
+    cpu.write(0x05, 0b00000011);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b00000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE(cpu.get_carry());
+  };
+}
+
+TEST_CASE("Unit: LSR_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,  //
+      kLSR_ZPX, 0x05   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000001);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.read(0x07) == 0b01100000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: LSR_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kLSR_ABS, U16(0x07)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000001);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.read(0x07) == 0b01100000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: LSR_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,       //
+      kLSR_ABSX, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000001);
+
+  cpu.advance_cycles(7);
+
+  REQUIRE(cpu.read(0x07) == 0b01100000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
 
 TEST_CASE("Unit: NOP") {
   std::vector<uint8_t> bytecode = {
