@@ -132,10 +132,28 @@ void PPU::render_to_framebuffer(frame_t& out) {
         color = 0x0;
       }
 
+      color_t r = (color >> 16) & 0xFF;
+      color_t g = (color >> 8) & 0xFF;
+      color_t b = color & 0xFF;
+
+      // Emphasis
+      if (PPUMASK_ & (1 << 5)) {
+        // red emph
+        r = 0xFA;
+      }
+      if (PPUMASK_ & (1 << 6)) {
+        // green emph
+        g = 0xFA;
+      }
+      if (PPUMASK_ & (1 << 7)) {
+        // blue emph
+        b = 0xFA;
+      }
+
       // Update values in buffer
-      out[i * 3] = (color >> 16) & 0xFF;
-      out[i * 3 + 1] = (color >> 8) & 0xFF;
-      out[i * 3 + 2] = color & 0xFF;
+      out[i * 3] = r;
+      out[i * 3 + 1] = g;
+      out[i * 3 + 2] = b;
     }
   }
 
@@ -196,16 +214,19 @@ uint8_t PPU::read(uint16_t addr) {
       // BOOST_LOG_TRIVIAL(info)
       // << "Read from nametable mirror: " << util::fmt_hex(addr);
       return nametables_[addr - 0x3000];
-    case 0x3F00 ... 0x3F1F:  // Palette RAM
+    case 0x3F00 ... 0x3FFF: {  // Palette RAM
       // BOOST_LOG_TRIVIAL(info)
       // << "Read from palette ram. Addr: " << util::fmt_hex(addr)
       // << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
-      return palette_ram_[addr - 0x3F00];
-    case 0x3F20 ... 0x3FFF:  // Palette RAM mirror
-      // BOOST_LOG_TRIVIAL(info)
-      //     << "Read from palette ram mirror. Addr: " << util::fmt_hex(addr)
-      //     << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
-      return palette_ram_[addr - 0x3F20];
+
+      //  Greyscale is implemented as a bitwise AND with $30 on any value read
+      //  from PPU $3F00-$3FFF, both on the display and through PPUDATA
+      uint8_t val = palette_ram_[addr % 0x20];
+      if (greyscale()) {
+        val &= 0x30;
+      }
+      return val;
+    }
     default:
       BOOST_LOG_TRIVIAL(info)
           << "Invalid PPU memory address read: " << util::fmt_hex(addr);

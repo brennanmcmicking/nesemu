@@ -918,9 +918,9 @@ TEST_CASE("Unit: BCC_REL") {
   // branch if carry clear
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x02,  //
-      kCMP_IMM, 0x01,  //
-      kBCC_REL, 0x06,  // jump 6 (+2)
       kCMP_IMM, 0x03,  //
+      kBCC_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x01,  //
       kNOP,     kNOP,  //
       kNOP,     kNOP,  //
       kBCC_REL, 0xF8,  // jump -8 (+2)
@@ -930,9 +930,9 @@ TEST_CASE("Unit: BCC_REL") {
   MAKE_CPU(bytecode);
 
   cpu.advance_instruction();  // LDA #$02
-  cpu.advance_instruction();  // CMP #$01
+  cpu.advance_instruction();  // CMP #$03
 
-  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_negative());
   REQUIRE_FALSE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
@@ -947,8 +947,8 @@ TEST_CASE("Unit: BCC_REL") {
 
   REQUIRE(cpu.PC() == old_pc - 0x06);
 
-  cpu.advance_instruction();  // CMP #$03
-  REQUIRE(cpu.get_negative());
+  cpu.advance_instruction();  // CMP #$01
+  REQUIRE_FALSE(cpu.get_negative());
 
   cpu.advance_instruction();  // NOP
   cpu.advance_instruction();  // NOP
@@ -966,9 +966,9 @@ TEST_CASE("Unit: BCS_REL") {
   // branch if carry set
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x02,  //
-      kCMP_IMM, 0x03,  //
-      kBCS_REL, 0x06,  // jump 6 (+2)
       kCMP_IMM, 0x01,  //
+      kBCS_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x03,  //
       kNOP,     kNOP,  //
       kNOP,     kNOP,  //
       kBCS_REL, 0xF8,  // jump -8 (+2)
@@ -978,9 +978,9 @@ TEST_CASE("Unit: BCS_REL") {
   MAKE_CPU(bytecode);
 
   cpu.advance_instruction();  // LDA #$02
-  cpu.advance_instruction();  // CMP #$03
+  cpu.advance_instruction();  // CMP #$01
 
-  REQUIRE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_negative());
   REQUIRE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
@@ -996,7 +996,7 @@ TEST_CASE("Unit: BCS_REL") {
   REQUIRE(cpu.PC() == old_pc - 0x06);
 
   cpu.advance_instruction();  // CMP #$01
-  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_negative());
 
   cpu.advance_instruction();  // NOP
   cpu.advance_instruction();  // NOP
@@ -1029,7 +1029,7 @@ TEST_CASE("Unit: BEQ_REL") {
   cpu.advance_instruction();  // CMP #$02
 
   REQUIRE_FALSE(cpu.get_negative());
-  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE(cpu.get_carry());
   REQUIRE(cpu.get_zero());
 
   uint16_t old_pc = cpu.PC();
@@ -1108,7 +1108,7 @@ TEST_CASE("Unit: BMI_REL") {
   cpu.advance_instruction();  // CMP #$03
 
   REQUIRE(cpu.get_negative());
-  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
 
@@ -1156,7 +1156,7 @@ TEST_CASE("Unit: BNE_REL") {
   cpu.advance_instruction();  // CMP #$01
 
   REQUIRE_FALSE(cpu.get_negative());
-  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
 
@@ -1495,31 +1495,460 @@ TEST_CASE("Unit: CMP_INDX") {}
 
 TEST_CASE("Unit: CMP_INDY") {}
 
-TEST_CASE("Unit: CPX_IMM") {}
+TEST_CASE("Unit: CPX_IMM") {
+  SECTION("Greater than") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0x06,  //
+        kCPX_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0x05,  //
+        kCPX_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0x04,  //
+        kCPX_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
 
 TEST_CASE("Unit: CPX_ZP") {}
 
 TEST_CASE("Unit: CPX_ABS") {}
 
-TEST_CASE("Unit: CPY_IMM") {}
+TEST_CASE("Unit: CPY_IMM") {
+  SECTION("Greater than") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0x06,  //
+        kCPY_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0x05,  //
+        kCPY_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0x04,  //
+        kCPY_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
 
 TEST_CASE("Unit: CPY_ZP") {}
 
 TEST_CASE("Unit: CPY_ABS") {}
 
-TEST_CASE("Unit: DEC_ZP") {}
+TEST_CASE("Unit: DEC_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kDEC_ZP, 0x05  //
+  };
 
-TEST_CASE("Unit: DEC_ZPX") {}
+  MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: DEC_ABS") {}
+  cpu.advance_cycles(4);
 
-TEST_CASE("Unit: DEC_ABSX") {}
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
 
-TEST_CASE("Unit: DEX") {}
+  SECTION("Positive") {
+    cpu.write(0x05, 0x09);
 
-TEST_CASE("Unit: DEY") {}
+    cpu.cycle();
 
-TEST_CASE("Unit: EOR_IMM") {}
+    REQUIRE(cpu.read(0x05) == 0x08);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Negative") {
+    cpu.write(0x05, 0x00);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0xFF);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+
+  SECTION("Zero flag") {
+    cpu.write(0x05, 0x01);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0x00);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: DEC_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,  //
+      kDEC_ZPX, 0x03   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  cpu.advance_cycles(5);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.write(0x05, 0x09);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0x08);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+}
+
+TEST_CASE("Unit: DEC_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kDEC_ABS, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(5);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.write(0x05, 0x09);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0x08);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+}
+
+TEST_CASE("Unit: DEC_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,       //
+      kDEC_ABSX, U16(0x03)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  cpu.advance_cycles(6);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.write(0x05, 0x09);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0x08);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+}
+
+TEST_CASE("Unit: DEX") {
+  SECTION("Positive") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0x02,  //
+        kDEX             //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.X() == 0x01);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0x01,  //
+        kDEX             //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.X() == 0x00);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0b10000001,  //
+        kLDA_IMM, 0x01,        //
+        kDEX,                  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.X() == 0b10000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  }
+}
+
+TEST_CASE("Unit: DEY") {
+  SECTION("Positive") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0x02,  //
+        kDEY             //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.Y() == 0x01);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0x01,  //
+        kDEY             //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.Y() == 0x00);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0b10000001,  //
+        kLDA_IMM, 0x01,        //
+        kDEY,                  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.Y() == 0b10000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  }
+}
+
+TEST_CASE("Unit: EOR_IMM") {
+  SECTION("Postitive") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000101,  //
+        kEOR_IMM, 0b00000110   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b00000011);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000101,  //
+        kEOR_IMM, 0b10000110   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b10000011);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+
+  SECTION("Zero flag") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000101,  //
+        kEOR_IMM, 0b00000101   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b00000000);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+}
 
 TEST_CASE("Unit: EOR_ZP") {}
 
@@ -1535,17 +1964,261 @@ TEST_CASE("Unit: EOR_INDX") {}
 
 TEST_CASE("Unit: EOR_INDY") {}
 
-TEST_CASE("Unit: INC_ZP") {}
+TEST_CASE("Unit: INC_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kINC_ZP, 0x05  //
+  };
 
-TEST_CASE("Unit: INC_ZPX") {}
+  MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: INC_ABS") {}
+  cpu.advance_cycles(4);
 
-TEST_CASE("Unit: INC_ABSX") {}
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
 
-TEST_CASE("Unit: INX") {}
+  SECTION("Positive") {
+    cpu.write(0x05, 0x07);
 
-TEST_CASE("Unit: INY") {}
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0x08);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Negative") {
+    cpu.write(0x05, 0b10000000);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0b10000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+
+  SECTION("Zero flag") {
+    cpu.write(0x05, 0xFF);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0x00);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: INC_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,  //
+      kINC_ZPX, 0x03   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  cpu.advance_cycles(5);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.write(0x05, 0x07);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0x08);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+}
+
+TEST_CASE("Unit: INC_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kINC_ABS, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(5);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.write(0x05, 0x07);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0x08);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+}
+
+TEST_CASE("Unit: INC_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,       //
+      kINC_ABSX, U16(0x03)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  cpu.advance_cycles(6);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.write(0x05, 0x07);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0x08);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+}
+
+TEST_CASE("Unit: INX") {
+  SECTION("Positive") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0x02,  //
+        kINX             //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.X() == 0x03);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0b11111111,  //
+        kLDA_IMM, 0x01,        //
+        kINX                   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.X() == 0x00);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDX_IMM, 0b10000000,  //
+        kLDA_IMM, 0x01,        //
+        kINX,                  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.X() == 0b10000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  }
+}
+
+TEST_CASE("Unit: INY") {
+  SECTION("Positive") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0x02,  //
+        kINY             //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.Y() == 0x03);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Zero") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0b11111111,  //
+        kLDA_IMM, 0x01,        //
+        kINY                   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.Y() == 0x00);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDY_IMM, 0b10000000,  //
+        kLDA_IMM, 0x01,        //
+        kINY,                  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    cpu.advance_cycles(1);
+
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.Y() == 0b10000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  }
+}
 
 TEST_CASE("Unit: JMP_ABS") {
   std::vector<uint8_t> bytecode = {
@@ -2690,15 +3363,195 @@ TEST_CASE("Unit: LDY_ABSX") {
   };
 }
 
-TEST_CASE("Unit: LSR_A") {}
+TEST_CASE("Unit: LSR_A") {
+  SECTION("Zero flag") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000000,  //
+        kLDX_IMM, 0x02,        //
+        kLSR_A                 //
+    };
 
-TEST_CASE("Unit: LSR_ZP") {}
+    MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: LSR_ZPX") {}
+    cpu.advance_instruction();
+    cpu.advance_instruction();
 
-TEST_CASE("Unit: LSR_ABS") {}
+    REQUIRE(cpu.A() == 0b00000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
 
-TEST_CASE("Unit: LSR_ABSX") {}
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Can not be negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b10000000,  //
+        kLDX_IMM, 0x01,        //
+        kLSR_A                 //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b10000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b01000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Carry") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000011,  //
+        kLSR_A                 //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000011);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b00000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE(cpu.get_carry());
+  };
+}
+
+TEST_CASE("Unit: LSR_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kLSR_ZP, 0x05  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE(cpu.A() == 0);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  SECTION("Zero flag") {
+    cpu.write(0x05, 0b00000000);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b00000000);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Not Negative") {
+    cpu.write(0x05, 0b10000000);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b01000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Carry") {
+    cpu.write(0x05, 0b00000011);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b00000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE(cpu.get_carry());
+  };
+}
+
+TEST_CASE("Unit: LSR_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,  //
+      kLSR_ZPX, 0x05   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000001);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.read(0x07) == 0b01100000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: LSR_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kLSR_ABS, U16(0x07)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000001);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.read(0x07) == 0b01100000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: LSR_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,       //
+      kLSR_ABSX, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000001);
+
+  cpu.advance_cycles(7);
+
+  REQUIRE(cpu.read(0x07) == 0b01100000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
 
 TEST_CASE("Unit: NOP") {
   std::vector<uint8_t> bytecode = {
