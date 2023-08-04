@@ -2634,7 +2634,68 @@ TEST_CASE("Unit: RTS") {
   REQUIRE(cpu.read16(cpu.PC()) == 0x5678);
 }
 
-TEST_CASE("Unit: SBC_IMM") {}
+TEST_CASE("Unit: SBC_IMM") {
+  SECTION("Positive, no carry") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 20,  //
+        kSBC_IMM, 5    //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    // - 1 because carry is 0
+    REQUIRE(cpu.A() == 20 - 5 - 1);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_overflow());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("With carry") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 20,  //
+        kSEC,          //
+        kSBC_IMM, 5    //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    // - 1 because carry is 0
+    REQUIRE(cpu.A() == 20 - 5 - 0);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_overflow());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 20,  //
+        kSEC,          //
+        kSBC_IMM, 5    //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    // - 1 because carry is 0
+    REQUIRE(cpu.A() == 20 - 5 - 0);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_overflow());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  // TODO: overflow, zero
+}
 
 TEST_CASE("Unit: SBC_ZP") {}
 
