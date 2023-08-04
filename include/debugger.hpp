@@ -48,8 +48,9 @@ class Debugger {
       "versions of command names are shown in parenthesis ()\n\n"
       "help (h) \n"
       "  Prints this message \n"
-      "step (s)\n"
-      "  Advance the CPU by one instruction \n"
+      "step (s) [num steps]\n"
+      "  Advance the CPU by one instruction. Optionally specify a number of \n"
+      "instructions to step\n"
       "continue (c)\n"
       "  Continue execution until the next breakpoint \n"
       "break <address> \n"
@@ -125,9 +126,10 @@ class Debugger {
   /****** Breakpoint commands *******/
 
   /**
-   * @brief Perform one step, executing the next instruction.
+   * @brief Perform one or more steps, executing the next instruction as many
+   * times as specified (default 1)
    */
-  void cmd_step();
+  void cmd_step(uint num_to_step = 1);
 
   /**
    * @brief Continue execution of the program as normal (until it hits the next

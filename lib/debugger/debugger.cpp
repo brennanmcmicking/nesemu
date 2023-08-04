@@ -104,7 +104,17 @@ void Debugger::read_command() {
     cmd_help();
 
   } else if (cmd_is(cmd, "step", "s")) {
-    cmd_step();
+    uint32_t num_instrs;
+
+    tmp_num = util::extract_num(input_stream);
+    if (tmp_num < 1) {
+      // Default to step 1
+      num_instrs = 1;
+    } else {
+      num_instrs = tmp_num;
+    }
+
+    cmd_step(num_instrs);
 
   } else if (cmd_is(cmd, "continue", "c")) {
     cmd_continue();
@@ -220,21 +230,28 @@ void Debugger::read_command() {
 }
 
 void Debugger::cmd_help() { std::cout << help_msg_; }
-void Debugger::cmd_step() {
-  uint8_t opcode = cpu_->read(cpu_->PC());
-  std::cout << "opcode: " << util::fmt_hex(opcode) << "\n";
-  bool no_interrupt = true;
+void Debugger::cmd_step(uint num_to_step) {
+  if (num_to_step != 1)
+    std::cout << "Stepping through: " << num_to_step << " instructions\n";
 
-  std::size_t i;
-  for (i = 0; (i < cpu_->cycle_count(opcode)) && no_interrupt; i++) {
-    no_interrupt = !smart_execute_cycle();
-  }
+  for (uint step_count = 0; step_count < num_to_step; ++step_count) {
+    if (num_to_step != 1) std::cout << "\nStep " << step_count + 1 << "\n";
 
-  std::cout << "true cycles executed: " << i << "\n";
-  if (!no_interrupt) {
-    std::cout << "interrupt occurred\n";
+    uint8_t opcode = cpu_->read(cpu_->PC());
+    std::cout << "opcode: " << util::fmt_hex(opcode) << "\n";
+    bool no_interrupt = true;
+
+    std::size_t i;
+    for (i = 0; (i < cpu_->cycle_count(opcode)) && no_interrupt; i++) {
+      no_interrupt = !smart_execute_cycle();
+    }
+
+    std::cout << "true cycles executed: " << i << "\n";
+    if (!no_interrupt) {
+      std::cout << "interrupt occurred\n";
+    }
+    cmd_registers();
   }
-  cmd_registers();
 
   // TODO: display data in current PC so this is more useful?
   // address_t instr_addr = cpu_->
