@@ -2439,6 +2439,7 @@ TEST_CASE("Unit: ROL_A") {
     REQUIRE(cpu.A() == 0b1);
     REQUIRE_FALSE(cpu.get_carry());
     REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
   }
 
   SECTION("All but carry") {
@@ -2488,7 +2489,50 @@ TEST_CASE("Unit: ROL_ABS") {}
 
 TEST_CASE("Unit: ROL_ABSX") {}
 
-TEST_CASE("Unit: ROR_A") {}
+TEST_CASE("Unit: ROR_A") {
+  SECTION("Only carry set") {
+    std::vector<uint8_t> bytecode = {
+        kSEC,           // set carry flag
+        kLDA_IMM, 0b0,  //
+        kROR_A,         // shift bits in A one to the left
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.A() == 0);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b1000'0000);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  }
+
+  SECTION("All but carry") {
+    std::vector<uint8_t> bytecode = {
+        // carry not set
+        kLDA_IMM, 0b1111'1111,  //
+        kROR_A,                 // shift bits in A one to the left
+    };
+
+    MAKE_CPU(bytecode);
+
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b0111'1111);
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+}
 
 TEST_CASE("Unit: ROR_ZP") {}
 

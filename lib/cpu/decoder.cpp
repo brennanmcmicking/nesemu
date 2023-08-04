@@ -757,6 +757,8 @@ void CPU::execute(uint8_t opcode) {
       set_carry((A_ & 0b00000001) > 0);
       A_ = A_ >> 1;
       A_ |= old_carry ? 0b10000000 : 0;
+      set_zero(A_ == 0);
+      set_negative((A_ & 0b10000000) > 0);
       PC_ += byte_count(kROR_A);
       break;
     }
