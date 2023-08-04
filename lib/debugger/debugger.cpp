@@ -50,10 +50,14 @@ bool Debugger::smart_execute_cycle() {
         // Render a frame using the current cpu data
         cpu::CPU::PPU& ppu = cpu_->ppu_->get();
         ppu.render_to_window();
+
+        // NMI. Program finishes current instruction before the interrupt
+        // happens
+        if (ppu.is_nmi_enabled()) {
+          cpu_->trigger_nmi();
+        }
       }
 
-      // NMI. Program finishes current instruction before the interrupt happens
-      cpu_->trigger_nmi();
       exited_vblank = true;
     }
 
