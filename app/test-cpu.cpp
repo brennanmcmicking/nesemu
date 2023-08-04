@@ -2039,9 +2039,97 @@ TEST_CASE("Unit: CPY_IMM") {
   };
 }
 
-TEST_CASE("Unit: CPY_ZP") {}
+TEST_CASE("Unit: CPY_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kLDY_IMM, 0x06,  //
+      kCPY_ZP, 0x03    //
+  };
 
-TEST_CASE("Unit: CPY_ABS") {}
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.advance_cycles(2);
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x08);
+
+    cpu.cycle();
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: CPY_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kLDY_IMM, 0x06,      //
+      kCPY_ABS, U16(0x03)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  cpu.advance_cycles(3);
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x08);
+
+    cpu.cycle();
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
 
 TEST_CASE("Unit: DEC_ZP") {
   std::vector<uint8_t> bytecode = {
