@@ -918,9 +918,9 @@ TEST_CASE("Unit: BCC_REL") {
   // branch if carry clear
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x02,  //
-      kCMP_IMM, 0x01,  //
-      kBCC_REL, 0x06,  // jump 6 (+2)
       kCMP_IMM, 0x03,  //
+      kBCC_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x01,  //
       kNOP,     kNOP,  //
       kNOP,     kNOP,  //
       kBCC_REL, 0xF8,  // jump -8 (+2)
@@ -930,9 +930,9 @@ TEST_CASE("Unit: BCC_REL") {
   MAKE_CPU(bytecode);
 
   cpu.advance_instruction();  // LDA #$02
-  cpu.advance_instruction();  // CMP #$01
+  cpu.advance_instruction();  // CMP #$03
 
-  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_negative());
   REQUIRE_FALSE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
@@ -947,8 +947,8 @@ TEST_CASE("Unit: BCC_REL") {
 
   REQUIRE(cpu.PC() == old_pc - 0x06);
 
-  cpu.advance_instruction();  // CMP #$03
-  REQUIRE(cpu.get_negative());
+  cpu.advance_instruction();  // CMP #$01
+  REQUIRE_FALSE(cpu.get_negative());
 
   cpu.advance_instruction();  // NOP
   cpu.advance_instruction();  // NOP
@@ -966,9 +966,9 @@ TEST_CASE("Unit: BCS_REL") {
   // branch if carry set
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, 0x02,  //
-      kCMP_IMM, 0x03,  //
-      kBCS_REL, 0x06,  // jump 6 (+2)
       kCMP_IMM, 0x01,  //
+      kBCS_REL, 0x06,  // jump 6 (+2)
+      kCMP_IMM, 0x03,  //
       kNOP,     kNOP,  //
       kNOP,     kNOP,  //
       kBCS_REL, 0xF8,  // jump -8 (+2)
@@ -978,9 +978,9 @@ TEST_CASE("Unit: BCS_REL") {
   MAKE_CPU(bytecode);
 
   cpu.advance_instruction();  // LDA #$02
-  cpu.advance_instruction();  // CMP #$03
+  cpu.advance_instruction();  // CMP #$01
 
-  REQUIRE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_negative());
   REQUIRE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
@@ -996,7 +996,7 @@ TEST_CASE("Unit: BCS_REL") {
   REQUIRE(cpu.PC() == old_pc - 0x06);
 
   cpu.advance_instruction();  // CMP #$01
-  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE(cpu.get_negative());
 
   cpu.advance_instruction();  // NOP
   cpu.advance_instruction();  // NOP
@@ -1029,7 +1029,7 @@ TEST_CASE("Unit: BEQ_REL") {
   cpu.advance_instruction();  // CMP #$02
 
   REQUIRE_FALSE(cpu.get_negative());
-  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE(cpu.get_carry());
   REQUIRE(cpu.get_zero());
 
   uint16_t old_pc = cpu.PC();
@@ -1108,7 +1108,7 @@ TEST_CASE("Unit: BMI_REL") {
   cpu.advance_instruction();  // CMP #$03
 
   REQUIRE(cpu.get_negative());
-  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
 
@@ -1156,7 +1156,7 @@ TEST_CASE("Unit: BNE_REL") {
   cpu.advance_instruction();  // CMP #$01
 
   REQUIRE_FALSE(cpu.get_negative());
-  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE(cpu.get_carry());
 
   uint16_t old_pc = cpu.PC();
 
