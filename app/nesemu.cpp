@@ -76,7 +76,7 @@ GLFWwindow* init_window() {
   // Create callback to close the window when expected (clicking the x)
   glfwSetWindowCloseCallback(window, [](GLFWwindow*) {
     BOOST_LOG_TRIVIAL(debug) << "Exiting\n";
-    exit(1);
+    exit(0);
   });
 
   return window;
