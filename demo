@@ -7,8 +7,10 @@ nesemu="$cmd_dir/nesemu"
 nesemu_cpu="$cmd_dir/nesemu-cpu"
 nesemu_cartridge="$cmd_dir/nesemu-cartridge"
 
-echo "Running nesemu with color test rom"
-echo "exit" | $nesemu $data_dir/color_test_nosprites.nes -D
+echo "Running nesemu with color test rom (with 30s timeout)"
+timeout -k 35s --foreground 30s $nesemu $data_dir/color_test_nosprites.nes
+echo "Running nesemu in debug mode with color test rom (with 30s)"
+timeout -k 35s --foreground 30s $nesemu $data_dir/color_test_nosprites.nes -D
 
 echo "a9778dffff" | xxd -r -p | LOG_LEVEL=trace $nesemu_cpu 6
 
