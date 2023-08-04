@@ -1885,7 +1885,70 @@ TEST_CASE("Unit: DEY") {
   }
 }
 
-TEST_CASE("Unit: EOR_IMM") {}
+TEST_CASE("Unit: EOR_IMM") {
+  SECTION("Postitive") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000101,  //
+        kEOR_IMM, 0b00000110   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b00000011);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000101,  //
+        kEOR_IMM, 0b10000110   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b10000011);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+
+  SECTION("Zero flag") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b00000101,  //
+        kEOR_IMM, 0b00000101   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b00000101);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b00000000);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+}
 
 TEST_CASE("Unit: EOR_ZP") {}
 
