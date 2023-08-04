@@ -112,9 +112,9 @@ bool CPU::write(uint16_t addr, uint8_t data) {
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
       BOOST_LOG_TRIVIAL(fatal) << "Memory location disabled: " << addr;
       return false;
-    case 0x4020 ... 0xFFFF:  // TODO: Cartridge space
-      // cart_.cpu_write(addr, data);
-      return false;  // for now, writing is not allowed
+    case 0x4020 ... 0xFFFF:
+      cart_.cpu_write(addr, data);
+      return false;
     default:
       BOOST_LOG_TRIVIAL(fatal) << "Invalid memory address read: " << addr;
       return false;
