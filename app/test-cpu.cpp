@@ -1128,13 +1128,74 @@ TEST_CASE("Unit: BVS_REL") {
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
 
-TEST_CASE("Unit: CLC") {}
+TEST_CASE("Unit: CLC") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x01,  //
+      kADC_IMM, 0xFF,  //
+      kCLC             //
+  };
 
-TEST_CASE("Unit: CLD") {}
+  MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: CLI") {}
+  cpu.advance_instruction();  // LDA
+  cpu.advance_instruction();  // ADC
 
-TEST_CASE("Unit: CLV") {}
+  REQUIRE(cpu.get_carry());
+
+  cpu.advance_cycles(2);
+
+  REQUIRE_FALSE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: CLD") {
+  std::vector<uint8_t> bytecode = {
+      kSED,  //
+      kCLD   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.get_decimal());
+
+  cpu.advance_cycles(2);
+
+  REQUIRE_FALSE(cpu.get_decimal());
+}
+
+TEST_CASE("Unit: CLI") {
+  std::vector<uint8_t> bytecode = {
+      kCLI  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE(cpu.get_interrupt_disable());
+
+  cpu.advance_cycles(2);
+
+  REQUIRE_FALSE(cpu.get_interrupt_disable());
+}
+
+TEST_CASE("Unit: CLV") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x7F,  //
+      kADC_IMM, 0x01,  //
+      kCLV             //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA
+  cpu.advance_instruction();  // ADC
+
+  REQUIRE(cpu.get_overflow());
+
+  cpu.advance_cycles(2);
+
+  REQUIRE_FALSE(cpu.get_overflow());
+}
 
 TEST_CASE("Unit: CMP_IMM") {}
 
@@ -2821,11 +2882,53 @@ TEST_CASE("Unit: SBC_INDX") {}
 
 TEST_CASE("Unit: SBC_INDY") {}
 
-TEST_CASE("Unit: SEC") {}
+TEST_CASE("Unit: SEC") {
+  std::vector<uint8_t> bytecode = {
+      kSEC,  //
+  };
 
-TEST_CASE("Unit: SED") {}
+  MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: SEI") {}
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.advance_cycles(2);
+
+  REQUIRE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: SED") {
+  std::vector<uint8_t> bytecode = {
+      kSED,  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE_FALSE(cpu.get_decimal());
+
+  cpu.advance_cycles(2);
+
+  REQUIRE(cpu.get_decimal());
+}
+
+TEST_CASE("Unit: SEI") {
+  std::vector<uint8_t> bytecode = {
+      kCLI,  //
+      kSEI,  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  // Interupt Disable flag is set by default
+  REQUIRE(cpu.get_interrupt_disable());
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_interrupt_disable());
+
+  cpu.advance_cycles(2);
+
+  REQUIRE(cpu.get_interrupt_disable());
+}
 
 TEST_CASE("Unit: STA_ZP") {
   uint8_t addr = GENERATE(0x00, 0x01, 0x05, 0x10, 0x66, 0xAA, 0xFF);

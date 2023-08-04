@@ -226,6 +226,7 @@ void CPU::execute(uint8_t opcode) {
     case kCLI: {
       // CLI, Implied, 1 bytes, 2 cycles
       set_interrupt_disable(false);
+      PC_ += byte_count(kCLI);
       break;
     }
     case kCLV: {
