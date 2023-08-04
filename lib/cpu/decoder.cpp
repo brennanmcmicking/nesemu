@@ -94,19 +94,19 @@ void CPU::execute(uint8_t opcode) {
     }
     case kAND_ABSY: {
       // AND, Absolute,Y, 3 bytes, 4 (+1 if page crossed)
-      AND(kAbsoluteY);
+      AND(value_fetch(kAbsoluteY));
       PC_ += byte_count(kAND_ABSY);
       break;
     }
     case kAND_INDX: {
       // AND, (Indirect,X), 2 bytes, 6 cycles
-      AND(kIndexedIndirect);
+      AND(value_fetch(kIndexedIndirect));
       PC_ += byte_count(kAND_INDX);
       break;
     }
     case kAND_INDY: {
       // AND, (Indirect),Y, 2 bytes, 5 (+1 if page crossed)
-      AND(kIndirectIndexed);
+      AND(value_fetch(kIndirectIndexed));
       PC_ += byte_count(kAND_INDY);
       break;
     }
@@ -226,6 +226,7 @@ void CPU::execute(uint8_t opcode) {
     case kCLI: {
       // CLI, Implied, 1 bytes, 2 cycles
       set_interrupt_disable(false);
+      PC_ += byte_count(kCLI);
       break;
     }
     case kCLV: {
