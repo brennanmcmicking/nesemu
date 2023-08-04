@@ -830,8 +830,8 @@ void CPU::ROR_m(AddrMode addressingMode) {
   set_carry((val & 0b00000001) > 0);
   val = val >> 1;
   val |= old_carry ? 0b10000000 : 0;
-  set_zero(A_ == 0);
-  set_negative((A_ & 0b10000000) > 0);
+  set_zero(val == 0);
+  set_negative((val & 0b10000000) > 0);
   write(addr, val);
 }
 

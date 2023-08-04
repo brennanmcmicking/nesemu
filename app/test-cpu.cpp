@@ -4107,13 +4107,134 @@ TEST_CASE("Unit: ROR_A") {
   }
 }
 
-TEST_CASE("Unit: ROR_ZP") {}
+TEST_CASE("Unit: ROR_ZP") {
+  SECTION("Carry + Negative") {
+    std::vector<uint8_t> bytecode = {
+        kSEC,          //
+        kROR_ZP, 0x05  //
+    };
 
-TEST_CASE("Unit: ROR_ZPX") {}
+    MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: ROR_ABS") {}
+    cpu.advance_instruction();
+    cpu.advance_cycles(4);
 
-TEST_CASE("Unit: ROR_ABSX") {}
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.read(0x05) == 0);
+
+    cpu.write(0x05, 0b0);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0b10000000);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  }
+
+  std::vector<uint8_t> bytecode = {
+      kROR_ZP, 0x05  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(4);
+
+  REQUIRE_FALSE(cpu.get_carry());
+
+  SECTION("All but carry") {
+    cpu.write(0x05, 0b11111111);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0b01111111);
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+  }
+
+  SECTION("Zero") {
+    cpu.write(0x05, 0b0);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+  }
+}
+
+TEST_CASE("Unit: ROR_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kSEC,            //
+      kLDX_IMM, 0x02,  //
+      kROR_ZPX, 0x03   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0b10101011);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(5);
+
+  REQUIRE(cpu.get_carry());
+  REQUIRE(cpu.read(0x05) == 0b10101011);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0b11010101);
+  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+}
+
+TEST_CASE("Unit: ROR_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kSEC,                //
+      kROR_ABS, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0b10101011);
+
+  cpu.advance_instruction();
+  cpu.advance_cycles(5);
+
+  REQUIRE(cpu.get_carry());
+  REQUIRE(cpu.read(0x05) == 0b10101011);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0b11010101);
+  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+}
+
+TEST_CASE("Unit: ROR_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kSEC,                 //
+      kLDX_IMM, 0x02,       //
+      kROR_ABSX, U16(0x03)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0b10101011);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.get_carry());
+  REQUIRE(cpu.read(0x05) == 0b10101011);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0b11010101);
+  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+}
 
 TEST_CASE("Unit: RTI") {
   uint16_t addr = 0x1234;
