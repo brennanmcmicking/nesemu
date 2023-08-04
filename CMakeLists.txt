@@ -59,3 +59,8 @@ target_link_libraries(test-ppu PUBLIC ppu util Boost::log)
 
 add_executable(test-cartridge app/catch2_main.cpp app/test-cartridge.cpp)
 target_link_libraries(test-cartridge PUBLIC cartridge util Boost::log)
+
+# install
+install(TARGETS nesemu nesemu-cpu nesemu-cartridge DESTINATION bin)
+install(PROGRAMS demo DESTINATION bin)
+install(FILES vendor/out/color_test_nosprites.nes DESTINATION usr/share/nesemu)

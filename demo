@@ -1,7 +1,11 @@
 #!/bin/bash
 
-mkdir build
-cd build
-cmake ..
-make
-./nesemu ../vendor/out/color_test_nosprites.nes
+set -e
+
+cmd_dir=$(dirname "$0")
+data_dir=$cmd_dir/../usr/share/nesemu
+
+nesemu="$cmd_dir/nesemu"
+
+echo "Running nesemu with color test rom"
+$nesemu $data_dir/color_test_nosprites.nes
