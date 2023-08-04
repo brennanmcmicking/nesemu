@@ -1,3 +1,4 @@
+#include <bitset>
 #include <catch2/catch.hpp>
 #include <cstdint>
 #include <vector>
@@ -1063,8 +1064,10 @@ TEST_CASE("Unit: BIT_ZP") {
   bool is_overflow = GENERATE(true, false);
   bool is_zero = GENERATE(true, false);
 
-  uint8_t data = (is_negative << 7) | (is_overflow << 6);
-  uint8_t mask = is_zero ? ~data : data;
+  uint8_t data = (is_negative << 7) | (is_overflow << 6) + 1;
+  uint8_t mask = !is_zero;
+  CAPTURE(is_negative, is_overflow, is_zero,  //
+          std::bitset<8>(data), std::bitset<8>(mask));
   std::vector<uint8_t> bytecode = {
       kLDA_IMM, data,  //
       kSTA_ZP,  0x42,  //
@@ -1074,9 +1077,10 @@ TEST_CASE("Unit: BIT_ZP") {
 
   MAKE_CPU(bytecode);
 
-  cpu.advance_instruction();
-  cpu.advance_instruction();
-  cpu.advance_instruction();
+  cpu.advance_instruction();  // LDA
+  cpu.advance_instruction();  // STA
+  cpu.advance_instruction();  // LDA
+  cpu.advance_instruction();  // BIT
 
   REQUIRE(cpu.get_negative() == is_negative);
   REQUIRE(cpu.get_overflow() == is_overflow);
