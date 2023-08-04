@@ -673,12 +673,22 @@ void CPU::ADC(uint8_t value) {
 
 void CPU::ASL_a() {
   set_carry((A_ & 0b10000000) > 0);
+
   A_ = A_ << 1;
+
+  set_zero(A_ == 0);
+  set_negative((A_ & 0b10000000) > 0);
 }
 void CPU::ASL_m(uint16_t addr) {
   uint8_t val = read(addr);
+
   set_carry((val & 0b10000000) > 0);
+
   val = val << 1;
+
+  set_zero(val == 0);
+  set_negative((val & 0b10000000) > 0);
+
   write(addr, val);
 }
 void CPU::AND(uint8_t other) {
