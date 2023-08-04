@@ -540,13 +540,13 @@ void CPU::advance_frame() {
   advance_cycles(kRenderCycles);
 
   if (ppu_.has_value() && ppu_->get().is_nmi_enabled()) {
-    BOOST_LOG_TRIVIAL(debug) << "nmi enabled";
+    // BOOST_LOG_TRIVIAL(info) << "nmi enabled";
     trigger_nmi();
   } else
-    BOOST_LOG_TRIVIAL(debug) << "nmi disabled";
+    // BOOST_LOG_TRIVIAL(info) << "nmi disabled";
 
-  // TODO: what does 0.5 cycles mean and how to deal with that?
-  advance_cycles(kVBlankCycles);
+    // TODO: what does 0.5 cycles mean and how to deal with that?
+    advance_cycles(kVBlankCycles);
 }
 
 void CPU::cycle() {
@@ -693,8 +693,8 @@ void CPU::BIT(AddrMode addressingMode) {
   uint8_t r = A_ & v;
 
   set_zero(r == 0);
-  set_overflow((r & 0b01000000) > 0);
-  set_negative((r & 0b10000000) > 0);
+  set_overflow((v & 0b01000000) > 0);
+  set_negative((v & 0b10000000) > 0);
 }
 
 void CPU::BRANCH(OpCode opcode, bool doBranch) {
