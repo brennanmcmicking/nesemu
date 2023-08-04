@@ -667,7 +667,12 @@ void CPU::ASL_m(uint16_t addr) {
   val = val << 1;
   write(addr, val);
 }
-void CPU::AND(uint8_t other) { A_ = A_ & other; }
+void CPU::AND(uint8_t other) {
+  A_ = A_ & other;
+
+  set_zero(A_ == 0);
+  set_negative((A_ & 0b10000000) > 0);
+}
 
 void CPU::BIT(AddrMode addressingMode) {
   uint8_t v = value_fetch(addressingMode);
