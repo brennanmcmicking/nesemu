@@ -41,8 +41,6 @@ void PPU::render_to_window() {
   // Render current cpu data to internal buf
   render_to_framebuffer(*internal_frame_buf_);
 
-  // TODO: draw it to the window
-
   // Actual size of window
   int width, height;
   // TODO: glfwSetFramebufferSizeCallback to be notified when window size
@@ -54,7 +52,6 @@ void PPU::render_to_window() {
 
   // Clear window contents
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  // chatgpt told me to write these two lines
 
   glDrawPixels(kScreenWidth, kScreenHeight, GL_RGB, GL_UNSIGNED_BYTE,
                internal_frame_buf_->data());
@@ -232,17 +229,11 @@ bool PPU::write(uint16_t addr, uint8_t data) {
       // << "Write to nametable mirror: " << util::fmt_hex(addr);
       nametables_[addr - 0x3000] = data;
       return true;
-    case 0x3F00 ... 0x3F1F:  // Palette RAM
+    case 0x3F00 ... 0x3FFF:  // Palette RAM & mirror
       BOOST_LOG_TRIVIAL(debug)
           << "Write to palette ram. Addr: " << util::fmt_hex(addr)
-          << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
-      palette_ram_[addr - 0x3F00] = data;
-      return true;
-    case 0x3F20 ... 0x3FFF:  // Palette RAM mirror
-      BOOST_LOG_TRIVIAL(debug)
-          << "Write to palette ram mirror. Addr: " << util::fmt_hex(addr)
-          << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
-      palette_ram_[addr - 0x3F20] = data;
+          << ", data: " << util::fmt_hex(palette_ram_[addr % 32]);
+      palette_ram_[addr % 32] = data;
       return true;
     default:
       BOOST_LOG_TRIVIAL(warning)
