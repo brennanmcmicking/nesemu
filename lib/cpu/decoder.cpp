@@ -441,7 +441,7 @@ void CPU::execute(uint8_t opcode) {
     }
     case kINY: {
       // INY, Implied, 1 bytes, 2 cycles
-      Y_ -= 1;
+      Y_ += 1;
       set_zero(Y_ == 0);
       set_negative((Y_ & 0b10000000) > 0);
       PC_ += byte_count(kINY);
