@@ -54,7 +54,7 @@ setting breakpoints, and reading/writing memory and registers.
 
 The following is an example of how the program may be run in debug mode:
 
-$ ./$INSTALL_DIR/bin/nesemu $INSTALL_DIR/usr/share/nesemu/color_test_nosprites.nes --debug
+$ $INSTALL_DIR/bin/nesemu $INSTALL_DIR/usr/share/nesemu/color_test_nosprites.nes --debug
 
 The program then prints a message explaining that debug mode is active and that
 you may run the "help" command to view all commands. Running the "help" command
