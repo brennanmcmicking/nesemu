@@ -1,6 +1,6 @@
 # nesemu
 
-"If you have any undefined behaviour in your spec you're a liberal sissy"
+"That's what I'm sayin'!!!"
 
 ## Development
 
@@ -13,8 +13,8 @@ This project requires the Catch2 (v2) and Boost libraries.
 ## Building + Running
 
 1. Run CMake
-2. `nesemu <repo-root>/vendor/out/<rom-name>.nes`
-   For example: `./nesemu ../vendor/out/color_test_nosprites.nes`
+2. `./nesemu <repo-root>/vendor/out/<rom-name>.nes`
+   For example: `build/nesemu vendor/out/color_test_nosprites.nes`
 
 ## Caveats
 

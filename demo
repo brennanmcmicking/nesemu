@@ -1,0 +1,7 @@
+#!/bin/bash
+
+mkdir build
+cd build
+cmake ..
+make
+./nesemu ../vendor/out/color_test_nosprites.nes

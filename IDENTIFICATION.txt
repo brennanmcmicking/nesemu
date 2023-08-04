@@ -1,0 +1,7 @@
+name "Brennan McMicking,Anika Bookout,Malcolm Seyd,Max Thomson"
+student_id "V00939944,,,"
+email "brennanmcmicking@uvic.ca,abookout@uvic.ca,malcolmseyd@uvic.ca,maxthomson@uvic.ca"
+term "2023-05"
+course "SENG475"
+section "T01"
+assignment "cpp_project"
