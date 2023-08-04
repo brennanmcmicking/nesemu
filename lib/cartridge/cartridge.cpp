@@ -30,7 +30,7 @@ class Mapper0 : public Mapper {
             std::format("bad memory address for mapper: {}", addr));
         break;
       case 0x6000 ... 0x7FFF:
-        // TODO ?
+        // unsupported feature of cartridge
         break;
       case 0x8000 ... 0xFFFF:
         if (prg_rom_.size() == 16 * (1 << 10)) {
@@ -48,7 +48,7 @@ class Mapper0 : public Mapper {
             std::format("bad memory address for mapper: {}", addr));
         break;
       case 0x6000 ... 0x7FFF:
-        // TODO ?
+        // unsupported feature of cartridge
         break;
       case 0x8000 ... 0xFFFF:
         if (prg_rom_.size() == 16 * (1 << 10)) {

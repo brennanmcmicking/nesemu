@@ -47,7 +47,7 @@ uint8_t CPU::read(uint16_t addr) {
     case 0x4018 ... 0x401F:  // APU and I/O that is normally disabled
       BOOST_LOG_TRIVIAL(debug) << "Memory location disabled: " << addr;
       return 0xAA;
-    case 0x4020 ... 0xFFFF:  // TODO: Cartridge space
+    case 0x4020 ... 0xFFFF:  // Cartridge space
       return cart_.cpu_read(addr);
     default:
       BOOST_LOG_TRIVIAL(fatal) << "Invalid memory address read: " << addr;
@@ -60,7 +60,7 @@ bool CPU::write(uint16_t addr, uint8_t data) {
     case 0x0000 ... 0x1FFF:  // Internal RAM
       ram_[addr % 0x800] = data;
       return true;
-    case 0x2000 ... 0x3FFF: {  // TODO: PPU Registers
+    case 0x2000 ... 0x3FFF: {  // PPU Registers
       if (!ppu_.has_value()) {
         BOOST_LOG_TRIVIAL(debug)
             << "Read from PPU register without attached PPU: " << addr;

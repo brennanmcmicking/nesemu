@@ -114,7 +114,6 @@ int main(int argc, char* argv[]) {
     input_filename = vm["input-file"].as<std::string>();
   } else {
     // No input file specified, die
-    // std::cout << desc;
     std::cout << help_msg;
 
     return 1;

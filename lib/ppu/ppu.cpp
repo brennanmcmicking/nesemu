@@ -43,8 +43,6 @@ void PPU::render_to_window() {
 
   // Actual size of window
   int width, height;
-  // TODO: glfwSetFramebufferSizeCallback to be notified when window size
-  // changes
 
   // Setup viewport (full window)
   glfwGetFramebufferSize(&window_, &width, &height);
@@ -60,9 +58,6 @@ void PPU::render_to_window() {
   glfwSwapBuffers(&window_);
   // process all waiting events
   glfwPollEvents();  // TODO: window refresh callback as in fn hint
-
-  // BOOST_LOG_TRIVIAL(info) << "end of frame render. ppu status: "
-  // << unsigned(PPUSTATUS_);
 }
 
 // Note: sets vblank flag!
@@ -77,7 +72,6 @@ void PPU::render_to_framebuffer(frame_t& out) {
   for (int y = 0; y < kScreenHeight; ++y) {
     for (int x = 0; x < kScreenWidth; ++x) {
       int i = y * kScreenWidth + x;
-
       // Calculate part of attribute table that corresponds to this pixel
 
       // Width is 256 pixels, attribute table is 8x8 chunks. Each byte in the
@@ -115,9 +109,9 @@ void PPU::render_to_framebuffer(frame_t& out) {
       // Mask color out of attribute depending on quadrant
       pixel_t quadrant_color_idx = (attribute >> quadrant_idx) & 0b11;
 
-      // Use color index in current frame palette to find actual color. //TODO:
-      // Lowest two bits are supposed to be for tile data but we don't implement
-      // tiles so hardcoded to index_into_palette
+      // Use color index in current frame palette to find actual color.
+      // TODO: Lowest two bits are supposed to be for tile data but we don't
+      // implement tiles so hardcoded to index_into_palette
       constexpr uint16_t palette_ram_start = 0x3F00;
       uint8_t color_offset = (quadrant_color_idx << 2) & index_into_palette;
       pixel_t nes_color = read(palette_ram_start + color_offset);
@@ -181,7 +175,6 @@ void PPU::set_PPUADDR(uint8_t val) { PPUADDR_ = (PPUADDR_ << 8) | val; }
 uint8_t PPU::get_PPUDATA() {
   // wiki: After access, the video memory address will increment by an amount
   // determined by bit 2 of $2000 (1 if 0, 32 if 1)
-  // TODO:
   uint8_t val = read(PPUADDR_);
   bool address_inc_bit = PPUCTRL_ & 0b100;
   PPUADDR_ += address_inc_bit ? 32 : 1;
@@ -203,24 +196,17 @@ bool PPU::is_nmi_enabled() { return PPUCTRL_ & 0b1000'0000; }
 uint8_t PPU::read(uint16_t addr) {
   switch (addr) {
     case 0x0000 ... 0x1FFF:  // Pattern table 0
-      BOOST_LOG_TRIVIAL(info)
+      BOOST_LOG_TRIVIAL(debug)
           << "Pattern tables not implemented: " << util::fmt_hex(addr);
       return 0xAA;
     case 0x2000 ... 0x2FFF:  // Nametables
-                             // BOOST_LOG_TRIVIAL(info) << "Read from nametable:
-                             // " << util::fmt_hex(addr);
       return nametables_[addr - 0x2000];
     case 0x3000 ... 0x3EFF:  // Nametable mirror
-      // BOOST_LOG_TRIVIAL(info)
-      // << "Read from nametable mirror: " << util::fmt_hex(addr);
       return nametables_[addr - 0x3000];
     case 0x3F00 ... 0x3FFF: {  // Palette RAM
-      // BOOST_LOG_TRIVIAL(info)
-      // << "Read from palette ram. Addr: " << util::fmt_hex(addr)
-      // << ", data: " << util::fmt_hex(palette_ram_[addr - 0x3F00]);
-
-      //  Greyscale is implemented as a bitwise AND with $30 on any value read
-      //  from PPU $3F00-$3FFF, both on the display and through PPUDATA
+      // from wiki: Greyscale is implemented as a bitwise AND with $30 on any
+      //  value read from PPU $3F00-$3FFF, both on the display and through
+      //  PPUDATA
       uint8_t val = palette_ram_[addr % 0x20];
       if (greyscale()) {
         val &= 0x30;
@@ -228,7 +214,7 @@ uint8_t PPU::read(uint16_t addr) {
       return val;
     }
     default:
-      BOOST_LOG_TRIVIAL(info)
+      BOOST_LOG_TRIVIAL(warning)
           << "Invalid PPU memory address read: " << util::fmt_hex(addr);
       return 0xAA;
   }
@@ -237,23 +223,16 @@ uint8_t PPU::read(uint16_t addr) {
 bool PPU::write(uint16_t addr, uint8_t data) {
   switch (addr) {
     case 0x0000 ... 0x1FFF:  // Pattern table 0
-      BOOST_LOG_TRIVIAL(info)
+      BOOST_LOG_TRIVIAL(debug)
           << "Pattern tables not implemented: " << util::fmt_hex(addr);
       return false;
     case 0x2000 ... 0x2FFF:  // Nametables
-      // BOOST_LOG_TRIVIAL(info) << "Write to nametable: " <<
-      // util::fmt_hex(addr);
       nametables_[addr - 0x2000] = data;
       return true;
     case 0x3000 ... 0x3EFF:  // Nametable mirror
-      // BOOST_LOG_TRIVIAL(info)
-      // << "Write to nametable mirror: " << util::fmt_hex(addr);
       nametables_[addr - 0x3000] = data;
       return true;
     case 0x3F00 ... 0x3FFF:  // Palette RAM & mirror
-      BOOST_LOG_TRIVIAL(debug)
-          << "Write to palette ram. Addr: " << util::fmt_hex(addr)
-          << ", data: " << util::fmt_hex(palette_ram_[addr % 32]);
       palette_ram_[addr % 32] = data;
       return true;
     default:

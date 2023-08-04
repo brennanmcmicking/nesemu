@@ -1271,7 +1271,6 @@ TEST_CASE("Unit: BRK") {
 
   cpu.advance_instruction();
   REQUIRE(cpu.get_break() == true);
-  // TODO NMI stuff?
   REQUIRE(cpu.PC() == addr);
 }
 
@@ -1821,26 +1820,6 @@ TEST_CASE("Unit: CMP_INDY") {
     REQUIRE_FALSE(cpu.get_zero());
     REQUIRE_FALSE(cpu.get_negative());
   };
-
-  // SECTION("Equal to") {
-  //   cpu.write(0x03, 0x06);
-
-  //   cpu.cycle();
-
-  //   REQUIRE(cpu.get_carry());
-  //   REQUIRE(cpu.get_zero());
-  //   REQUIRE_FALSE(cpu.get_negative());
-  // };
-
-  // SECTION("Less than") {
-  //   cpu.write(0x03, 0x07);
-
-  //   cpu.cycle();
-
-  //   REQUIRE_FALSE(cpu.get_carry());
-  //   REQUIRE_FALSE(cpu.get_zero());
-  //   REQUIRE(cpu.get_negative());
-  // };
 }
 
 TEST_CASE("Unit: CPX_IMM") {

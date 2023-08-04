@@ -997,8 +997,6 @@ void CPU::execute(uint8_t opcode) {
     }
 
     default:
-      // BOOST_LOG_TRIVIAL(warning) << std::format("Unexpected opcode {}",
-      // opcode);
       break;
   }
 }

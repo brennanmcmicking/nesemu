@@ -60,8 +60,7 @@ class CPU {
   static constexpr std::chrono::duration<double, std::milli>
       kTimePerFrameMillis{kTimePerFrame * 1000};  // Milliseconds
 
-  static constexpr double kCyclesPerFrame =
-      29780.5;  // taken from wiki //TODO: remove?
+  static constexpr double kCyclesPerFrame = 29780.5;  // taken from wiki
   static constexpr double kCPUCyclesPerScanline = 113.667;
   static constexpr int kNumVisibleScanlines = 241;  // including pre-render line
   static constexpr double kVBlankScanlines = 260 - 240;
@@ -192,8 +191,7 @@ class CPU {
   Cartridge& cart_;
 
   // True iff the program was started in debug mode. If true, the
-  // program will stop execution on breakpoints //TODO: make that
-  // happen
+  // program will stop execution on breakpoints
   bool debug_mode_;
 
   uint16_t PC_;  // program counter. points to next instruction

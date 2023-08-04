@@ -37,7 +37,7 @@ int32_t parse_num(const std::string& str);
  * from the given stream
  *
  * @param stream
- * @return int32_t A non-negative number on success, or //TODO: failure
+ * @return int32_t A non-negative number on success
  */
 int32_t extract_num(std::iostream& stream);
 

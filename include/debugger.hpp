@@ -50,7 +50,7 @@ class Debugger {
       "  Prints this message \n"
       "step (s) [num steps]\n"
       "  Advance the CPU by one instruction. Optionally specify a number of \n"
-      "instructions to step\n"
+      "  instructions to step\n"
       "continue (c)\n"
       "  Continue execution until the next breakpoint \n"
       "break <address> \n"
@@ -61,20 +61,12 @@ class Debugger {
       "  Prints the addresses of all existing breakpoints \n"
       "clear \n"
       "  Deletes all breakpoints \n"
-      // TODO: x/<N> or read ???????????? not both
-      // "x/<N> <address> \n"
-      // "  Prints N bytes starting at the location <address>. This only
-      // supports "
-      // "\n"
-      // "  RAM access, everything else is undefined. Bytes are printed in \n"
-      // "  hexadecimal \n"
       "read (r) <address> [bytes] \n"
       "  Prints the value in memory at the specified address in hexadecimal. \n"
       "  Optionally specify a number of bytes to read (default 1) \n"
       "write (w) <address> <data> \n"
       "  Overwrites the value in memory at the given address with specified \n"
-      "  data. Note: only writes a single byte. If given data is more than a \n"
-      "  byte, //TODO: what to do? \n"
+      "  data. Note: only writes a single byte \n"
       "registers (reg)\n"
       "  Prints the names and values of all registers in hexadecimal format. \n"
       "  The register names are: \n"
@@ -84,7 +76,6 @@ class Debugger {
       "  - X (index register X, 8-bit) \n"
       "  - Y (index register Y, 8-bit) \n"
       "  - P (processor status flags, 8-bit) \n"
-      // TODO: add description of flag bits to help message here
       "set <register> <value> \n"
       "  Set the specified register's value \n"
       "exit\n"
@@ -151,7 +142,7 @@ class Debugger {
    *
    * Has no effect if there was no breakpoint at the specified address.
    *
-   * @param addr //TODO: where is program memory
+   * @param addr
    */
   void cmd_delete(address_t addr);
 

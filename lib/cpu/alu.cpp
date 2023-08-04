@@ -89,34 +89,14 @@ std::size_t CPU::cycle_count(uint8_t opcode) {
       return 7;
     case kBCC_REL: {  // branching instruction
       std::size_t cycles = 2;
-      // TODO fill in the function for kBCC_REL
-      // uint16_t base_addr = PC_;
-      // uint16_t branch_addr = addr_fetch(kRelative);
-      // if (!()) return cycles;
-      // cycles += 1;
-      // if (crossed_page(base_addr, branch_addr)) cycles += 1;
       return cycles;
     }
     case kBCS_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBCS_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
       return cycles;
     }
     case kBEQ_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBEQ_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
       return cycles;
     }
     case kBIT_ZP:
@@ -125,59 +105,24 @@ std::size_t CPU::cycle_count(uint8_t opcode) {
       return 4;
     case kBMI_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBMI_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
       return cycles;
     }
     case kBNE_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBNE_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
       return cycles;
     }
     case kBPL_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBPL_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
       return cycles;
     }
     case kBRK:
       return 7;
     case kBVC_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBVC_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
       return cycles;
     }
     case kBVS_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBVS_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
       return cycles;
     }
     case kCLC:
@@ -540,35 +485,17 @@ void CPU::advance_frame() {
   advance_cycles(kRenderCycles);
 
   if (ppu_.has_value() && ppu_->get().is_nmi_enabled()) {
-    // BOOST_LOG_TRIVIAL(info) << "nmi enabled";
     trigger_nmi();
-  } else
-    // BOOST_LOG_TRIVIAL(info) << "nmi disabled";
+  }
 
-    // TODO: what does 0.5 cycles mean and how to deal with that?
-    advance_cycles(kVBlankCycles);
+  advance_cycles(kVBlankCycles);
 }
 
 void CPU::cycle() {
-  // BOOST_LOG_TRIVIAL(trace) << "cycle()";
-  // BOOST_LOG_TRIVIAL(trace) << std::format(
-  //     "PC: {}, SP: {}, A: {}, X: {}, Y: {}, P: {}", util::fmt_hex(PC_),
-  //     util::fmt_hex(SP_), util::fmt_hex(A_), util::fmt_hex(X_),
-  //     util::fmt_hex(Y_), util::fmt_hex(P_));
-  // BOOST_LOG_TRIVIAL(trace) << std::format("cycles_todo: {}", cycles_todo_);
-
   if (cycles_todo_ == 1) {
-    // BOOST_LOG_TRIVIAL(trace) << std::format(
-    //     "PC: {}, SP: {}, A: {}, X: {}, Y: {}, P: {}", util::fmt_hex(PC_),
-    //     util::fmt_hex(SP_), util::fmt_hex(A_), util::fmt_hex(X_),
-    //     util::fmt_hex(Y_), util::fmt_hex(P_));
-    // fetch, decode, execute
     execute(read(PC_));
   } else if (cycles_todo_ == 0) {
-    // BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
     cycles_todo_ = cycle_count(read(PC_));
-    // BOOST_LOG_TRIVIAL(trace)
-    //     << std::format("next_instr: {}", print_instruction());
   }
   cycles_todo_--;
 }
@@ -740,9 +667,6 @@ void CPU::BRANCH(OpCode opcode, bool doBranch) {
   // i.e. we must increment the PC *before* applying the offset
   PC_ += byte_count(opcode);
   if (doBranch) {
-    // BOOST_LOG_TRIVIAL(trace)
-    //     << "Branch succeeded, offset: " << signed(offset)
-    //     << ", unsigned offset: " << unsigned(unsigned_offset);
     PC_ += offset;
   }
 }

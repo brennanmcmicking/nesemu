@@ -253,19 +253,8 @@ void Debugger::cmd_step(uint num_to_step) {
   }
   std::cout << "registers after instruction:\n";
   cmd_registers();
-
-  // TODO: display data in current PC so this is more useful?
-  // address_t instr_addr = cpu_->
-  // cpu_->advance_instruction();
-
-  // std::cout << "Step: executed instruction at address"
-  // << util::fmt_hex(cpu_->addr_fetch(cpu::kAbsolute)) << "\n";
 }
 void Debugger::cmd_continue() {
-  // while (!breakpoints_.contains(cpu_->PC())) {
-  //   cpu_->advance_frame();
-  // }
-
   bool frame_crossed = false;
 
   while (!breakpoints_.contains(cpu_->PC())) {
@@ -333,12 +322,6 @@ void Debugger::cmd_registers() {
       ;
 }
 void Debugger::cmd_set(std::string reg_name, uint16_t value) {
-  // TODO: Normalize to allow writing mixed case register names (e.g. 'pc')
-  //  std::string normalized_reg_name;
-  //  std::transform(reg_name.cbegin(), reg_name.cend(),
-  //                 normalized_reg_name.begin(),
-  //                 [](char c) { return std::toupper(c); });
-
   Register reg;
   try {
     reg = RegisterFromString.at(reg_name);
