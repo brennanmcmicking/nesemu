@@ -1481,19 +1481,341 @@ TEST_CASE("Unit: CMP_IMM") {
   };
 }
 
-TEST_CASE("Unit: CMP_ZP") {}
+TEST_CASE("Unit: CMP_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x06,  //
+      kCMP_ZP, 0x03    //
+  };
 
-TEST_CASE("Unit: CMP_ZPX") {}
+  MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: CMP_ABS") {}
+  cpu.advance_instruction();
+  cpu.advance_cycles(2);
 
-TEST_CASE("Unit: CMP_ABSX") {}
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
 
-TEST_CASE("Unit: CMP_ABSY") {}
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
 
-TEST_CASE("Unit: CMP_INDX") {}
+    cpu.cycle();
 
-TEST_CASE("Unit: CMP_INDY") {}
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x07);
+
+    cpu.cycle();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: CMP_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x06,  //
+      kLDX_IMM, 0x01,  //
+      kCMP_ZPX, 0x02   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x07);
+
+    cpu.cycle();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: CMP_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x06,      //
+      kCMP_ABS, U16(0x03)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x07);
+
+    cpu.cycle();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: CMP_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x06,      //
+      kLDX_IMM,  0x01,      //
+      kCMP_ABSX, U16(0x02)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x07);
+
+    cpu.cycle();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: CMP_ABSY") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x06,      //
+      kLDY_IMM,  0x01,      //
+      kCMP_ABSY, U16(0x02)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x07);
+
+    cpu.cycle();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: CMP_INDX") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x06,  //
+      kLDX_IMM,  0x01,  //
+      kCMP_INDX, 0x0E   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x0F, 0x03);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(5);
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    cpu.write(0x03, 0x06);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    cpu.write(0x03, 0x07);
+
+    cpu.cycle();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
+
+TEST_CASE("Unit: CMP_INDY") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x06,  //
+      kLDY_IMM,  0x01,  //
+      kCMP_INDX, 0x0F   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x0F, 0x02);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(5);
+
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+
+  SECTION("Greater than") {
+    cpu.write(0x03, 0x05);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  // SECTION("Equal to") {
+  //   cpu.write(0x03, 0x06);
+
+  //   cpu.cycle();
+
+  //   REQUIRE(cpu.get_carry());
+  //   REQUIRE(cpu.get_zero());
+  //   REQUIRE_FALSE(cpu.get_negative());
+  // };
+
+  // SECTION("Less than") {
+  //   cpu.write(0x03, 0x07);
+
+  //   cpu.cycle();
+
+  //   REQUIRE_FALSE(cpu.get_carry());
+  //   REQUIRE_FALSE(cpu.get_zero());
+  //   REQUIRE(cpu.get_negative());
+  // };
+}
 
 TEST_CASE("Unit: CPX_IMM") {
   SECTION("Greater than") {
