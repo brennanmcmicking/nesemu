@@ -5329,62 +5329,294 @@ TEST_CASE("Unit: RTS") {
 }
 
 TEST_CASE("Unit: SBC_IMM") {
-  SECTION("Positive, no carry") {
+  SECTION("No flags") {
     std::vector<uint8_t> bytecode = {
-        kLDA_IMM, 20,  //
-        kSBC_IMM, 5    //
+        kLDA_IMM, 0x03,  //
+        kSBC_IMM, 0x01,  //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_cycles(1);
+
+    REQUIRE(cpu.A() == 0x03);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_overflow());
+
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 1);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_overflow());
+  };
+
+  SECTION("carry and zero flag") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0x01,  //
+        kLDX_IMM, 0x01,  //
+        kSBC_IMM, 0x02,  //
     };
 
     MAKE_CPU(bytecode);
 
     cpu.advance_instruction();
     cpu.advance_instruction();
+    cpu.advance_cycles(1);
 
-    // - 1 because carry is 0
-    REQUIRE(cpu.A() == 20 - 5 - 1);
+    REQUIRE(cpu.A() == 0x01);
     REQUIRE_FALSE(cpu.get_carry());
     REQUIRE_FALSE(cpu.get_zero());
-    REQUIRE_FALSE(cpu.get_overflow());
     REQUIRE_FALSE(cpu.get_negative());
-  }
+    REQUIRE_FALSE(cpu.get_overflow());
 
-  SECTION("With carry") {
+    cpu.cycle();
+
+    REQUIRE((unsigned int)cpu.A() == 0xFE);
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_overflow());
+  };
+
+  SECTION("overflow and negative flag") {
     std::vector<uint8_t> bytecode = {
-        kLDA_IMM, 20,  //
-        kSEC,          //
-        kSBC_IMM, 5    //
+        kLDA_IMM, 0x01,  //
+        kLDX_IMM, 0x01,  //
+        kSBC_IMM, 0x7F,  //
     };
 
     MAKE_CPU(bytecode);
 
     cpu.advance_instruction();
     cpu.advance_instruction();
-    cpu.advance_instruction();
+    cpu.advance_cycles(1);
 
-    // - 1 because carry is 0
-    REQUIRE(cpu.A() == 20 - 5 - 0);
+    REQUIRE(cpu.A() == 0x01);
     REQUIRE_FALSE(cpu.get_carry());
     REQUIRE_FALSE(cpu.get_zero());
-    REQUIRE_FALSE(cpu.get_overflow());
     REQUIRE_FALSE(cpu.get_negative());
-  }
+    REQUIRE_FALSE(cpu.get_overflow());
 
-  // TODO: overflow, zero
+    cpu.cycle();
+
+    REQUIRE(cpu.A() == 0x81);
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_overflow());
+  };
 }
 
-TEST_CASE("Unit: SBC_ZP") {}
+TEST_CASE("Unit: SBC_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x03,  //
+      kSBC_ZP, 0x05,   //
+  };
 
-TEST_CASE("Unit: SBC_ZPX") {}
+  MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: SBC_ABS") {}
+  cpu.write(0x05, 0x01);
 
-TEST_CASE("Unit: SBC_ABSX") {}
+  cpu.advance_instruction();
+  cpu.advance_cycles(2);
 
-TEST_CASE("Unit: SBC_ABSY") {}
+  REQUIRE(cpu.A() == 0x03);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
 
-TEST_CASE("Unit: SBC_INDX") {}
+  cpu.cycle();
 
-TEST_CASE("Unit: SBC_INDY") {}
+  REQUIRE(cpu.A() == 0x01);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+}
+
+TEST_CASE("Unit: SBC_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x03,  //
+      kLDX_IMM, 0x02,  //
+      kSBC_ZPX, 0x03,  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0x01);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE(cpu.A() == 0x03);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+
+  cpu.cycle();
+
+  REQUIRE(cpu.A() == 0x01);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+}
+
+TEST_CASE("Unit: SBC_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x03,       //
+      kSBC_ABS, U16(0x05),  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0x01);
+
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE(cpu.A() == 0x03);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+
+  cpu.cycle();
+
+  REQUIRE(cpu.A() == 0x01);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+}
+
+TEST_CASE("Unit: SBC_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, 0x03,       //
+      kLDX_IMM, 0x02,       //
+      kSBC_ZPX, U16(0x03),  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0x01);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE(cpu.A() == 0x03);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+
+  cpu.cycle();
+
+  REQUIRE(cpu.A() == 0x01);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+}
+
+TEST_CASE("Unit: SBC_ABSY") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x03,       //
+      kLDY_IMM,  0x02,       //
+      kSBC_ABSY, U16(0x03),  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0x01);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(3);
+
+  REQUIRE(cpu.A() == 0x03);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+
+  cpu.cycle();
+
+  REQUIRE(cpu.A() == 0x01);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+}
+
+TEST_CASE("Unit: SBC_INDX") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x03,       //
+      kLDX_IMM,  0x02,       //
+      kSBC_INDX, U16(0x01),  //
+  };
+
+  MAKE_CPU(bytecode);
+  cpu.write(0x03, 0x05);
+  cpu.write(0x05, 0x01);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(5);
+
+  REQUIRE(cpu.A() == 0x03);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+
+  cpu.cycle();
+
+  REQUIRE(cpu.A() == 0x01);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+}
+
+TEST_CASE("Unit: SBC_INDY") {
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM,  0x03,       //
+      kLDY_IMM,  0x02,       //
+      kSBC_INDY, U16(0x01),  //
+  };
+
+  MAKE_CPU(bytecode);
+  cpu.write(0x01, 0x03);
+  cpu.write(0x05, 0x01);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(4);
+
+  REQUIRE(cpu.A() == 0x03);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+
+  cpu.cycle();
+
+  REQUIRE(cpu.A() == 0x01);
+  REQUIRE_FALSE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_overflow());
+}
 
 TEST_CASE("Unit: SEC") {
   std::vector<uint8_t> bytecode = {
