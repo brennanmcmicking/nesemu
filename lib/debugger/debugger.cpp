@@ -249,9 +249,8 @@ void Debugger::cmd_step(uint num_to_step) {
     if (!no_interrupt) {
       std::cout << "interrupt occurred\n";
     }
-    cmd_registers();
   }
-  std::cout << "registers after instruction:\n";
+  std::cout << "registers after instruction(s):\n";
   cmd_registers();
 }
 void Debugger::cmd_continue() {
