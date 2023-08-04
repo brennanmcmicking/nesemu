@@ -2434,7 +2434,21 @@ TEST_CASE("Unit: LSR_ABS") {}
 
 TEST_CASE("Unit: LSR_ABSX") {}
 
-TEST_CASE("Unit: NOP") {}
+TEST_CASE("Unit: NOP") {
+  std::vector<uint8_t> bytecode = {
+      kNOP,  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE(cpu.P() == 0x34);
+  const uint16_t pc = cpu.PC();
+
+  cpu.advance_cycles(2);
+
+  REQUIRE(cpu.P() == 0x34);
+  REQUIRE(cpu.PC() == pc + 1);
+}
 
 TEST_CASE("Unit: ORA_IMM") {
   SECTION("Positive") {
