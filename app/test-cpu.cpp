@@ -4907,13 +4907,134 @@ TEST_CASE("Unit: ROL_A") {
   }
 }
 
-TEST_CASE("Unit: ROL_ZP") {}
+TEST_CASE("Unit: ROL_ZP") {
+  SECTION("Only carry set") {
+    std::vector<uint8_t> bytecode = {
+        kSEC,          //
+        kROL_ZP, 0x05  //
+    };
 
-TEST_CASE("Unit: ROL_ZPX") {}
+    MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: ROL_ABS") {}
+    cpu.advance_instruction();
+    cpu.advance_cycles(4);
 
-TEST_CASE("Unit: ROL_ABSX") {}
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.A() == 0);
+
+    cpu.write(0x05, 0b0);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0b1);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  }
+
+  std::vector<uint8_t> bytecode = {
+      kROL_ZP, 0x05  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_cycles(4);
+
+  REQUIRE_FALSE(cpu.get_carry());
+
+  SECTION("All but carry") {
+    cpu.write(0x05, 0b11111111);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0b11111110);
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+  }
+
+  SECTION("Zero") {
+    cpu.write(0x05, 0b0);
+
+    cpu.cycle();
+
+    REQUIRE(cpu.read(0x05) == 0);
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+  }
+}
+
+TEST_CASE("Unit: ROL_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kSEC,            //
+      kLDX_IMM, 0x02,  //
+      kROL_ZPX, 0x03   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0b10101010);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(5);
+
+  REQUIRE(cpu.get_carry());
+  REQUIRE(cpu.read(0x05) == 0b10101010);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0b01010101);
+  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+}
+
+TEST_CASE("Unit: ROL_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kSEC,                //
+      kROL_ABS, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0b10101010);
+
+  cpu.advance_instruction();
+  cpu.advance_cycles(5);
+
+  REQUIRE(cpu.get_carry());
+  REQUIRE(cpu.read(0x05) == 0b10101010);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0b01010101);
+  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+}
+
+TEST_CASE("Unit: ROL_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kSEC,                 //
+      kLDX_IMM, 0x02,       //
+      kROL_ABSX, U16(0x03)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.write(0x05, 0b10101010);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.get_carry());
+  REQUIRE(cpu.read(0x05) == 0b10101010);
+
+  cpu.cycle();
+
+  REQUIRE(cpu.read(0x05) == 0b01010101);
+  REQUIRE(cpu.get_carry());
+  REQUIRE_FALSE(cpu.get_zero());
+}
 
 TEST_CASE("Unit: ROR_A") {
   SECTION("Only carry set") {
