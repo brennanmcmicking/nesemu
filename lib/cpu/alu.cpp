@@ -533,20 +533,20 @@ void CPU::advance_instruction() {
 void CPU::advance_frame() {
   if (ppu_.has_value()) {
     // Render a frame using the current cpu data
-    CPU::PPU& ppu = ppu_->get();
-    ppu.render_to_window();
-
-    // NMI. Program finishes current instruction before the interrupt happens
-    if (cycles_todo_ > 1) {
-      advance_cycles(cycles_todo_ - 1);
-    }
-    push_stack16(PC_);
-    push_stack(P_);
-    PC_ = read16(0xFFFA);
+    ppu_->get().render_to_window();
   }
 
+  // Want to advance the cycles regardless of if ppu attached
+  advance_cycles(kRenderCycles);
+
+  if (ppu_.has_value() && ppu_->get().is_nmi_enabled()) {
+    BOOST_LOG_TRIVIAL(info) << "nmi enabled";
+    trigger_nmi();
+  } else
+    BOOST_LOG_TRIVIAL(info) << "nmi disabled";
+
   // TODO: what does 0.5 cycles mean and how to deal with that?
-  advance_cycles(static_cast<std::size_t>(kCyclesPerFrame));
+  advance_cycles(kVBlankCycles);
 }
 
 void CPU::cycle() {
@@ -567,6 +567,16 @@ void CPU::cycle() {
         << std::format("next_instr: {}", print_instruction());
   }
   cycles_todo_--;
+}
+
+void CPU::trigger_nmi() {
+  // Program finishes current instruction before the interrupt happens
+  if (cycles_todo_ > 1) {
+    advance_cycles(cycles_todo_ - 1);
+  }
+  push_stack16(PC_);
+  push_stack(P_);
+  PC_ = read16(0xFFFA);
 }
 
 bool CPU::get_carry() { return (P_ & 0x1) > 0; }

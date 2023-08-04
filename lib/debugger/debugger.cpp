@@ -53,13 +53,7 @@ bool Debugger::smart_execute_cycle() {
       }
 
       // NMI. Program finishes current instruction before the interrupt happens
-
-      if (cpu_->cycles_todo_ > 1) {
-        cpu_->advance_cycles(cpu_->cycles_todo_ - 1);
-      }
-      cpu_->push_stack16(cpu_->PC());
-      cpu_->push_stack(cpu_->P());
-      cpu_->PC_ = cpu_->read16(0xFFFA);
+      cpu_->trigger_nmi();
       exited_vblank = true;
     }
 

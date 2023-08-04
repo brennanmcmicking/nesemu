@@ -25,7 +25,7 @@ PPU::~PPU() {
   glfwTerminate();
 }
 
-// TODO: where we gonna get cpu data. bus??
+// Note: sets vblank flag!
 void PPU::render_to_window() {
   if (!internal_frame_buf_) {
     // Unallocated, allocate it
@@ -65,6 +65,7 @@ void PPU::render_to_window() {
   glfwPollEvents();  // TODO: window refresh callback as in fn hint
 }
 
+// Note: sets vblank flag!
 void PPU::render_to_framebuffer(frame_t& out) {
   // From wiki:
   //       $3F00 	Universal background color
@@ -175,6 +176,7 @@ void PPU::set_PPUDATA(uint8_t val) {
 bool PPU::greyscale() { return PPUMASK_ & 0b1; }
 bool PPU::show_background() { return PPUMASK_ & 0b1000; }
 bool PPU::in_vblank() { return PPUSTATUS_ & 0b1000'0000; }
+bool PPU::is_nmi_enabled() { return PPUCTRL_ & 0b1000'0000; }
 
 uint8_t PPU::read(uint16_t addr) {
   switch (addr) {

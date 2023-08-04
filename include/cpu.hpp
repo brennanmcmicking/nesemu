@@ -59,7 +59,16 @@ class CPU {
   static constexpr double kTimePerFrame = 1.0 / kFramerate;  // seconds
   static constexpr std::chrono::duration<double, std::milli>
       kTimePerFrameMillis{kTimePerFrame * 1000};      // Milliseconds
-  static constexpr double kCyclesPerFrame = 29780.5;  // taken from wiki
+
+  static constexpr double kCyclesPerFrame = 29780.5;  // taken from wiki //TODO: remove?
+  static constexpr double kCPUCyclesPerScanline = 113.667;
+  static constexpr int kNumVisibleScanlines = 241;  // including pre-render line
+  static constexpr double kVBlankScanlines = 260 - 240;
+
+  static constexpr double kRenderCycles =
+      kCPUCyclesPerScanline * kNumVisibleScanlines;
+  static constexpr double kVBlankCycles =
+      kCPUCyclesPerScanline * kVBlankScanlines;
 
   explicit CPU(Cartridge& cartridge,
                std::optional<std::reference_wrapper<PPU>> ppu = std::nullopt,
@@ -149,6 +158,11 @@ class CPU {
   bool write(uint16_t addr, uint8_t value);
   // convenience function for writing 16-bit values
   bool write16(uint16_t addr, uint16_t value);
+
+/**
+ * @brief Execute an NMI: push PC and P onto stack and jump to 0xFFFA
+ */
+  void trigger_nmi();
 
   // Made public for testing purposes
   bool get_carry();

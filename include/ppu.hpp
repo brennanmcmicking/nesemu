@@ -107,6 +107,7 @@ class PPU {
   bool greyscale();
   bool show_background();
   bool in_vblank();
+  bool is_nmi_enabled();
 
  private:
   // Instead of storing whole ram array, since much of it is unused, only
