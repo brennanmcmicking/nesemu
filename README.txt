@@ -34,3 +34,23 @@ Building the main emulator program:
 will clear them. For example: reading `$2002` when the VBlank bit is set will
 clear the VBlank bit. As a result, the cartridge you're running may end up being
 acting in unexpected ways.
+
+== Stats
+
+Total Commits:           235+
+Files Changed:           16010 insertions(+) 5466 deletions(-)
+Monster Energy Consumed: 8
+
+-------------------------------------------------------------------------------
+ Language            Files        Lines         Code     Comments       Blanks
+-------------------------------------------------------------------------------
+ C++                    19        10003         7734          373         1896
+ C++ Header              6          906          536          253          117
+ Python                  1          245          126           85           34
+ CMake                   2          127           90           16           21
+ Dockerfile              1           86           45           25           16
+ Makefile                1           12            9            0            3
+ BASH                    1           11            6            1            4
+-------------------------------------------------------------------------------
+ Total                  31        11390         8546          753         2091
+-------------------------------------------------------------------------------
