@@ -29,7 +29,7 @@ Building the main emulator program:
 
 1. Run CMake Build
 2. `./nesemu <rom path>`
-    E.g. `$INSTALL_DIR/bin/nesemu $INSTALL_DIR/usr/share/nesemu/color_test_nosprites.nes`
+E.g. `$INSTALL_DIR/bin/nesemu $INSTALL_DIR/usr/share/nesemu/color_test_nosprites.nes`
 
 
 (OPTIONAL) Building the color_test_nosprites.nes ROM file from source
@@ -41,18 +41,18 @@ Building the main emulator program:
 
 === Debugging
 
-The main emulator program can be run in "debug mode" using the "--debug" flag. This
-causes the program to stop execution on the first instruction so that the user
-may perform various debugging commands such as instruction stepping, setting
-breakpoints, and reading/writing memory and registers.
+The main emulator program can be run in "debug mode" using the "--debug" flag.
+This causes the program to stop execution on the first instruction so that the
+user may perform various debugging commands such as instruction stepping,
+setting breakpoints, and reading/writing memory and registers.
 
 The following is an example of how the program may be run in debug mode:
 
 $ ./$INSTALL_DIR/bin/nesemu $INSTALL_DIR/usr/share/nesemu/color_test_nosprites.nes --debug
 
 The program then prints a message explaining that debug mode is active and that
-you may run the "help" command to view all commands. Running the "help" command will
-explain how each command may be used.
+you may run the "help" command to view all commands. Running the "help" command
+will explain how each command may be used.
 
 One of the most notable commands is "step" which executes the next instruction
 and prints the name of the instruction which was executed and the subsequent
@@ -68,8 +68,8 @@ acting in unexpected ways.
 2. The emulator program is not guaranteed to work with any ROM other than the
 provided "color_test_nosprites.nes" file. Most (if not almost all) ROMs use
 unsupported and untested features such as the APU (audio), scrolling, and
-sprite rendering which result in undefined behaviour (these unsupported features
-were specified in the project approval).
+sprite rendering which result in undefined behaviour (these unsupported
+features were specified in the project approval).
 
 === Tests
 
@@ -77,8 +77,8 @@ There are unit tests for the CPU instructions & Cartridge reading. After
 building, the `test-cpu` & `test-cartridge` executables are available in the
 build directory (NOT the install directory).
 
-For `test-cpu`, all 151 CPU instructions were thouroughly tested with each possible
-branch (for flags, etc) being covered.
+For `test-cpu`, all 151 CPU instructions were thouroughly tested with each
+possible branch (for flags, etc) being covered.
 
 === Continuous Integration
 
@@ -88,8 +88,8 @@ GitHub will show either a green checkmark or a red crossmark on each commit.
 Clicking on this icon will show the CI (test) output
 https://github.com/uvic-seng475-2023-05/cpp_project-nesemu/commits/main
 
-The CI job runs a custom built Docker image that represents the SDE. The source is
-in `Dockerfile` and runs the SDE setup scripts to configure the environment.
+The CI job runs a custom built Docker image that represents the SDE. The source
+is in `Dockerfile` and runs the SDE setup scripts to configure the environment.
 
 
 == Stats
