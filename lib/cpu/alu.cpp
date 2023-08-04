@@ -642,7 +642,7 @@ void CPU::set_negative(bool value) {
   }
 }
 
-bool detectOverflow(uint8_t a, uint8_t b, uint8_t result) {
+bool detectFlowAddition(uint8_t a, uint8_t b, uint8_t result) {
   bool aNeg = (a & 0b10000000) != 0;
   bool bNeg = (b & 0b10000000) != 0;
   if (aNeg != bNeg) {
@@ -660,10 +660,33 @@ bool detectOverflow(uint8_t a, uint8_t b, uint8_t result) {
   return differentSigns;
 }
 
+bool detectFlowSubtraction(uint8_t a, uint8_t b, uint8_t result) {
+  bool aNeg = (a & 0b10000000) != 0;
+  bool bNeg = (b & 0b10000000) != 0;
+  if (aNeg && bNeg) {
+    // If the signs are the same, overflow cannot occur.
+    return false;
+  }
+
+  // - - + = +
+  // + - - = -
+
+  bool resultNeg = (result & 0b1000'0000) != 0;
+  if (aNeg && !bNeg) {
+    return !resultNeg;
+  }
+
+  if (!aNeg && bNeg) {
+    return resultNeg;
+  }
+
+  return false;
+}
+
 void CPU::ADC(uint8_t value) {
   uint16_t newA_ = A_ + value + get_carry();
 
-  set_overflow(detectOverflow(A_, value, newA_));
+  set_overflow(detectFlowAddition(A_, value, newA_));
   set_carry((newA_ >> 8) != 0);
   set_zero((newA_ & 0xFF) == 0);
   set_negative((newA_ & 0b10000000) > 0);
@@ -814,12 +837,14 @@ void CPU::ROR_m(AddrMode addressingMode) {
 
 void CPU::SBC(AddrMode addressingMode) {
   uint8_t val = value_fetch(addressingMode);
-  uint8_t c = get_carry() ? 0 : 1;
-  bool overflowed = (val + c) > A_;
-  A_ -= (val + c);
-  set_carry(overflowed);
-  set_zero(A_ == 0);
-  set_negative((A_ & 0b10000000) > 0);
+  uint16_t newA_ = A_ - (val + !get_carry());
+
+  set_overflow(detectFlowSubtraction(A_, val, newA_));
+  set_carry((newA_ >> 8) != 0);
+  set_zero((newA_ & 0xFF) == 0);
+  set_negative((newA_ & 0b10000000) > 0);
+
+  A_ = newA_ & 0xFF;
 }
 
 void CPU::STA(AddrMode addressingMode) {
