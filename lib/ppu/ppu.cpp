@@ -132,10 +132,28 @@ void PPU::render_to_framebuffer(frame_t& out) {
         color = 0x0;
       }
 
+      color_t r = (color >> 16) & 0xFF;
+      color_t g = (color >> 8) & 0xFF;
+      color_t b = color & 0xFF;
+
+      // Emphasis
+      if (PPUMASK_ & (1 << 5)) {
+        // red emph
+        r = 0xFA;
+      }
+      if (PPUMASK_ & (1 << 6)) {
+        // green emph
+        g = 0xFA;
+      }
+      if (PPUMASK_ & (1 << 7)) {
+        // blue emph
+        b = 0xFA;
+      }
+
       // Update values in buffer
-      out[i * 3] = (color >> 16) & 0xFF;
-      out[i * 3 + 1] = (color >> 8) & 0xFF;
-      out[i * 3 + 2] = color & 0xFF;
+      out[i * 3] = r;
+      out[i * 3 + 1] = g;
+      out[i * 3 + 2] = b;
     }
   }
 
