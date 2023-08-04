@@ -94,20 +94,20 @@ in `Dockerfile` and runs the SDE setup scripts to configure the environment.
 
 == Stats
 
-Total Commits:           235+
-Files Changed:           16010 insertions(+) 5466 deletions(-)
+Total Commits:           245+
+Files Changed:           16116 insertions(+) 5484 deletions(-)
 Monster Energy Consumed: 8
 
 -------------------------------------------------------------------------------
  Language            Files        Lines         Code     Comments       Blanks
 -------------------------------------------------------------------------------
- C++                    19        10003         7734          373         1896
+ C++                    18        10001         7732          373         1896
  C++ Header              6          906          536          253          117
  Python                  1          245          126           85           34
- CMake                   2          127           90           16           21
+ CMake                   2          125           89           16           20
  Dockerfile              1           86           45           25           16
  Makefile                1           12            9            0            3
  BASH                    1           11            6            1            4
 -------------------------------------------------------------------------------
- Total                  31        11390         8546          753         2091
+ Total                  30        11386         8543          753         2090
 -------------------------------------------------------------------------------
