@@ -14,6 +14,12 @@ $ cmake -H. -Bbuild -DCMAKE_INSTALL_PREFIX=$INSTALL_DIR/
 $ cmake --build build --clean-first --target install
 $ ./$INSTALL_DIR/bin/demo
 
+== Demo Program
+
+Note: The provided demo program times out after a short time 
+(30 seconds) to pass the requirements of assignment_precheck.
+This simply closes the program after the timeout duration.
+
 
 == Development
 
