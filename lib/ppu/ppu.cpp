@@ -63,6 +63,9 @@ void PPU::render_to_window() {
   glfwSwapBuffers(&window_);
   // process all waiting events
   glfwPollEvents();  // TODO: window refresh callback as in fn hint
+
+  // BOOST_LOG_TRIVIAL(info) << "end of frame render. ppu status: "
+  // << unsigned(PPUSTATUS_);
 }
 
 // Note: sets vblank flag!

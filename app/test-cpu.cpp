@@ -727,15 +727,191 @@ TEST_CASE("Unit: AND_INDY") {
   REQUIRE_FALSE(cpu.get_negative());
 }
 
-TEST_CASE("Unit: ASL_A") {}
+TEST_CASE("Unit: ASL_A") {
+  SECTION("Zero flag") {
+    std::vector<uint8_t> bytecode = {
+        kASL_A  //
+    };
 
-TEST_CASE("Unit: ASL_ZP") {}
+    MAKE_CPU(bytecode);
 
-TEST_CASE("Unit: ASL_ZPX") {}
+    REQUIRE(cpu.A() == 0);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
 
-TEST_CASE("Unit: ASL_ABS") {}
+    cpu.advance_cycles(2);
 
-TEST_CASE("Unit: ASL_ABSX") {}
+    REQUIRE(cpu.A() == 0);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Negative") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b01000001,  //
+        kASL_A                 //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b01000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b10000010);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Carry") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0b11000001,  //
+        kLDX_IMM, 0x01,        //
+        kASL_A                 //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+    cpu.advance_instruction();
+
+    REQUIRE(cpu.A() == 0b11000001);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.A() == 0b10000010);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+    REQUIRE(cpu.get_carry());
+  };
+}
+
+TEST_CASE("Unit: ASL_ZP") {
+  std::vector<uint8_t> bytecode = {
+      kASL_ZP, 0x05  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE(cpu.A() == 0);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  SECTION("Zero flag") {
+    cpu.write(0x05, 0b00000000);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b00000000);
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Negative") {
+    cpu.write(0x05, 0b01000000);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b10000000);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+    REQUIRE_FALSE(cpu.get_carry());
+  };
+
+  SECTION("Carry") {
+    cpu.write(0x05, 0b10000001);
+
+    cpu.advance_cycles(5);
+
+    REQUIRE(cpu.read(0x05) == 0b00000010);
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+    REQUIRE(cpu.get_carry());
+  };
+}
+
+TEST_CASE("Unit: ASL_ZPX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,  //
+      kASL_ZPX, 0x05   //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.A() == 0);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000000);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.read(0x07) == 0b10000000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: ASL_ABS") {
+  std::vector<uint8_t> bytecode = {
+      kASL_ABS, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x05, 0b11000000);
+
+  cpu.advance_cycles(6);
+
+  REQUIRE(cpu.read(0x05) == 0b10000000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
+
+TEST_CASE("Unit: ASL_ABSX") {
+  std::vector<uint8_t> bytecode = {
+      kLDX_IMM, 0x02,       //
+      kASL_ABSX, U16(0x05)  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE_FALSE(cpu.get_negative());
+  REQUIRE_FALSE(cpu.get_carry());
+
+  cpu.write(0x07, 0b11000000);
+
+  cpu.advance_cycles(7);
+
+  REQUIRE(cpu.read(0x07) == 0b10000000);
+  REQUIRE_FALSE(cpu.get_zero());
+  REQUIRE(cpu.get_negative());
+  REQUIRE(cpu.get_carry());
+}
 
 TEST_CASE("Unit: BCC_REL") {
   // branch if carry clear

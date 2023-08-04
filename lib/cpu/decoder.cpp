@@ -356,6 +356,7 @@ void CPU::execute(uint8_t opcode) {
       Y_ -= 1;
       set_zero(Y_ == 0);
       set_negative((Y_ & 0b10000000) > 0);
+      PC_ += byte_count(kDEY);
       break;
     }
     case kEOR_IMM: {
