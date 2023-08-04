@@ -63,7 +63,7 @@ bool Debugger::smart_execute_cycle() {
 
     cpu_->cycle();
     cycles_todo_in_frame_ -= 1;
-  } catch (std::exception e) {
+  } catch (std::exception& e) {
     std::cout << e.what() << "\n";
   }
   return exited_vblank;
