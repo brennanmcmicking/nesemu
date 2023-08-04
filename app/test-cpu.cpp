@@ -882,7 +882,30 @@ TEST_CASE("Unit: BEQ_REL") {
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
 
-TEST_CASE("Unit: BIT_ZP") {}
+TEST_CASE("Unit: BIT_ZP") {
+  bool is_negative = GENERATE(true, false);
+  bool is_overflow = GENERATE(true, false);
+  bool is_zero = GENERATE(true, false);
+
+  uint8_t data = (is_negative << 7) | (is_overflow << 6);
+  uint8_t mask = is_zero ? ~data : data;
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, data,  //
+      kSTA_ZP,  0x42,  //
+      kLDA_IMM, mask,  //
+      kBIT_ZP,  0x42,  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+  cpu.advance_instruction();
+
+  REQUIRE(cpu.get_negative() == is_negative);
+  REQUIRE(cpu.get_overflow() == is_overflow);
+  REQUIRE(cpu.get_zero() == is_zero);
+}
 
 TEST_CASE("Unit: BIT_ABS") {}
 
