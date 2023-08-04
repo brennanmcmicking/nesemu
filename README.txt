@@ -65,6 +65,33 @@ will clear them. For example: reading `$2002` when the VBlank bit is set will
 clear the VBlank bit. As a result, the cartridge you're running may end up
 acting in unexpected ways.
 
+2. The emulator program is not guaranteed to work with any ROM other than the
+provided "color_test_nosprites.nes" file. Most (if not almost all) ROMs use
+unsupported and untested features such as the APU (audio), scrolling, and
+sprite rendering which result in undefined behaviour (these unsupported features
+were specified in the project approval).
+
+=== Tests
+
+There are unit tests for the CPU instructions & Cartridge reading. After
+building, the `test-cpu` & `test-cartridge` executables are available in the
+build directory (NOT the install directory).
+
+For `test-cpu`, all 151 CPU instructions were thouroughly tested with each possible
+branch (for flags, etc) being covered.
+
+=== Continuous Integration
+
+There is a GitHub Actions Workflow (`.github/workflows/ci.yml`) that runs both
+unit tests on every commit to provide a source of truth. The "commits" view in
+GitHub will show either a green checkmark or a red crossmark on each commit.
+Clicking on this icon will show the CI (test) output
+https://github.com/uvic-seng475-2023-05/cpp_project-nesemu/commits/main
+
+The CI job runs a custom built Docker image that represents the SDE. The source is
+in `Dockerfile` and runs the SDE setup scripts to configure the environment.
+
+
 == Stats
 
 Total Commits:           235+
