@@ -143,9 +143,13 @@ void PPU::render_to_framebuffer(frame_t& out) {
   PPUSTATUS_ |= 0b1000'0000;
 }
 
-void PPU::set_PPUCTRL(uint8_t val) { PPUCTRL_ = val; }
+void PPU::set_PPUCTRL(uint8_t val) {
+  BOOST_LOG_TRIVIAL(debug) << "PPUCTRL set to " << util::fmt_hex(val) << "\n";
+  PPUCTRL_ = val;
+}
 void PPU::set_PPUMASK(uint8_t val) { PPUMASK_ = val; }
 uint8_t PPU::get_PPUSTATUS() {
+  BOOST_LOG_TRIVIAL(debug) << "PPUSTATUS read as " << util::fmt_hex(PPUSTATUS_);
   // Reading ppustatus clears bit 7
   uint8_t status = PPUSTATUS_;
   PPUSTATUS_ &= 0b0111'1111;

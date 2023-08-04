@@ -531,6 +531,7 @@ void CPU::advance_instruction() {
 
 void CPU::advance_frame() {
   if (ppu_.has_value()) {
+    BOOST_LOG_TRIVIAL(debug) << "Rendering frame";
     // Render a frame using the current cpu data
     ppu_->get().render_to_window();
   }
@@ -539,10 +540,10 @@ void CPU::advance_frame() {
   advance_cycles(kRenderCycles);
 
   if (ppu_.has_value() && ppu_->get().is_nmi_enabled()) {
-    BOOST_LOG_TRIVIAL(info) << "nmi enabled";
+    BOOST_LOG_TRIVIAL(debug) << "nmi enabled";
     trigger_nmi();
   } else
-    BOOST_LOG_TRIVIAL(info) << "nmi disabled";
+    BOOST_LOG_TRIVIAL(debug) << "nmi disabled";
 
   // TODO: what does 0.5 cycles mean and how to deal with that?
   advance_cycles(kVBlankCycles);
