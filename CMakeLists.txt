@@ -8,6 +8,7 @@ include(Sanitizers.cmake)
 
 find_package(Catch2 2 REQUIRED)
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+set(Boost_NO_WARN_NEW_VERSIONS 1)
 find_package(Boost COMPONENTS log program_options REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
@@ -53,9 +54,6 @@ target_link_libraries(nesemu-cartridge PUBLIC cartridge util Boost::log)
 # testing
 add_executable(test-cpu app/catch2_main.cpp app/test-cpu.cpp)
 target_link_libraries(test-cpu PUBLIC cpu ppu cartridge controller util Boost::log)
-
-add_executable(test-ppu app/catch2_main.cpp app/test-ppu.cpp)
-target_link_libraries(test-ppu PUBLIC ppu util Boost::log)
 
 add_executable(test-cartridge app/catch2_main.cpp app/test-cartridge.cpp)
 target_link_libraries(test-cartridge PUBLIC cartridge util Boost::log)
