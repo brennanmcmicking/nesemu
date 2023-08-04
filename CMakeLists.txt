@@ -8,6 +8,7 @@ include(Sanitizers.cmake)
 
 find_package(Catch2 2 REQUIRED)
 ADD_DEFINITIONS(-DBOOST_LOG_DYN_LINK)
+set(Boost_NO_WARN_NEW_VERSIONS 1)
 find_package(Boost COMPONENTS log program_options REQUIRED)
 find_package(glfw3 REQUIRED)
 find_package(OpenGL REQUIRED)
