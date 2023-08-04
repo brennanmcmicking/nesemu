@@ -1416,7 +1416,70 @@ TEST_CASE("Unit: CLV") {
   REQUIRE_FALSE(cpu.get_overflow());
 }
 
-TEST_CASE("Unit: CMP_IMM") {}
+TEST_CASE("Unit: CMP_IMM") {
+  SECTION("Greater than") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0x06,  //
+        kCMP_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Equal to") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0x05,  //
+        kCMP_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE(cpu.get_carry());
+    REQUIRE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+  };
+
+  SECTION("Less than") {
+    std::vector<uint8_t> bytecode = {
+        kLDA_IMM, 0x04,  //
+        kCMP_IMM, 0x05   //
+    };
+
+    MAKE_CPU(bytecode);
+
+    cpu.advance_instruction();
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE_FALSE(cpu.get_negative());
+
+    cpu.advance_cycles(2);
+
+    REQUIRE_FALSE(cpu.get_carry());
+    REQUIRE_FALSE(cpu.get_zero());
+    REQUIRE(cpu.get_negative());
+  };
+}
 
 TEST_CASE("Unit: CMP_ZP") {}
 

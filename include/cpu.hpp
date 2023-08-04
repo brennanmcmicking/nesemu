@@ -58,9 +58,10 @@ class CPU {
   static constexpr double kFramerate = 60.0988;              // Hz
   static constexpr double kTimePerFrame = 1.0 / kFramerate;  // seconds
   static constexpr std::chrono::duration<double, std::milli>
-      kTimePerFrameMillis{kTimePerFrame * 1000};      // Milliseconds
+      kTimePerFrameMillis{kTimePerFrame * 1000};  // Milliseconds
 
-  static constexpr double kCyclesPerFrame = 29780.5;  // taken from wiki //TODO: remove?
+  static constexpr double kCyclesPerFrame =
+      29780.5;  // taken from wiki //TODO: remove?
   static constexpr double kCPUCyclesPerScanline = 113.667;
   static constexpr int kNumVisibleScanlines = 241;  // including pre-render line
   static constexpr double kVBlankScanlines = 260 - 240;
@@ -159,9 +160,9 @@ class CPU {
   // convenience function for writing 16-bit values
   bool write16(uint16_t addr, uint16_t value);
 
-/**
- * @brief Execute an NMI: push PC and P onto stack and jump to 0xFFFA
- */
+  /**
+   * @brief Execute an NMI: push PC and P onto stack and jump to 0xFFFA
+   */
   void trigger_nmi();
 
   // Made public for testing purposes

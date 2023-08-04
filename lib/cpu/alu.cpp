@@ -725,7 +725,7 @@ void CPU::BRANCH(OpCode opcode, bool doBranch) {
 }
 
 void CPU::CMP(uint8_t reg, uint8_t other) {
-  set_carry(reg < other);
+  set_carry(reg >= other);
   set_zero(reg == other);
   set_negative(reg < other);
 }
