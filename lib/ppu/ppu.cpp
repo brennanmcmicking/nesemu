@@ -137,11 +137,19 @@ void PPU::render_to_framebuffer(frame_t& out) {
       out[i * 3 + 2] = color & 0xFF;
     }
   }
+
+  // When done rendering, set the vblank flag
+  PPUSTATUS_ |= 0b1000'0000;
 }
 
 void PPU::set_PPUCTRL(uint8_t val) { PPUCTRL_ = val; }
 void PPU::set_PPUMASK(uint8_t val) { PPUMASK_ = val; }
-uint8_t PPU::get_PPUSTATUS() { return PPUSTATUS_; }
+uint8_t PPU::get_PPUSTATUS() {
+  // Reading ppustatus clears bit 7
+  uint8_t status = PPUSTATUS_;
+  PPUSTATUS_ &= 0b0111'1111;
+  return status;
+}
 void PPU::set_OAMADDR(uint8_t val) { OAMADDR_ = val; }
 void PPU::set_OAMDATA(uint8_t val) { OAMDATA_ = val; }
 uint8_t PPU::get_OAMDATA() { return OAMDATA_; }

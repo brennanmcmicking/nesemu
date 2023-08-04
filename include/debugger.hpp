@@ -44,17 +44,20 @@ class Debugger {
 
  private:
   static constexpr char help_msg_[] =
-      "help \n"
+      "Use the following commands to interact with the debugger. Short \n"
+      "versions of command names are shown in parenthesis ()\n\n"
+      "help (h) \n"
       "  Prints this message \n"
-      "step \n"
-      "  Advance the CPU by one instruction \n"
-      "continue \n"
+      "step (s) [num steps]\n"
+      "  Advance the CPU by one instruction. Optionally specify a number of \n"
+      "instructions to step\n"
+      "continue (c)\n"
       "  Continue execution until the next breakpoint \n"
       "break <address> \n"
       "  Pauses program execution when program counter contains <address> \n"
       "delete <address> \n"
       "  Removes the previously specified breakpoint at address \n"
-      "list \n"
+      "list (l)\n"
       "  Prints the addresses of all existing breakpoints \n"
       "clear \n"
       "  Deletes all breakpoints \n"
@@ -65,14 +68,14 @@ class Debugger {
       // "\n"
       // "  RAM access, everything else is undefined. Bytes are printed in \n"
       // "  hexadecimal \n"
-      "read <address> [bytes] \n"
+      "read (r) <address> [bytes] \n"
       "  Prints the value in memory at the specified address in hexadecimal. \n"
       "  Optionally specify a number of bytes to read (default 1) \n"
-      "write <address> <data> \n"
+      "write (w) <address> <data> \n"
       "  Overwrites the value in memory at the given address with specified \n"
       "  data. Note: only writes a single byte. If given data is more than a \n"
       "  byte, //TODO: what to do? \n"
-      "registers \n"
+      "registers (reg)\n"
       "  Prints the names and values of all registers in hexadecimal format. \n"
       "  The register names are: \n"
       "  - PC (program counter, 16-bit) \n"
@@ -113,7 +116,7 @@ class Debugger {
    * @return true iff the debug loop should continue (i.e. didn't read EOF or
    * some other fatal error)
    */
-  bool read_command();
+  void read_command();
 
   /**
    * @brief Prints a help message describing the commands that can be used.
@@ -123,9 +126,10 @@ class Debugger {
   /****** Breakpoint commands *******/
 
   /**
-   * @brief Perform one step, executing the next instruction.
+   * @brief Perform one or more steps, executing the next instruction as many
+   * times as specified (default 1)
    */
-  void cmd_step();
+  void cmd_step(uint num_to_step = 1);
 
   /**
    * @brief Continue execution of the program as normal (until it hits the next
