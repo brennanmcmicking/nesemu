@@ -89,13 +89,12 @@ std::size_t CPU::cycle_count(uint8_t opcode) {
       return 7;
     case kBCC_REL: {  // branching instruction
       std::size_t cycles = 2;
-      /* TODO fill in the function for kBCC_REL
-      uint16_t base_addr = PC_;
-      uint16_t branch_addr = addr_fetch(kRelative);
-      if (!BRANCH_INSTRUCTION()) return cycles;
-      cycles += 1;
-      if (crossed_page(base_addr, branch_addr)) cycles += 1;
-      */
+      // TODO fill in the function for kBCC_REL
+      // uint16_t base_addr = PC_;
+      // uint16_t branch_addr = addr_fetch(kRelative);
+      // if (!()) return cycles;
+      // cycles += 1;
+      // if (crossed_page(base_addr, branch_addr)) cycles += 1;
       return cycles;
     }
     case kBCS_REL: {  // branching instruction
@@ -550,21 +549,25 @@ void CPU::advance_frame() {
 }
 
 void CPU::cycle() {
-  BOOST_LOG_TRIVIAL(trace) << "cycle()";
-  BOOST_LOG_TRIVIAL(trace) << std::format(
-      "PC: {}, SP: {}, A: {}, X: {}, Y: {}, P: {}", util::fmt_hex(PC_),
-      util::fmt_hex(SP_), util::fmt_hex(A_), util::fmt_hex(X_),
-      util::fmt_hex(Y_), util::fmt_hex(P_));
-  BOOST_LOG_TRIVIAL(trace) << std::format("cycles_todo: {}", cycles_todo_);
+  // BOOST_LOG_TRIVIAL(trace) << "cycle()";
+  // BOOST_LOG_TRIVIAL(trace) << std::format(
+  //     "PC: {}, SP: {}, A: {}, X: {}, Y: {}, P: {}", util::fmt_hex(PC_),
+  //     util::fmt_hex(SP_), util::fmt_hex(A_), util::fmt_hex(X_),
+  //     util::fmt_hex(Y_), util::fmt_hex(P_));
+  // BOOST_LOG_TRIVIAL(trace) << std::format("cycles_todo: {}", cycles_todo_);
 
   if (cycles_todo_ == 1) {
+    // BOOST_LOG_TRIVIAL(trace) << std::format(
+    //     "PC: {}, SP: {}, A: {}, X: {}, Y: {}, P: {}", util::fmt_hex(PC_),
+    //     util::fmt_hex(SP_), util::fmt_hex(A_), util::fmt_hex(X_),
+    //     util::fmt_hex(Y_), util::fmt_hex(P_));
     // fetch, decode, execute
     execute(read(PC_));
   } else if (cycles_todo_ == 0) {
-    BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
+    // BOOST_LOG_TRIVIAL(trace) << "fetching next instruction";
     cycles_todo_ = cycle_count(read(PC_));
-    BOOST_LOG_TRIVIAL(trace)
-        << std::format("next_instr: {}", print_instruction());
+    // BOOST_LOG_TRIVIAL(trace)
+    //     << std::format("next_instr: {}", print_instruction());
   }
   cycles_todo_--;
 }
@@ -680,7 +683,7 @@ void CPU::BIT(AddrMode addressingMode) {
 
 void CPU::BRANCH(OpCode opcode, bool doBranch) {
   // we must the read value as a signed integer to support backwards jumps
-  uint8_t unsigned_offset = value_fetch(kRelative);
+  // uint8_t unsigned_offset = value_fetch(kRelative);
   int8_t offset = static_cast<int8_t>(value_fetch(kRelative));
   // from the docs: "As the program counter itself is incremented during
   // instruction execution by two the effective address range for the target
@@ -688,9 +691,9 @@ void CPU::BRANCH(OpCode opcode, bool doBranch) {
   // i.e. we must increment the PC *before* applying the offset
   PC_ += byte_count(opcode);
   if (doBranch) {
-    BOOST_LOG_TRIVIAL(trace)
-        << "Branch succeeded, offset: " << signed(offset)
-        << ", unsigned offset: " << unsigned(unsigned_offset);
+    // BOOST_LOG_TRIVIAL(trace)
+    //     << "Branch succeeded, offset: " << signed(offset)
+    //     << ", unsigned offset: " << unsigned(unsigned_offset);
     PC_ += offset;
   }
 }

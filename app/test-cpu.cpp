@@ -813,7 +813,23 @@ TEST_CASE("Unit: BPL_REL") {
   REQUIRE(cpu.PC() == old_pc + 0x02);
 }
 
-TEST_CASE("Unit: BRK") {}
+TEST_CASE("Unit: BRK") {
+  const uint16_t addr = 0x1234;
+  std::vector<uint8_t> bytecode = {
+      kBRK,  //
+  };
+
+  std::unique_ptr<VectorMapper> __mapper(new VectorMapper(bytecode, addr));
+  cartridge::Cartridge __cart(std::move(__mapper));
+  CPU cpu(__cart);
+
+  REQUIRE(cpu.get_break() == true);
+
+  cpu.advance_instruction();
+  REQUIRE(cpu.get_break() == true);
+  // TODO NMI stuff?
+  REQUIRE(cpu.PC() == addr);
+}
 
 TEST_CASE("Unit: BVC_REL") {
   // branch if overflow clear
