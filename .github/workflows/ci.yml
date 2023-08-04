@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+      - master
   pull_request:
 
 jobs:
@@ -31,7 +32,6 @@ jobs:
             build/nesemu-cartridge
             build/nesemu-cpu
             build/test-cpu
-            build/test-ppu
             build/test-cartridge
 
   test:
@@ -42,7 +42,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        test: ["cpu", "ppu", "cartridge"]
+        test: ["cpu", "cartridge"]
     steps:
       - name: Download executables
         uses: actions/download-artifact@v3

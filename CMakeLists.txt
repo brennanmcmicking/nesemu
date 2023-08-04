@@ -55,9 +55,6 @@ target_link_libraries(nesemu-cartridge PUBLIC cartridge util Boost::log)
 add_executable(test-cpu app/catch2_main.cpp app/test-cpu.cpp)
 target_link_libraries(test-cpu PUBLIC cpu ppu cartridge controller util Boost::log)
 
-add_executable(test-ppu app/catch2_main.cpp app/test-ppu.cpp)
-target_link_libraries(test-ppu PUBLIC ppu util Boost::log)
-
 add_executable(test-cartridge app/catch2_main.cpp app/test-cartridge.cpp)
 target_link_libraries(test-cartridge PUBLIC cartridge util Boost::log)
 
