@@ -1087,7 +1087,33 @@ TEST_CASE("Unit: BIT_ZP") {
   REQUIRE(cpu.get_zero() == is_zero);
 }
 
-TEST_CASE("Unit: BIT_ABS") {}
+TEST_CASE("Unit: BIT_ABS") {
+  bool is_negative = GENERATE(true, false);
+  bool is_overflow = GENERATE(true, false);
+  bool is_zero = GENERATE(true, false);
+
+  uint8_t data = (is_negative << 7) | (is_overflow << 6) + 1;
+  uint8_t mask = !is_zero;
+  CAPTURE(is_negative, is_overflow, is_zero,  //
+          std::bitset<8>(data), std::bitset<8>(mask));
+  std::vector<uint8_t> bytecode = {
+      kLDA_IMM, data,       //
+      kSTA_ZP,  0x42,       //
+      kLDA_IMM, mask,       //
+      kBIT_ABS, U16(0x42),  //
+  };
+
+  MAKE_CPU(bytecode);
+
+  cpu.advance_instruction();  // LDA
+  cpu.advance_instruction();  // STA
+  cpu.advance_instruction();  // LDA
+  cpu.advance_instruction();  // BIT
+
+  REQUIRE(cpu.get_negative() == is_negative);
+  REQUIRE(cpu.get_overflow() == is_overflow);
+  REQUIRE(cpu.get_zero() == is_zero);
+}
 
 TEST_CASE("Unit: BMI_REL") {
   // branch if minus
